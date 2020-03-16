@@ -11,3 +11,17 @@ ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR169/009/ERR1698349/ERR1698349.fastq.gz
 ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR169/000/ERR1698350/ERR1698350.fastq.gz
 ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR169/001/ERR1698351/ERR1698351.fastq.gz
 ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR169/002/ERR1698352/ERR1698352.fastq.gz
+
+## E-MTAB-6251
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/009/ERR2206799/ERR2206799.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/007/ERR2206807/ERR2206807.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/008/ERR2206808/ERR2206808.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/009/ERR2206809/ERR2206809.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/000/ERR2206800/ERR2206800.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/001/ERR2206801/ERR2206801.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/002/ERR2206802/ERR2206802.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/003/ERR2206803/ERR2206803.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/004/ERR2206804/ERR2206804.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/005/ERR2206805/ERR2206805.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/006/ERR2206806/ERR2206806.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR220/000/ERR2206810/ERR2206810.fastq.gz

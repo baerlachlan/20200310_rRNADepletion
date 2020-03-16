@@ -49,4 +49,4 @@ mkdir -p ${ALIGNDATA}/featureCounts
 ## FastQC on the raw data
 ##--------------------------------------------------------------------------------------------##
 
-fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/*.fastq.gz
+fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/*SRR*.fastq.gz
