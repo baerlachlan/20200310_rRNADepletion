@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -p batch
 #SBATCH -N 1
-#SBATCH -n 8
+#SBATCH -n 16
 #SBATCH --time=4:00:00
-#SBATCH --mem=16GB
+#SBATCH --mem=32GB
 #SBATCH -o /fast/users/a1647910/20200310_rRNADepletion/slurm/%x_%j.out
 #SBATCH -e /fast/users/a1647910/20200310_rRNADepletion/slurm/%x_%j.err
 #SBATCH --mail-type=END
@@ -52,36 +52,89 @@ mkdir -p ${ALIGNDATA}/FastQC
 ## Trimming the merged data
 ##--------------------------------------------------------------------------------------------##
 
-# for R1 in ${RAWDATA}/fastq/*.fastq.gz
-# do
+## Trimming dataset 1
+for R1 in ${RAWDATA}/fastq/ERR169*.fastq.gz
+do
 
-#  echo -e "Currently working on ${R1}"
+ echo -e "Currently working on ${R1}"
 
-#  # Now create the output filenames
-#  out1=${TRIMDATA}/fastq/$(basename $R1)
-#  BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
-#  echo -e "Output file will be ${out1}"
-#  echo -e "Trimming:\t${BNAME}"
+ # Now create the output filenames
+ out1=${TRIMDATA}/fastq/$(basename $R1)
+ BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
+ echo -e "Output file will be ${out1}"
+ echo -e "Trimming:\t${BNAME}"
 
-#  #Trim
-#  AdapterRemoval \
-#    --gzip \
-#    --trimns \
-#    --trimqualities \
-#    --minquality 30 \
-#    --minlength 35 \
-#    --threads ${CORES} \
-#    --basename ${BNAME} \
-#    --output1 ${out1} \
-#    --file1 ${R1}
+ # Trim
+ AdapterRemoval \
+   --gzip \
+   --trimns \
+   --trimqualities \
+   --minquality 30 \
+   --minlength 35 \
+   --threads ${CORES} \
+   --basename ${BNAME} \
+   --output1 ${out1} \
+   --file1 ${R1}
 
-#  done
+done
 
-# ## Move the log files into their own folder
-# mv ${TRIMDATA}/fastq/*settings ${TRIMDATA}/log
+## Trimming dataset 2
+for R1 in ${RAWDATA}/fastq/ERR220*.fastq.gz
+do
 
-# ## Run FastQC
-# fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/*.fastq.gz
+ echo -e "Currently working on ${R1}"
+
+ # Now create the output filenames
+ out1=${TRIMDATA}/fastq/$(basename $R1)
+ BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
+ echo -e "Output file will be ${out1}"
+ echo -e "Trimming:\t${BNAME}"
+
+ # Trim
+ AdapterRemoval \
+   --gzip \
+   --trimns \
+   --trimqualities \
+   --minquality 30 \
+   --minlength 35 \
+   --threads ${CORES} \
+   --basename ${BNAME} \
+   --output1 ${out1} \
+   --file1 ${R1}
+
+done
+
+## Trimming dataset 3
+for R1 in ${RAWDATA}/fastq/SRR213*.fastq.gz
+do
+
+ echo -e "Currently working on ${R1}"
+
+ # Now create the output filenames
+ out1=${TRIMDATA}/fastq/$(basename $R1)
+ BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
+ echo -e "Output file will be ${out1}"
+ echo -e "Trimming:\t${BNAME}"
+
+ # Trim
+ AdapterRemoval \
+   --gzip \
+   --trimns \
+   --trimqualities \
+   --minquality 30 \
+   --minlength 35 \
+   --threads ${CORES} \
+   --basename ${BNAME} \
+   --output1 ${out1} \
+   --file1 ${R1}
+
+done
+
+## Move the log files into their own folder
+mv ${TRIMDATA}/fastq/*settings ${TRIMDATA}/log
+
+## Run FastQC
+fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/*.fastq.gz
 
 ##--------------------------------------------------------------------------------------------##
 ## Aligning trimmed data to ribosomal RNA
@@ -100,16 +153,16 @@ mkdir -p ${ALIGNDATA}/FastQC
 
 # done
 
-## Fastqc, indexing and flagstats
-for BAM in ${ALIGNDATA}/bam/*.bam
-do
+# ## Fastqc, indexing and flagstats
+# for BAM in ${ALIGNDATA}/bam/*.bam
+# do
 
-  out=${ALIGNDATA}/log/$(basename ${BAM%.sorted.bam})
+#   out=${ALIGNDATA}/log/$(basename ${BAM%.sorted.bam})
 
-  fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATA}/FastQC --noextract ${BAM}
-  samtools index ${BAM}
-  samtools stats ${BAM} > ${out}.stats
-  samtools flagstat ${BAM} > ${out}.flagstat
-  samtools idxstats ${BAM} > ${out}.idxstats
+#   fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATA}/FastQC --noextract ${BAM}
+#   samtools index ${BAM}
+#   samtools stats ${BAM} > ${out}.stats
+#   samtools flagstat ${BAM} > ${out}.flagstat
+#   samtools idxstats ${BAM} > ${out}.idxstats
 
-done
+# done
