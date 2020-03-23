@@ -46,41 +46,41 @@ mkdir -p ${ALIGNDATA}/FastQC
 ## FastQC on the raw data
 ##--------------------------------------------------------------------------------------------##
 
-fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/SRR218*.fastq.gz
+# fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/*.fastq.gz
 
 ##--------------------------------------------------------------------------------------------##
 ## Trimming the merged data
 ##--------------------------------------------------------------------------------------------##
 
-for R1 in ${RAWDATA}/fastq/SRR218*.fastq.gz
-do
+# for R1 in ${RAWDATA}/fastq/*.fastq.gz
+# do
 
- echo -e "Currently working on ${R1}"
+#  echo -e "Currently working on ${R1}"
 
- # Now create the output filenames
- out1=${TRIMDATA}/fastq/$(basename $R1)
- BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
- echo -e "Output file will be ${out1}"
- echo -e "Trimming:\t${BNAME}"
+#  # Now create the output filenames
+#  out1=${TRIMDATA}/fastq/$(basename $R1)
+#  BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
+#  echo -e "Output file will be ${out1}"
+#  echo -e "Trimming:\t${BNAME}"
 
- # Trim
- AdapterRemoval \
-   --gzip \
-   --trimns \
-   --trimqualities \
-   --minquality 30 \
-   --threads ${CORES} \
-   --basename ${BNAME} \
-   --output1 ${out1} \
-   --file1 ${R1}
+#  # Trim
+#  AdapterRemoval \
+#    --gzip \
+#    --trimns \
+#    --trimqualities \
+#    --minquality 30 \
+#    --threads ${CORES} \
+#    --basename ${BNAME} \
+#    --output1 ${out1} \
+#    --file1 ${R1}
 
-done
+# done
 
-## Move the log files into their own folder
-mv ${TRIMDATA}/fastq/*settings ${TRIMDATA}/log
+# ## Move the log files into their own folder
+# mv ${TRIMDATA}/fastq/*settings ${TRIMDATA}/log
 
-## Run FastQC
-fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/*.fastq.gz
+# ## Run FastQC
+# fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/*.fastq.gz
 
 ##--------------------------------------------------------------------------------------------##
 ## Aligning trimmed data to ribosomal RNA
@@ -99,16 +99,16 @@ fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/*.fastq.g
 
 # done
 
-# ## Fastqc, indexing and flagstats
-# for BAM in ${ALIGNDATA}/bam/*.bam
-# do
+## Fastqc, indexing and flagstats
+for BAM in ${ALIGNDATA}/bam/SRR218*.bam
+do
 
-#   out=${ALIGNDATA}/log/$(basename ${BAM%.sorted.bam})
+  out=${ALIGNDATA}/log/$(basename ${BAM%.sorted.bam})
 
-#   fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATA}/FastQC --noextract ${BAM}
-#   samtools index ${BAM}
-#   samtools stats ${BAM} > ${out}.stats
-#   samtools flagstat ${BAM} > ${out}.flagstat
-#   samtools idxstats ${BAM} > ${out}.idxstats
+  fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATA}/FastQC --noextract ${BAM}
+  samtools index ${BAM}
+  samtools stats ${BAM} > ${out}.stats
+  samtools flagstat ${BAM} > ${out}.flagstat
+  samtools idxstats ${BAM} > ${out}.idxstats
 
-# done
+done
