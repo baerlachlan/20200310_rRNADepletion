@@ -1,0 +1,139 @@
+---
+title: "rRNA Depletion"
+author: "Lachlan Baer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    fig_width: 8
+    fig_height: 6
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    error = FALSE
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r}
+library(tidyverse)
+library(ngsReports)
+library(here)
+library(scales)
+```
+
+```{r}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+```
+
+# Raw Data
+
+## Library sizes
+
+```{r}
+files <- list.files(
+    path = "0_rawData/FastQC",
+    pattern = "zip",
+    full.names = TRUE
+) %>%
+    basename()
+samples <- tibble(
+    sample = str_remove(files, "_fastqc.zip"),
+    dataset = NA
+) %>%
+    mutate(
+        dataset = ifelse(
+            str_detect(sample, "ERR169"), "E-MTAB-5173", dataset
+        ),
+        dataset = ifelse(
+            str_detect(sample, "ERR220"), "E-MTAB-6251", dataset
+        ),
+        dataset = ifelse(
+            str_detect(sample, "SRR213"), "E-GEOD-71609", dataset
+        )
+    )
+```
+
+```{r}
+rawFqc <- list.files(
+    path = "0_rawData/FastQC",
+    pattern = "zip",
+    full.names = TRUE
+) %>%
+    FastqcDataList()
+```
+
+```{r, fig.cap="E-MTAB-5173"}
+data1 <- grepl("ERR169", fqName(rawFqc))
+plotReadTotals(rawFqc[data1]) 
+```
+
+```{r, fig.cap="E-MTAB-6251"}
+data2 <- grepl("ERR220", fqName(rawFqc))
+plotReadTotals(rawFqc[data2])
+```
+
+```{r, fig.cap="E-GEOD-71609"}
+data3 <- grepl("SRR213", fqName(rawFqc))
+plotReadTotals(rawFqc[data3])
+```
+
+## GC Content
+
+```{r, fig.cap="E-MTAB-5173"}
+plotGcContent(
+    x = rawFqc[data1], 
+    plotType = "line",
+    gcType = "Transcriptome",
+    species = "Drerio"
+)
+```
+
+```{r, fig.cap="E-MTAB-6251"}
+plotGcContent(
+    x = rawFqc[data2], 
+    plotType = "line",
+    gcType = "Transcriptome",
+    species = "Drerio"
+)
+```
+
+```{r, fig.cap="E-GEOD-71609"}
+plotGcContent(
+    x = rawFqc[data3], 
+    plotType = "line",
+    gcType = "Transcriptome",
+    species = "Drerio"
+)
+```
+
+```{r, fig.cap="Percentages of each library which contain >70% GC. Using the known theoretical distribution, this should be 0.19% of the total library."}
+gc <- getModule(rawFqc, "Per_sequence_GC") %>%
+    mutate(sample = str_remove(Filename, ".fastq.gz"))
+rawGC <- gc %>% 
+    group_by(sample) %>%
+    mutate(Freq = Count / sum(Count)) %>%
+    dplyr::filter(GC_Content > 70) %>% 
+    summarise(Freq = sum(Freq)) %>% 
+    arrange(desc(Freq)) %>%
+    left_join(samples) 
+rawGC %>%
+    ggplot(aes(sample, Freq)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~dataset, scales = "free_x") +
+    scale_y_continuous(labels = percent) +
+    labs(x = "Sample", y = "Percent of Total") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
