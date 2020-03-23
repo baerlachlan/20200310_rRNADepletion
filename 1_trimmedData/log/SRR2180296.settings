@@ -1,0 +1,93 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 22787103
+Number of unaligned reads: 19184948
+Number of well aligned reads: 3602155
+Number of discarded mate 1 reads: 19097
+Number of singleton mate 1 reads: 22768006
+Number of reads with adapters[1]: 3602155
+Number of retained reads: 22768006
+Number of retained nucleotides: 1100567331
+Average length of retained reads: 48.3383
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	586	586
+1	0	576	576
+2	0	737	737
+3	0	383	383
+4	0	483	483
+5	0	491	491
+6	0	518	518
+7	0	642	642
+8	0	891	891
+9	0	1164	1164
+10	0	1563	1563
+11	0	1979	1979
+12	0	2603	2603
+13	0	2880	2880
+14	0	3601	3601
+15	4883	0	4883
+16	5776	0	5776
+17	7411	0	7411
+18	9507	0	9507
+19	10685	0	10685
+20	13706	0	13706
+21	16569	0	16569
+22	17901	0	17901
+23	24013	0	24013
+24	25404	0	25404
+25	28274	0	28274
+26	28615	0	28615
+27	30282	0	30282
+28	28959	0	28959
+29	31479	0	31479
+30	31443	0	31443
+31	33560	0	33560
+32	42711	0	42711
+33	43618	0	43618
+34	48777	0	48777
+35	80411	0	80411
+36	108600	0	108600
+37	70294	0	70294
+38	135262	0	135262
+39	102137	0	102137
+40	129530	0	129530
+41	120023	0	120023
+42	131125	0	131125
+43	164187	0	164187
+44	301907	0	301907
+45	329700	0	329700
+46	548598	0	548598
+47	1249965	0	1249965
+48	1853196	0	1853196
+49	2866930	0	2866930
+50	14092568	0	14092568

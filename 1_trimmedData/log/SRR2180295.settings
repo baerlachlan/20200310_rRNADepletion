@@ -1,0 +1,93 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 17265487
+Number of unaligned reads: 14407590
+Number of well aligned reads: 2857897
+Number of discarded mate 1 reads: 6470
+Number of singleton mate 1 reads: 17259017
+Number of reads with adapters[1]: 2857897
+Number of retained reads: 17259017
+Number of retained nucleotides: 841189678
+Average length of retained reads: 48.7391
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	241	241
+1	0	242	242
+2	0	268	268
+3	0	145	145
+4	0	156	156
+5	0	190	190
+6	0	150	150
+7	0	205	205
+8	0	278	278
+9	0	397	397
+10	0	489	489
+11	0	647	647
+12	0	843	843
+13	0	1010	1010
+14	0	1209	1209
+15	1650	0	1650
+16	1909	0	1909
+17	2558	0	2558
+18	3369	0	3369
+19	3676	0	3676
+20	4789	0	4789
+21	5980	0	5980
+22	6696	0	6696
+23	8801	0	8801
+24	9811	0	9811
+25	10920	0	10920
+26	11217	0	11217
+27	11849	0	11849
+28	12210	0	12210
+29	13220	0	13220
+30	13694	0	13694
+31	14937	0	14937
+32	19108	0	19108
+33	19953	0	19953
+34	23378	0	23378
+35	38551	0	38551
+36	46936	0	46936
+37	39780	0	39780
+38	74136	0	74136
+39	54815	0	54815
+40	80174	0	80174
+41	64749	0	64749
+42	75553	0	75553
+43	102247	0	102247
+44	189735	0	189735
+45	223878	0	223878
+46	395066	0	395066
+47	888533	0	888533
+48	1296715	0	1296715
+49	2312363	0	2312363
+50	11176061	0	11176061

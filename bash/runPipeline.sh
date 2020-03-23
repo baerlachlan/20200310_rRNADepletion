@@ -46,64 +46,13 @@ mkdir -p ${ALIGNDATA}/FastQC
 ## FastQC on the raw data
 ##--------------------------------------------------------------------------------------------##
 
-# fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/*SRR*.fastq.gz
+fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/SRR218*.fastq.gz
 
 ##--------------------------------------------------------------------------------------------##
 ## Trimming the merged data
 ##--------------------------------------------------------------------------------------------##
 
-## Trimming dataset 1
-for R1 in ${RAWDATA}/fastq/ERR169*.fastq.gz
-do
-
- echo -e "Currently working on ${R1}"
-
- # Now create the output filenames
- out1=${TRIMDATA}/fastq/$(basename $R1)
- BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
- echo -e "Output file will be ${out1}"
- echo -e "Trimming:\t${BNAME}"
-
- # Trim
- AdapterRemoval \
-   --gzip \
-   --trimns \
-   --trimqualities \
-   --minquality 30 \
-   --threads ${CORES} \
-   --basename ${BNAME} \
-   --output1 ${out1} \
-   --file1 ${R1}
-
-done
-
-## Trimming dataset 2
-for R1 in ${RAWDATA}/fastq/ERR220*.fastq.gz
-do
-
- echo -e "Currently working on ${R1}"
-
- # Now create the output filenames
- out1=${TRIMDATA}/fastq/$(basename $R1)
- BNAME=${TRIMDATA}/fastq/$(basename ${R1%.fastq.gz})
- echo -e "Output file will be ${out1}"
- echo -e "Trimming:\t${BNAME}"
-
- # Trim
- AdapterRemoval \
-   --gzip \
-   --trimns \
-   --trimqualities \
-   --minquality 30 \
-   --threads ${CORES} \
-   --basename ${BNAME} \
-   --output1 ${out1} \
-   --file1 ${R1}
-
-done
-
-## Trimming dataset 3
-for R1 in ${RAWDATA}/fastq/SRR213*.fastq.gz
+for R1 in ${RAWDATA}/fastq/SRR218*.fastq.gz
 do
 
  echo -e "Currently working on ${R1}"
