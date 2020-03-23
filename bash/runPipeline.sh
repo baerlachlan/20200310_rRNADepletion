@@ -2,7 +2,7 @@
 #SBATCH -p batch
 #SBATCH -N 1
 #SBATCH -n 16
-#SBATCH --time=4:00:00
+#SBATCH --time=2:00:00
 #SBATCH --mem=32GB
 #SBATCH -o /fast/users/a1647910/20200310_rRNADepletion/slurm/%x_%j.out
 #SBATCH -e /fast/users/a1647910/20200310_rRNADepletion/slurm/%x_%j.err
@@ -70,7 +70,6 @@ do
    --trimns \
    --trimqualities \
    --minquality 30 \
-   --minlength 35 \
    --threads ${CORES} \
    --basename ${BNAME} \
    --output1 ${out1} \
@@ -96,7 +95,6 @@ do
    --trimns \
    --trimqualities \
    --minquality 30 \
-   --minlength 35 \
    --threads ${CORES} \
    --basename ${BNAME} \
    --output1 ${out1} \
@@ -122,7 +120,6 @@ do
    --trimns \
    --trimqualities \
    --minquality 30 \
-   --minlength 35 \
    --threads ${CORES} \
    --basename ${BNAME} \
    --output1 ${out1} \

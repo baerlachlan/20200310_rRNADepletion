@@ -19,7 +19,7 @@ Mate-number separator (input): '/'
 Trimming Ns: Yes
 Trimming Phred scores <= 30: Yes
 Trimming using sliding windows: No
-Minimum genomic length: 35
+Minimum genomic length: 15
 Maximum genomic length: 4294967295
 Collapse overlapping reads: No
 Minimum overlap (in case of collapse): 11
@@ -30,12 +30,12 @@ Minimum adapter overlap: 0
 Total number of reads: 14064762
 Number of unaligned reads: 11975767
 Number of well aligned reads: 2088995
-Number of discarded mate 1 reads: 11138424
-Number of singleton mate 1 reads: 2926338
+Number of discarded mate 1 reads: 10183595
+Number of singleton mate 1 reads: 3881167
 Number of reads with adapters[1]: 2088995
-Number of retained reads: 2926338
-Number of retained nucleotides: 222858727
-Average length of retained reads: 76.1562
+Number of retained reads: 3881167
+Number of retained nucleotides: 245892620
+Average length of retained reads: 63.3553
 
 
 [Length distribution]
@@ -55,26 +55,26 @@ Length	Mate1	Discarded	All
 12	0	64398	64398
 13	0	61217	61217
 14	0	59423	59423
-15	0	55683	55683
-16	0	55036	55036
-17	0	52753	52753
-18	0	51589	51589
-19	0	50487	50487
-20	0	49234	49234
-21	0	47950	47950
-22	0	47394	47394
-23	0	47011	47011
-24	0	46062	46062
-25	0	46203	46203
-26	0	45705	45705
-27	0	44967	44967
-28	0	45574	45574
-29	0	44764	44764
-30	0	45122	45122
-31	0	45161	45161
-32	0	44473	44473
-33	0	44626	44626
-34	0	45035	45035
+15	55683	0	55683
+16	55036	0	55036
+17	52753	0	52753
+18	51589	0	51589
+19	50487	0	50487
+20	49234	0	49234
+21	47950	0	47950
+22	47394	0	47394
+23	47011	0	47011
+24	46062	0	46062
+25	46203	0	46203
+26	45705	0	45705
+27	44967	0	44967
+28	45574	0	45574
+29	44764	0	44764
+30	45122	0	45122
+31	45161	0	45161
+32	44473	0	44473
+33	44626	0	44626
+34	45035	0	45035
 35	44118	0	44118
 36	44123	0	44123
 37	43809	0	43809
