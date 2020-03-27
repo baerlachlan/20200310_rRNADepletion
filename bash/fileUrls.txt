@@ -38,3 +38,28 @@ ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR213/003/SRR2138293/SRR2138293.fastq.gz
 ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR213/004/SRR2138294/SRR2138294.fastq.gz
 ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR213/005/SRR2138295/SRR2138295.fastq.gz
 
+## E-GEOD-72322
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/003/SRR2180293/SRR2180293.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/004/SRR2180294/SRR2180294.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/005/SRR2180295/SRR2180295.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/006/SRR2180296/SRR2180296.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/007/SRR2180297/SRR2180297.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/008/SRR2180298/SRR2180298.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/009/SRR2180299/SRR2180299.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/000/SRR2180300/SRR2180300.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/001/SRR2180301/SRR2180301.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/002/SRR2180302/SRR2180302.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/003/SRR2180303/SRR2180303.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/004/SRR2180304/SRR2180304.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/005/SRR2180305/SRR2180305.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/006/SRR2180306/SRR2180306.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/007/SRR2180307/SRR2180307.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/008/SRR2180308/SRR2180308.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/009/SRR2180309/SRR2180309.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/000/SRR2180310/SRR2180310.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/001/SRR2180311/SRR2180311.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/002/SRR2180312/SRR2180312.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/003/SRR2180313/SRR2180313.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/004/SRR2180314/SRR2180314.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/005/SRR2180315/SRR2180315.fastq.gz
+ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR218/006/SRR2180316/SRR2180316.fastq.gz
