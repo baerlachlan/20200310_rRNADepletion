@@ -172,8 +172,8 @@ mkdir -p ${ALIGNDATASTAR}/featureCounts
 ##--------------------------------------------------------------------------------------------##
 
 ## Feature Counts - obtaining all sorted bam files
-mappedSamples=`find ${ALIGNDATASTAR}/bam -name "*mapped*out.bam" | tr '\n' ' '`
-unmappedSamples=`find ${ALIGNDATASTAR}/bam -name "*unmapped*out.bam" | tr '\n' ' '`
+mappedSamples=`find ${ALIGNDATASTAR}/bam -name "*.mapped*out.bam" | tr '\n' ' '`
+unmappedSamples=`find ${ALIGNDATASTAR}/bam -name "*.unmapped*out.bam" | tr '\n' ' '`
 
 ## Extract gtf for featureCounts
 zcat ${GTF} > temp.gtf
