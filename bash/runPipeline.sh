@@ -97,43 +97,38 @@ mkdir -p ${ALIGNDATASTAR}/featureCounts
 ## Aligning trimmed data to reference rRNA
 ##--------------------------------------------------------------------------------------------##
 
-# ## Aligning and sorting
-# for R1 in ${TRIMDATA}/fastq/*fastq.gz
-# do
+## Aligning and sorting
+for R1 in ${TRIMDATA}/fastq/*fastq.gz
+do
 
-#   out=${ALIGNDATABWA}/bam/$(basename ${R1%.fastq.gz})
-#   echo -e "Output file will be ${out}"
+  out=${ALIGNDATABWA}/bam/$(basename ${R1%.fastq.gz})
+  echo -e "Output file will be ${out}"
 
-#   ## Mapped reads
-#   bwa mem -t ${CORES} ${RRNA} ${R1} \
-#   | samtools view -u -h -F 4 \
-#   | samtools sort -o ${out}.mapped.sorted.bam
+  ## Align and return unmapped reads as .bam
+  bwa mem -t ${CORES} ${RRNA} ${R1} \
+  | samtools view -u -h -f 4 \
+  | samtools sort -o ${out}.sorted.bam
 
-#   ## Unmapped reads
-#   bwa mem -t ${CORES} ${RRNA} ${R1} \
-#   | samtools view -u -h -f 4 \
-#   | samtools sort -o ${out}.unmapped.sorted.bam
+done
 
-# done
+Fastqc, indexing, flagstat, and conversion to fastq for alignemnt with STAR
+for BAM in ${ALIGNDATABWA}/bam/*.bam
+do
 
-# Fastqc, indexing, flagstat, and conversion to fastq for alignemnt with STAR
-# for BAM in ${ALIGNDATABWA}/bam/*.bam
-# do
+  outbam=${ALIGNDATABWA}/log/$(basename ${BAM%.sorted.bam})
+  echo -e "Working on ${outbam}"
 
-#   outbam=${ALIGNDATABWA}/log/$(basename ${BAM%.sorted.bam})
-#   echo -e "Working on ${outbam}"
+  fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATABWA}/FastQC --noextract ${BAM}
+  samtools index ${BAM}
+  samtools flagstat ${BAM} > ${outbam}.flagstat
 
-#   fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATABWA}/FastQC --noextract ${BAM}
-#   samtools index ${BAM}
-#   samtools flagstat ${BAM} > ${outbam}.flagstat
+  outfastq=${ALIGNDATABWA}/fastq/$(basename ${BAM%.sorted.bam})
+  echo -e "Working on ${outfastq}"
 
-#   outfastq=${ALIGNDATABWA}/fastq/$(basename ${BAM%.sorted.bam})
-#   echo -e "Working on ${outfastq}"
+  samtools fastq ${BAM} > ${outfastq}.fastq
+  gzip ${ALIGNDATABWA}/fastq/*.fastq
 
-#   samtools fastq ${BAM} > ${outfastq}.fastq
-#   gzip ${ALIGNDATABWA}/fastq/*.fastq
-
-# done
+done
 
 ##--------------------------------------------------------------------------------------------##
 ## Aligning trimmed data to the genome
