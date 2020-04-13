@@ -1,0 +1,93 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 22768401
+Number of unaligned reads: 19063185
+Number of well aligned reads: 3705216
+Number of discarded mate 1 reads: 6158
+Number of singleton mate 1 reads: 22762243
+Number of reads with adapters[1]: 3705216
+Number of retained reads: 22762243
+Number of retained nucleotides: 1116154399
+Average length of retained reads: 49.0353
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	394	394
+1	0	388	388
+2	0	279	279
+3	0	137	137
+4	0	156	156
+5	0	166	166
+6	0	143	143
+7	0	198	198
+8	0	271	271
+9	0	364	364
+10	0	455	455
+11	0	551	551
+12	0	688	688
+13	0	846	846
+14	0	1122	1122
+15	1463	0	1463
+16	1928	0	1928
+17	2232	0	2232
+18	3097	0	3097
+19	3452	0	3452
+20	4251	0	4251
+21	5517	0	5517
+22	5984	0	5984
+23	8449	0	8449
+24	9791	0	9791
+25	9966	0	9966
+26	11396	0	11396
+27	12014	0	12014
+28	11740	0	11740
+29	13262	0	13262
+30	12817	0	12817
+31	14368	0	14368
+32	18677	0	18677
+33	17581	0	17581
+34	21903	0	21903
+35	38236	0	38236
+36	38779	0	38779
+37	39106	0	39106
+38	76798	0	76798
+39	53958	0	53958
+40	87698	0	87698
+41	53403	0	53403
+42	68570	0	68570
+43	98205	0	98205
+44	187487	0	187487
+45	210145	0	210145
+46	386970	0	386970
+47	863788	0	863788
+48	1419958	0	1419958
+49	2884510	0	2884510
+50	16064744	0	16064744

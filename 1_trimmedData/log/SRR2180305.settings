@@ -1,0 +1,93 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 15927893
+Number of unaligned reads: 13400336
+Number of well aligned reads: 2527557
+Number of discarded mate 1 reads: 7158
+Number of singleton mate 1 reads: 15920735
+Number of reads with adapters[1]: 2527557
+Number of retained reads: 15920735
+Number of retained nucleotides: 779800959
+Average length of retained reads: 48.9802
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	1104	1104
+1	0	463	463
+2	0	384	384
+3	0	186	186
+4	0	159	159
+5	0	198	198
+6	0	167	167
+7	0	210	210
+8	0	335	335
+9	0	373	373
+10	0	470	470
+11	0	575	575
+12	0	730	730
+13	0	782	782
+14	0	1022	1022
+15	1290	0	1290
+16	1626	0	1626
+17	1960	0	1960
+18	2550	0	2550
+19	2919	0	2919
+20	3690	0	3690
+21	4446	0	4446
+22	4913	0	4913
+23	6595	0	6595
+24	7466	0	7466
+25	8269	0	8269
+26	8821	0	8821
+27	9554	0	9554
+28	9297	0	9297
+29	10312	0	10312
+30	10461	0	10461
+31	11436	0	11436
+32	14520	0	14520
+33	14028	0	14028
+34	17057	0	17057
+35	32212	0	32212
+36	34574	0	34574
+37	28396	0	28396
+38	59814	0	59814
+39	40255	0	40255
+40	63107	0	63107
+41	42539	0	42539
+42	51842	0	51842
+43	71723	0	71723
+44	133795	0	133795
+45	150326	0	150326
+46	268621	0	268621
+47	625652	0	625652
+48	1004721	0	1004721
+49	1947763	0	1947763
+50	11214185	0	11214185
