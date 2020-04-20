@@ -1,0 +1,94 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 67002314
+Number of unaligned reads: 55182230
+Number of well aligned reads: 11820084
+Number of discarded mate 1 reads: 2757258
+Number of singleton mate 1 reads: 64245056
+Number of reads with adapters[1]: 11820084
+Number of retained reads: 64245056
+Number of retained nucleotides: 3162700095
+Average length of retained reads: 49.2287
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	1536275	1536275
+1	0	543919	543919
+2	0	75068	75068
+3	0	71509	71509
+4	0	67661	67661
+5	0	57307	57307
+6	0	51401	51401
+7	0	48358	48358
+8	0	45252	45252
+9	0	44216	44216
+10	0	43172	43172
+11	0	42317	42317
+12	0	43266	43266
+13	0	43485	43485
+14	0	44052	44052
+15	46346	0	46346
+16	46368	0	46368
+17	47737	0	47737
+18	48745	0	48745
+19	49588	0	49588
+20	51299	0	51299
+21	55138	0	55138
+22	53519	0	53519
+23	59093	0	59093
+24	115978	0	115978
+25	68162	0	68162
+26	68085	0	68085
+27	78985	0	78985
+28	73218	0	73218
+29	81055	0	81055
+30	88812	0	88812
+31	95255	0	95255
+32	104213	0	104213
+33	121803	0	121803
+34	125297	0	125297
+35	155124	0	155124
+36	214462	0	214462
+37	205031	0	205031
+38	299769	0	299769
+39	351498	0	351498
+40	311454	0	311454
+41	409894	0	409894
+42	313684	0	313684
+43	453304	0	453304
+44	473422	0	473422
+45	751502	0	751502
+46	988180	0	988180
+47	1658732	0	1658732
+48	2788617	0	2788617
+49	4259967	0	4259967
+50	10252171	0	10252171
+51	38879549	0	38879549

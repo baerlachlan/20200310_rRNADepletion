@@ -1,0 +1,94 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 70848564
+Number of unaligned reads: 58292055
+Number of well aligned reads: 12556509
+Number of discarded mate 1 reads: 3917590
+Number of singleton mate 1 reads: 66930974
+Number of reads with adapters[1]: 12556509
+Number of retained reads: 66930974
+Number of retained nucleotides: 3248156040
+Average length of retained reads: 48.5299
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	2164095	2164095
+1	0	758131	758131
+2	0	104001	104001
+3	0	98809	98809
+4	0	92723	92723
+5	0	83560	83560
+6	0	75696	75696
+7	0	73560	73560
+8	0	69543	69543
+9	0	66399	66399
+10	0	64539	64539
+11	0	63780	63780
+12	0	66096	66096
+13	0	68636	68636
+14	0	68022	68022
+15	71867	0	71867
+16	68200	0	68200
+17	72820	0	72820
+18	74430	0	74430
+19	77831	0	77831
+20	82981	0	82981
+21	88757	0	88757
+22	92757	0	92757
+23	97291	0	97291
+24	134335	0	134335
+25	117608	0	117608
+26	115830	0	115830
+27	125634	0	125634
+28	121434	0	121434
+29	135480	0	135480
+30	145435	0	145435
+31	151167	0	151167
+32	172614	0	172614
+33	201145	0	201145
+34	203165	0	203165
+35	253093	0	253093
+36	478460	0	478460
+37	283988	0	283988
+38	562979	0	562979
+39	813183	0	813183
+40	460012	0	460012
+41	667253	0	667253
+42	410550	0	410550
+43	491770	0	491770
+44	684520	0	684520
+45	1139651	0	1139651
+46	1260654	0	1260654
+47	2045572	0	2045572
+48	2938440	0	2938440
+49	4598329	0	4598329
+50	11708624	0	11708624
+51	35783115	0	35783115

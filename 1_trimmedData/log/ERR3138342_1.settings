@@ -1,0 +1,94 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 76344617
+Number of unaligned reads: 62289041
+Number of well aligned reads: 14055576
+Number of discarded mate 1 reads: 3301622
+Number of singleton mate 1 reads: 73042995
+Number of reads with adapters[1]: 14055576
+Number of retained reads: 73042995
+Number of retained nucleotides: 3597835611
+Average length of retained reads: 49.2564
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	1750620	1750620
+1	0	646737	646737
+2	0	97136	97136
+3	0	94885	94885
+4	0	93015	93015
+5	0	88511	88511
+6	0	75621	75621
+7	0	67532	67532
+8	0	62553	62553
+9	0	58735	58735
+10	0	54998	54998
+11	0	52744	52744
+12	0	53528	53528
+13	0	53234	53234
+14	0	51773	51773
+15	53366	0	53366
+16	49151	0	49151
+17	52513	0	52513
+18	53639	0	53639
+19	56182	0	56182
+20	61501	0	61501
+21	69152	0	69152
+22	71252	0	71252
+23	76716	0	76716
+24	168596	0	168596
+25	90096	0	90096
+26	88695	0	88695
+27	98917	0	98917
+28	85324	0	85324
+29	96480	0	96480
+30	101280	0	101280
+31	102003	0	102003
+32	105987	0	105987
+33	118289	0	118289
+34	121622	0	121622
+35	152256	0	152256
+36	244237	0	244237
+37	183881	0	183881
+38	309660	0	309660
+39	387475	0	387475
+40	294974	0	294974
+41	453205	0	453205
+42	320308	0	320308
+43	394063	0	394063
+44	543436	0	543436
+45	908769	0	908769
+46	1086491	0	1086491
+47	1859324	0	1859324
+48	2991899	0	2991899
+49	4597360	0	4597360
+50	12760282	0	12760282
+51	43834614	0	43834614

@@ -1,0 +1,94 @@
+AdapterRemoval ver. 2.2.1a
+Trimming of single-end reads
+
+
+[Adapter sequences]
+Adapter1[1]: AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG
+Adapter2[1]: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT
+
+
+[Adapter trimming]
+RNG seed: NA
+Alignment shift value: 2
+Global mismatch threshold: 0.333333
+Quality format (input): Phred+33
+Quality score max (input): 41
+Quality format (output): Phred+33
+Quality score max (output): 41
+Mate-number separator (input): '/'
+Trimming Ns: Yes
+Trimming Phred scores <= 30: Yes
+Trimming using sliding windows: No
+Minimum genomic length: 15
+Maximum genomic length: 4294967295
+Collapse overlapping reads: No
+Minimum overlap (in case of collapse): 11
+Minimum adapter overlap: 0
+
+
+[Trimming statistics]
+Total number of reads: 77674848
+Number of unaligned reads: 63865757
+Number of well aligned reads: 13809091
+Number of discarded mate 1 reads: 3248796
+Number of singleton mate 1 reads: 74426052
+Number of reads with adapters[1]: 13809091
+Number of retained reads: 74426052
+Number of retained nucleotides: 3666546538
+Average length of retained reads: 49.2643
+
+
+[Length distribution]
+Length	Mate1	Discarded	All
+0	0	1807460	1807460
+1	0	636383	636383
+2	0	88101	88101
+3	0	84593	84593
+4	0	79277	79277
+5	0	67054	67054
+6	0	60503	60503
+7	0	57103	57103
+8	0	54437	54437
+9	0	52294	52294
+10	0	51969	51969
+11	0	50687	50687
+12	0	52915	52915
+13	0	53187	53187
+14	0	52833	52833
+15	55889	0	55889
+16	55829	0	55829
+17	57799	0	57799
+18	57716	0	57716
+19	57894	0	57894
+20	60062	0	60062
+21	64445	0	64445
+22	62612	0	62612
+23	68639	0	68639
+24	149134	0	149134
+25	80850	0	80850
+26	79030	0	79030
+27	92883	0	92883
+28	82496	0	82496
+29	90717	0	90717
+30	98412	0	98412
+31	101452	0	101452
+32	111645	0	111645
+33	129393	0	129393
+34	129518	0	129518
+35	160182	0	160182
+36	246318	0	246318
+37	188808	0	188808
+38	318187	0	318187
+39	365452	0	365452
+40	311050	0	311050
+41	475614	0	475614
+42	333903	0	333903
+43	426837	0	426837
+44	599775	0	599775
+45	938205	0	938205
+46	1165973	0	1165973
+47	1950737	0	1950737
+48	3239100	0	3239100
+49	4914863	0	4914863
+50	11958256	0	11958256
+51	45146377	0	45146377

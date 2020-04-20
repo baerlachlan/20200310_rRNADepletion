@@ -378,7 +378,7 @@ soloUMIdedup                      1MM_All
 
 
    Input read files for mate 1, from input string /fast/users/a1647910/20200310_rRNADepletion/2_alignedDataBwa/fastq/SRR2138291.fastq.gz
--rw-r--r-- 1 a1647910 CATS_STUDENTS 519420500 Apr 10 17:27 /fast/users/a1647910/20200310_rRNADepletion/2_alignedDataBwa/fastq/SRR2138291.fastq.gz
+-rw-r--r-- 1 a1647910 CATS_STUDENTS 517568058 Apr 20 20:11 /fast/users/a1647910/20200310_rRNADepletion/2_alignedDataBwa/fastq/SRR2138291.fastq.gz
 
    readsCommandsFile:
 exec > "/fast/users/a1647910/20200310_rRNADepletion/3_alignedDataStar/bam/SRR2138291_STARtmp/tmp.fifo.read1"
@@ -1400,7 +1400,7 @@ Number of real (reference) chromosomes= 993
 992	KN150481.1	1008	1602224128
 993	KN150525.1	650	1602486272
 --sjdbOverhang = 149 taken from the generated genome
-Started loading the genome: Sun Apr 12 11:26:57 2020
+Started loading the genome: Tue Apr 21 00:26:34 2020
 
 Genome: size given as a parameter = 1678412758
 SA: size given as a parameter = 11914392777
@@ -1414,7 +1414,7 @@ Loading Genome ... done! state: good=1 eof=0 fail=0 bad=0; loaded 1678412758 byt
 SA file size: 11914392777 bytes; state: good=1 eof=0 fail=0 bad=0
 Loading SA ... done! state: good=1 eof=0 fail=0 bad=0; loaded 11914392777 bytes
 Loading SAindex ... done: 1565873619 bytes
-Finished loading the genome: Sun Apr 12 11:27:02 2020
+Finished loading the genome: Tue Apr 21 00:26:39 2020
 
 Processing splice junctions database sjdbN=253058,   pGe.sjdbOverhang=149 
 alignIntronMax=alignMatesGapMax=0, the max intron size will be approximately determined by (2^winBinNbits)*winAnchorDistNbins=589824
@@ -1435,70 +1435,70 @@ Created thread # 12
 Created thread # 13
 Created thread # 14
 Created thread # 15
-BAM sorting: 379585 mapped reads
+BAM sorting: 379559 mapped reads
 BAM sorting bins genomic start loci:
-1	0	45687747
-2	1	29850803
-3	2	11404615
-4	2	12591077
-5	3	4690868
-6	4	5247339
-7	5	5865056
-8	5	45633338
-9	6	36979514
-10	7	32668711
-11	8	26966050
-12	9	22288294
-13	10	18132884
-14	10	46359649
-15	11	31360877
-16	12	7713613
-17	12	49916568
-18	13	26722385
-19	14	17265706
-20	15	18027519
-21	16	19708816
-22	17	35044988
-23	17	35134705
-24	17	36332993
-25	18	11840740
-26	18	35519891
-27	19	17704579
-28	19	39289198
-29	19	55726770
-30	19	55796609
-31	19	59370974
-32	19	73863234
-33	19	77558992
-34	19	77559879
-35	19	77560086
-36	20	822968
-37	20	835374
-38	20	31008902
-39	21	119655
-40	21	49342800
-41	22	7574
-42	22	6366928
-43	22	25915534
-44	22	73815091
-45	23	23166182
-46	24	23413331
-47	80	78691
-48	591	6480
-Thread #1 end of input stream, nextChar=-1
-Completed: thread #3
+1	0	45577867
+2	1	29850438
+3	2	11383925
+4	2	12568076
+5	3	3800795
+6	4	4719248
+7	5	1194229
+8	5	42173205
+9	6	34627841
+10	7	30322973
+11	8	24600300
+12	9	19138333
+13	10	14502721
+14	10	43122276
+15	11	26499899
+16	12	2739546
+17	12	43717405
+18	13	22347719
+19	14	13201477
+20	15	10817173
+21	16	12838181
+22	17	30145249
+23	17	35127342
+24	17	36322708
+25	18	4461239
+26	18	32100756
+27	19	11585010
+28	19	36155273
+29	19	55725520
+30	19	55796586
+31	19	56735939
+32	19	69078633
+33	19	77558884
+34	19	77559870
+35	19	77560043
+36	20	822869
+37	20	835372
+38	20	30743942
+39	20	72166721
+40	21	49101028
+41	22	7595
+42	22	6367038
+43	22	25932336
+44	22	73818139
+45	23	23160483
+46	24	23338094
+47	70	64
+48	591	6475
+Thread #0 end of input stream, nextChar=-1
 Completed: thread #1
-Completed: thread #2
+Completed: thread #3
 Completed: thread #4
-Completed: thread #5
-Completed: thread #7
-Completed: thread #8
+Completed: thread #2
 Completed: thread #6
-Completed: thread #10
-Completed: thread #11
+Completed: thread #8
+Completed: thread #7
 Completed: thread #9
-Completed: thread #14
-Completed: thread #12
+Completed: thread #11
+Completed: thread #5
+Completed: thread #10
+Completed: thread #15
+Completed: thread #13
 Completed: thread #0
 Joined thread # 1
 Joined thread # 2
@@ -1511,12 +1511,12 @@ Joined thread # 8
 Joined thread # 9
 Joined thread # 10
 Joined thread # 11
+Completed: thread #14
+Completed: thread #12
 Joined thread # 12
-Completed: thread #15
-Completed: thread #13
 Joined thread # 13
 Joined thread # 14
 Joined thread # 15
-Apr 12 11:27:45 ..... started sorting BAM
-Max memory needed for sorting = 76233453
+Apr 21 00:27:19 ..... started sorting BAM
+Max memory needed for sorting = 76550439
 ALL DONE!
