@@ -2,13 +2,13 @@
 #SBATCH -p batch
 #SBATCH -N 1
 #SBATCH -n 16
-#SBATCH --time=10:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mem=32GB
 #SBATCH -o /fast/users/a1647910/20200310_rRNADepletion/slurm/%x_%j.out
 #SBATCH -e /fast/users/a1647910/20200310_rRNADepletion/slurm/%x_%j.err
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
-#SBATCH --mail-user=lachlan.baer@adelaide.edu.au
+#SBATCH --mail-user=baerlachlan@gmail.com
 
 ## Cores
 CORES=16
@@ -22,9 +22,9 @@ module load STAR/2.7.0d-foss-2016b
 module load Subread/1.5.2-foss-2016b
 
 ## Reference files
-RRNA=/data/biorefs/rRNA/danio_rerio/bwa/danRer11
-STAR=/data/biorefs/reference_genomes/ensembl-release-98/danio_rerio/star
-GTF=/data/biorefs/reference_genomes/ensembl-release-98/danio_rerio/Danio_rerio.GRCz11.98.chr.gtf.gz
+RRNA=/fast/users/a1647910/20200310_rRNADepletion/files/bwa/danRer11
+STAR=/data/biorefs/reference_genomes/ensembl-release-98/mus_musculus/star
+GTF=/data/biorefs/reference_genomes/ensembl-release-98/mus_musculus/Mus_musculus.GRCm38.98.chr.gtf.gz
 
 ## Directories
 PROJROOT=/fast/users/a1647910/20200310_rRNADepletion
@@ -57,13 +57,13 @@ mkdir -p ${ALIGNDATASTAR}/featureCounts
 ## FastQC on the raw data
 ##--------------------------------------------------------------------------------------------##
 
-# fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/SRR218*.fastq.gz         ###
+# fastqc -t ${CORES} -o ${RAWDATA}/FastQC --noextract ${RAWDATA}/fastq/ERR*.fastq.gz              ###
 
 ##--------------------------------------------------------------------------------------------##
 ## Trimming the merged data
 ##--------------------------------------------------------------------------------------------##
 
-# for R1 in ${RAWDATA}/fastq/SRR218*.fastq.gz                                                   ###
+# for R1 in ${RAWDATA}/fastq/ERR*.fastq.gz                                                        ###
 # do
 
 #  echo -e "Currently working on ${R1}"
@@ -91,14 +91,14 @@ mkdir -p ${ALIGNDATASTAR}/featureCounts
 # mv ${TRIMDATA}/fastq/*settings ${TRIMDATA}/log
 
 # ## Run FastQC
-# fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/SRR218*.fastq.gz       ###
+# fastqc -t ${CORES} -o ${TRIMDATA}/FastQC --noextract ${TRIMDATA}/fastq/ERR*.fastq.gz            ###
 
 ##--------------------------------------------------------------------------------------------##
 ## Aligning trimmed data to reference rRNA
 ##--------------------------------------------------------------------------------------------##
 
 # ## Aligning and sorting
-# for R1 in ${TRIMDATA}/fastq/*fastq.gz
+# for R1 in ${TRIMDATA}/fastq/*.fastq.gz                                                       
 # do
 
 #   out=${ALIGNDATABWA}/bam/$(basename ${R1%.fastq.gz})
@@ -111,22 +111,24 @@ mkdir -p ${ALIGNDATASTAR}/featureCounts
 
 # done
 
-# ## Fastqc, indexing, flagstat, and conversion of unmapped reads to fastq for alignment with STAR
-# for BAM in ${ALIGNDATABWA}/bam/*.bam
+# ## Run FastQC
+# fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATABWA}/FastQC --noextract ${ALIGNDATABWA}/bam/*.bam
+
+# # ## Indexing, flagstat, and conversion of unmapped reads to fastq for further alignment
+# for BAM in ${ALIGNDATABWA}/bam/*.bam                                                         
 # do
 
 #   outbam=${ALIGNDATABWA}/log/$(basename ${BAM%.sorted.bam})
+#   outfastq=${ALIGNDATABWA}/fastq/$(basename ${BAM%.sorted.bam})
 #   echo -e "Working on ${outbam}"
 
-#   fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATABWA}/FastQC --noextract ${BAM}
 #   samtools index ${BAM}
 #   samtools flagstat ${BAM} > ${outbam}.flagstat
 
-#   outfastq=${ALIGNDATABWA}/fastq/$(basename ${BAM%.sorted.bam})
-#   echo -e "Working on ${outfastq}"
+#   echo -e "Now working on ${outfastq}"
 
-#   ## Output only unmapped reads as fastq with -f 4
-#   samtools fastq -f 4 ${BAM} > ${outfastq}.fastq
+#   ## Output only unmapped reads as fastq using -f 4
+#   samtools fastq -f 4 -c 6 --threads ${CORES} ${BAM} > ${outfastq}.fastq.gz
 
 # done
 
@@ -136,40 +138,40 @@ mkdir -p ${ALIGNDATASTAR}/featureCounts
 ## Aligning trimmed data to the genome
 ##--------------------------------------------------------------------------------------------##
 
-# ## Aligning, filtering and sorting
-# for R1 in ${ALIGNDATABWA}/fastq/*.fastq.gz
-# do
+## Aligning, filtering and sorting
+for R1 in ${ALIGNDATABWA}/fastq/ERR*.fastq.gz
+do
 
-#   BNAME=$(basename ${R1%.fastq.gz})
-#   echo -e "STAR will align:\t${R1}"
+  BNAME=$(basename ${R1%.fastq.gz})
+  echo -e "STAR will align:\t${R1}"
 
-#   STAR \
-#     --runThreadN ${CORES} \
-#     --genomeDir ${STAR} \
-#     --readFilesIn ${R1} \
-#     --readFilesCommand gunzip -c \
-#     --outFileNamePrefix ${ALIGNDATASTAR}/bam/${BNAME} \
-#     --outSAMtype BAM SortedByCoordinate
+  STAR \
+    --runThreadN ${CORES} \
+    --genomeDir ${STAR} \
+    --readFilesIn ${R1} \
+    --readFilesCommand gunzip -c \
+    --outFileNamePrefix ${ALIGNDATASTAR}/bam/${BNAME} \
+    --outSAMtype BAM SortedByCoordinate
 
-# done
+done
 
-# # Move the log files into their own folder
-# mv ${ALIGNDATASTAR}/bam/*out ${ALIGNDATASTAR}/log
-# mv ${ALIGNDATASTAR}/bam/*tab ${ALIGNDATASTAR}/log
+# Move the log files into their own folder
+mv ${ALIGNDATASTAR}/bam/*out ${ALIGNDATASTAR}/log
+mv ${ALIGNDATASTAR}/bam/*tab ${ALIGNDATASTAR}/log
 
-# Fastqc and indexing
-# for BAM in ${ALIGNDATASTAR}/bam/*.bam
-# do
-#   fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATASTAR}/FastQC --noextract ${BAM}
-#   samtools index ${BAM}
-# done
+Fastqc and indexing
+for BAM in ${ALIGNDATASTAR}/bam/ERR*.bam
+do
+  fastqc -t ${CORES} -f bam_mapped -o ${ALIGNDATASTAR}/FastQC --noextract ${BAM}
+  samtools index ${BAM}
+done
 
 ##--------------------------------------------------------------------------------------------##
 ## featureCounts
 ##--------------------------------------------------------------------------------------------##
 
 ## Feature Counts - obtaining all sorted bam files
-samples=`find ${ALIGNDATASTAR}/bam -name "*out.bam" | tr '\n' ' '`
+samples=`find ${ALIGNDATASTAR}/bam -name "ERR*out.bam" | tr '\n' ' '`
 
 ## Extract gtf for featureCounts
 zcat ${GTF} > temp.gtf

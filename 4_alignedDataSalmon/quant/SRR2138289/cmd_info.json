@@ -1,0 +1,10 @@
+{
+    "salmon_version": "1.1.0",
+    "index": "/fast/users/a1647910/20200310_rRNADepletion/files/salmon_index",
+    "libType": "A",
+    "unmatedReads": "/fast/users/a1647910/20200310_rRNADepletion/2_alignedDataBwa/fastq/SRR2138289.fastq.gz",
+    "validateMappings": [],
+    "threads": "16",
+    "output": "/fast/users/a1647910/20200310_rRNADepletion/4_alignedDataSalmon/quant/SRR2138289",
+    "auxDir": "aux_info"
+}

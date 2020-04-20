@@ -3,6 +3,7 @@
 # *tar #This was ignoring 3_alignedDataStar
 *tar.gz
 *fq.gz
+*fa.gz
 *fastq.gz
 *truncated.gz
 *discarded.gz
@@ -25,4 +26,5 @@ slurm/
 .RData
 R/\.*
 bash/\.*
-
+*.gtf.gz
+files/*
