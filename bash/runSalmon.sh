@@ -22,13 +22,10 @@ ALIGNDATABWA=${PROJROOT}/2_alignedDataBwa
 ALIGNDATASALMON=${PROJROOT}/4_alignedDataSalmon
 
 ## Setup for salmon
-mkdir -p ${ALIGNDATASALMON}/FastQC
 mkdir -p ${ALIGNDATASALMON}/quant
 
-# ## Run salmon
-# SAMPLES=`find ${ALIGNDATABWA}/fastq -name "*fastq.gz" | tr '\n' ' '`
-
-for R1 in ${ALIGNDATABWA}/fastq/SRR*.fastq.gz
+## Run salmon
+for R1 in ${ALIGNDATABWA}/fastq/ERR*.fastq.gz
 do
 
   BNAME=$(basename ${R1%.fastq.gz})

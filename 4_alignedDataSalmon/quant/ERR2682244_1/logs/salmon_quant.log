@@ -1,0 +1,57 @@
+[2020-04-23 12:19:44.904] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2020-04-23 12:19:44.904] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2020-04-23 12:19:44.904] [jointLog] [info] Usage of --validateMappings implies a default consensus slack of 0.2. Setting consensusSlack to 0.35.
+[2020-04-23 12:19:44.904] [jointLog] [info] parsing read library format
+[2020-04-23 12:19:44.904] [jointLog] [info] There is 1 library.
+[2020-04-23 12:19:45.041] [jointLog] [info] Loading pufferfish index
+[2020-04-23 12:19:45.042] [jointLog] [info] Loading dense pufferfish index.
+[2020-04-23 12:20:22.026] [jointLog] [info] done
+[2020-04-23 12:20:22.026] [jointLog] [info] Index contained 52,598 targets
+[2020-04-23 12:20:22.080] [jointLog] [info] Number of decoys : 993
+[2020-04-23 12:20:22.080] [jointLog] [info] First decoy index : 51,591 
+[2020-04-23 12:21:02.697] [jointLog] [info] Automatically detected most likely library type as SF
+[2020-04-23 12:23:00.619] [jointLog] [info] Thread saw mini-batch with a maximum of 0.14% zero probability fragments
+[2020-04-23 12:23:00.703] [jointLog] [info] Thread saw mini-batch with a maximum of 0.20% zero probability fragments
+[2020-04-23 12:23:00.723] [jointLog] [info] Thread saw mini-batch with a maximum of 0.30% zero probability fragments
+[2020-04-23 12:23:00.731] [jointLog] [info] Thread saw mini-batch with a maximum of 0.16% zero probability fragments
+[2020-04-23 12:23:00.794] [jointLog] [info] Thread saw mini-batch with a maximum of 0.16% zero probability fragments
+[2020-04-23 12:23:00.924] [jointLog] [info] Thread saw mini-batch with a maximum of 0.30% zero probability fragments
+[2020-04-23 12:23:00.972] [jointLog] [info] Thread saw mini-batch with a maximum of 0.20% zero probability fragments
+[2020-04-23 12:23:01.016] [jointLog] [info] Thread saw mini-batch with a maximum of 0.20% zero probability fragments
+[2020-04-23 12:23:01.040] [jointLog] [info] Thread saw mini-batch with a maximum of 0.16% zero probability fragments
+[2020-04-23 12:23:01.069] [jointLog] [info] Thread saw mini-batch with a maximum of 0.22% zero probability fragments
+[2020-04-23 12:23:01.140] [jointLog] [info] Thread saw mini-batch with a maximum of 0.26% zero probability fragments
+[2020-04-23 12:23:01.140] [jointLog] [info] Thread saw mini-batch with a maximum of 0.18% zero probability fragments
+[2020-04-23 12:23:01.148] [jointLog] [info] Thread saw mini-batch with a maximum of 0.24% zero probability fragments
+[2020-04-23 12:23:01.157] [jointLog] [info] Thread saw mini-batch with a maximum of 0.18% zero probability fragments
+[2020-04-23 12:23:01.221] [jointLog] [info] Thread saw mini-batch with a maximum of 0.18% zero probability fragments
+[2020-04-23 12:23:01.351] [jointLog] [info] Thread saw mini-batch with a maximum of 0.20% zero probability fragments
+[2020-04-23 12:23:01.472] [jointLog] [info] Computed 320 rich equivalence classes for further processing
+[2020-04-23 12:23:01.472] [jointLog] [info] Counted 48,364 total reads in the equivalence classes 
+[2020-04-23 12:23:01.578] [jointLog] [warning] 0.00393935% of fragments were shorter than the k used to build the index.
+If this fraction is too large, consider re-building the index with a smaller k.
+The minimum read size found was 15.
+
+
+[2020-04-23 12:23:01.578] [jointLog] [info] Number of mappings discarded because of alignment score : 15,816,082
+[2020-04-23 12:23:01.578] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 203,642
+[2020-04-23 12:23:01.578] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 66,426
+[2020-04-23 12:23:01.578] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 0
+[2020-04-23 12:23:01.589] [jointLog] [warning] Only 48364 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2020-04-23 12:23:01.589] [jointLog] [info] Mapping rate = 0.3068%
+
+[2020-04-23 12:23:01.589] [jointLog] [info] finished quantifyLibrary()
+[2020-04-23 12:23:01.591] [jointLog] [info] Starting optimizer
+[2020-04-23 12:23:01.624] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2020-04-23 12:23:01.629] [jointLog] [info] iteration = 0 | max rel diff. = 27.2794
+[2020-04-23 12:23:01.473] [fileLog] [info] 
+At end of round 0
+==================
+Observed 15764028 total fragments (15764028 in most recent round)
+
+[2020-04-23 12:23:01.780] [jointLog] [info] iteration = 100 | max rel diff. = 0.00127948
+[2020-04-23 12:23:01.782] [jointLog] [info] Finished optimizer
+[2020-04-23 12:23:01.782] [jointLog] [info] writing output 
+

@@ -1,0 +1,22 @@
+{
+    "read_files": "[ /fast/users/a1647910/20200310_rRNADepletion/2_alignedDataBwa/fastq/ERR2682249_1.fastq.gz ]",
+    "expected_format": "SF",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 45415,
+    "num_assigned_fragments": 45415,
+    "num_frags_with_concordant_consistent_mappings": 43300,
+    "num_frags_with_inconsistent_or_orphan_mappings": 4417,
+    "strand_mapping_bias": 0.9074334094767064,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 43300,
+    "SR": 4417,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}

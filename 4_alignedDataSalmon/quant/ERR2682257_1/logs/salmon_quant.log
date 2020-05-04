@@ -1,0 +1,46 @@
+[2020-04-23 13:00:31.106] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2020-04-23 13:00:31.106] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2020-04-23 13:00:31.106] [jointLog] [info] Usage of --validateMappings implies a default consensus slack of 0.2. Setting consensusSlack to 0.35.
+[2020-04-23 13:00:31.106] [jointLog] [info] parsing read library format
+[2020-04-23 13:00:31.107] [jointLog] [info] There is 1 library.
+[2020-04-23 13:00:31.243] [jointLog] [info] Loading pufferfish index
+[2020-04-23 13:00:31.244] [jointLog] [info] Loading dense pufferfish index.
+[2020-04-23 13:01:07.617] [jointLog] [info] done
+[2020-04-23 13:01:07.617] [jointLog] [info] Index contained 52,598 targets
+[2020-04-23 13:01:07.670] [jointLog] [info] Number of decoys : 993
+[2020-04-23 13:01:07.670] [jointLog] [info] First decoy index : 51,591 
+[2020-04-23 13:01:22.904] [jointLog] [info] Automatically detected most likely library type as U
+[2020-04-23 13:03:42.637] [fileLog] [info] 
+At end of round 0
+==================
+Observed 15391215 total fragments (15391215 in most recent round)
+
+[2020-04-23 13:03:42.635] [jointLog] [info] Computed 541 rich equivalence classes for further processing
+[2020-04-23 13:03:42.635] [jointLog] [info] Counted 148,891 total reads in the equivalence classes 
+[2020-04-23 13:03:42.716] [jointLog] [warning] 0.00496387% of fragments were shorter than the k used to build the index.
+If this fraction is too large, consider re-building the index with a smaller k.
+The minimum read size found was 15.
+
+
+[2020-04-23 13:03:42.716] [jointLog] [info] Number of mappings discarded because of alignment score : 15,374,344
+[2020-04-23 13:03:42.716] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 417,917
+[2020-04-23 13:03:42.716] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 277,451
+[2020-04-23 13:03:42.716] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 0
+[2020-04-23 13:03:42.728] [jointLog] [warning] Only 148891 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+
+[2020-04-23 13:03:42.728] [jointLog] [info] Mapping rate = 0.967377%
+
+[2020-04-23 13:03:42.728] [jointLog] [info] finished quantifyLibrary()
+[2020-04-23 13:03:42.729] [jointLog] [info] Starting optimizer
+[2020-04-23 13:03:42.761] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2020-04-23 13:03:42.766] [jointLog] [info] iteration = 0 | max rel diff. = 254.065
+[2020-04-23 13:03:42.923] [jointLog] [info] iteration = 100 | max rel diff. = 0.0174274
+[2020-04-23 13:03:42.998] [jointLog] [info] iteration = 150 | max rel diff. = 0.000786335
+[2020-04-23 13:03:43.001] [jointLog] [info] Finished optimizer
+[2020-04-23 13:03:43.001] [jointLog] [info] writing output 
+
+[2020-04-23 13:03:43.253] [jointLog] [warning] NOTE: Read Lib [[ /fast/users/a1647910/20200310_rRNADepletion/2_alignedDataBwa/fastq/ERR2682257_1.fastq.gz ]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: /fast/users/a1647910/20200310_rRNADepletion/4_alignedDataSalmon/quant/ERR2682257_1/lib_format_counts.json for details
+
