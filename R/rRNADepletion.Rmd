@@ -972,7 +972,7 @@ topTable_3 %>%
 
 ```{r catchSalmon}
 dirs_3 <- list.dirs(
-  "~/Documents/Bioinformatics/Projects/20170327_Psen2S4Ter_RNASeq/data/5_salmon/quant/", 
+  "../20170327_Psen2S4Ter_RNASeq/data/5_salmon/quant/", 
   recursive = FALSE
 )
 salmon_3 <- catchSalmon(paths = dirs_3)
@@ -1466,7 +1466,7 @@ covFunc <- function(x){
       fontsize=10,
     )
 }
-covList <- lapply(files, covFunc) 
+covList <- mclapply(files, covFunc, mc.cores = 8) 
 covOrd <- covList[as.integer(order_3$order)]
 ```
 
