@@ -1,0 +1,12 @@
+Status	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/4_non_mutant_K97Gfs_6mth_10_03_2016_S1_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/1_non_mutant_K97Gfs_24mth_13_03_2014_S1_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/6_non_mutant_K97Gfs_6mth_10_03_2016_S3_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/5_non_mutant_K97Gfs_6mth_10_03_2016_S2_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/11_psen1K97Gfshet_6mth_10_03_2016_S2_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/2_non_mutant_K97Gfs_24mth_13_03_2014_S2_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/3_non_mutant_K97Gfs_24mth_13_03_2014_S3_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/7_psen1K97Gfshet_24mth_13_03_2014_S1_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/10_psen1K97Gfshet_6mth_10_03_2016_S1_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/9_psen1K97Gfshet_24mth_13_03_2014_S3_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/8_psen1K97Gfshet_24mth_13_03_2014_S2_femAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20201014_K97Gfs/2_alignedData/bam/12_psen1K97Gfshet_6mth_10_03_2016_S3_femAligned.sortedByCoord.out.bam
+Assigned	20419313	12698015	39552293	18042909	19579379	16819147	13428512	12375095	18835944	18264889	15533971	19316319
+Unassigned_Ambiguity	99090	70165	160838	86238	81267	89049	71043	67221	93777	100757	85541	82499
+Unassigned_MultiMapping	5211806	3808734	9600399	4774632	5218085	4481435	3985554	3668872	4570891	5031823	5081554	4340647
+Unassigned_NoFeatures	20878710	11098143	33681889	17793981	19571047	13605448	11455129	11237878	15753852	15020527	15215889	14965683
+Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Nonjunction	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0
