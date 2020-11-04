@@ -1,0 +1,96 @@
+This is cutadapt 1.14 with Python 2.7.13
+Command line parameters: -a GATCGGAAGAGCACACGTCTGAACTCCAGTCACAGTCAAATCTCGTATGC -o /hpcfs/users/a1647910/20200910_Hypoxia/1_trimmedData/fastq/9-MORGAN-6P-PH1_S7_R1_001.fastq.gz -m 35 --trim-n --max-n=1 --nextseq-trim=30 /hpcfs/users/a1647910/20200910_Hypoxia/0_rawData/fastq/9-MORGAN-6P-PH1_S7_R1_001.fastq.gz
+Trimming 1 adapter with at most 10.0% errors in single-end mode ...
+Finished in 468.77 s (15 us/read; 3.92 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:              30,645,100
+Reads with adapters:                   842,455 (2.7%)
+Reads that were too short:             418,591 (1.4%)
+Reads with too many N:                   8,522 (0.0%)
+Reads written (passing filters):    30,217,987 (98.6%)
+
+Total basepairs processed: 2,329,027,600 bp
+Total written (filtered):  2,264,996,358 bp (97.3%)
+
+=== Adapter 1 ===
+
+Sequence: GATCGGAAGAGCACACGTCTGAACTCCAGTCACAGTCAAATCTCGTATGC; Type: regular 3'; Length: 50; Trimmed: 842455 times.
+
+No. of allowed errors:
+0-9 bp: 0; 10-19 bp: 1; 20-29 bp: 2; 30-39 bp: 3; 40-49 bp: 4; 50 bp: 5
+
+Bases preceding removed adapters:
+  A: 29.2%
+  C: 13.6%
+  G: 20.8%
+  T: 35.2%
+  none/other: 1.2%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+3	705297	478829.7	0	705297
+4	113719	119707.4	0	113719
+7	1352	1870.4	0	1352
+8	1399	467.6	0	1399
+9	581	116.9	0	0 581
+10	1612	29.2	1	853 759
+11	183	7.3	1	0 183
+12	602	1.8	1	480 122
+13	432	0.5	1	319 113
+14	478	0.1	1	371 107
+15	376	0.0	1	289 87
+16	752	0.0	1	609 143
+17	8	0.0	1	0 8
+18	457	0.0	1	346 106 5
+19	279	0.0	1	205 69 5
+20	704	0.0	2	440 144 120
+21	10	0.0	2	0 5 5
+22	362	0.0	2	233 75 54
+23	306	0.0	2	180 72 54
+24	299	0.0	2	180 72 47
+25	260	0.0	2	155 64 41
+26	295	0.0	2	173 73 49
+27	306	0.0	2	177 75 54
+28	472	0.0	2	278 116 78
+29	14	0.0	2	0 9 3 2
+30	319	0.0	3	157 67 53 42
+31	254	0.0	3	133 59 37 25
+32	232	0.0	3	127 47 34 24
+33	304	0.0	3	173 59 36 36
+34	397	0.0	3	0 5 89 303
+35	9	0.0	3	0 0 2 7
+36	203	0.0	3	0 0 3 200
+37	354	0.0	3	0 0 255 98 1
+38	2	0.0	3	0 0 0 2
+39	366	0.0	3	0 0 0 363 3
+40	2	0.0	4	0 0 0 1 1
+41	3	0.0	4	0 0 0 0 3
+43	1	0.0	4	0 0 0 0 1
+44	2	0.0	4	0 0 0 0 2
+46	2	0.0	4	0 0 0 0 2
+47	1	0.0	4	0 0 0 0 1
+50	13	0.0	5	0 0 0 0 0 13
+51	41	0.0	5	0 0 0 0 1 40
+53	48	0.0	5	0 0 0 0 0 48
+54	22	0.0	5	0 0 0 0 0 22
+55	5	0.0	5	0 0 0 0 0 5
+56	31	0.0	5	0 0 0 0 1 30
+57	7	0.0	5	0 0 0 0 0 7
+58	20	0.0	5	0 0 0 0 0 20
+60	2	0.0	5	0 0 0 0 0 2
+62	16	0.0	5	0 0 0 0 0 16
+63	1	0.0	5	0 0 0 0 0 1
+64	1	0.0	5	0 0 0 0 0 1
+65	7	0.0	5	0 0 0 0 0 7
+66	11	0.0	5	0 0 0 0 1 10
+67	11	0.0	5	0 0 0 0 0 11
+68	47	0.0	5	0 0 0 0 1 46
+69	193	0.0	5	0 0 0 0 4 189
+70	856	0.0	5	0 0 0 0 8 848
+71	2619	0.0	5	0 0 0 0 12 2607
+72	4965	0.0	5	0 0 0 0 26 4939
+73	532	0.0	5	0 0 0 0 5 527
+74	1	0.0	5	0 0 0 0 0 1
+

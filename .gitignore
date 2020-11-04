@@ -28,3 +28,5 @@ R/\.*
 bash/\.*
 *.gtf.gz
 files/*
+oldDir/*
+*_dumps.txt
