@@ -49,12 +49,13 @@ library(Biostrings)
 library(Gviz)
 library(Rsamtools)
 library(viridis)
+library(ggfortify)
 ```
 
 ```{r options}
 if (interactive()) setwd(here::here())
 theme_set(theme_bw())
-cores <- 6
+cores <- 3
 ```
 
 ## Sequence information
@@ -288,7 +289,7 @@ rRnaProp %>%
 ## Gene GC content and length
 
 ```{r counts}
-dgeList <- read_tsv("/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/featureCounts/genes.out") %>%
+dgeList <- read_tsv("/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/featureCounts/genes.out") %>%
   set_colnames(basename(colnames(.))) %>%
   set_colnames(str_remove(colnames(.), "Aligned.sortedByCoord.out.bam")) %>%
   set_colnames(str_remove(colnames(.), "_6month_F3")) %>%
@@ -519,15 +520,15 @@ corrplot(
 # Differential expression
 
 ```{r}
-dgeWTvHet <- dgeFilt[,str_detect(colnames(dgeFilt), "Het|WT")]
+# dgeWTvHet <- dgeFilt[,str_detect(colnames(dgeFilt), "Het|WT")]
 ```
 
 ```{r design}
-design <- model.matrix(~rRNA, data = dgeWTvHet$samples)
+design <- model.matrix(~rRNA, data = dgeFilt$samples)
 ```
 
 ```{r voom}
-voom <- voom(dgeWTvHet, design = design)
+voom <- voom(dgeFilt, design = design)
 ```
 
 ```{r fit}
@@ -1954,10 +1955,10 @@ k8deDown <- k8topTable %>%
 
 ```{r}
 k8overlapUU <- mclapply(
-  upStrings, 
+  upStrings,
   function(x){
     vapply(
-      k8deUp, 
+      k8deUp,
       function(y){
         countPattern(y, x) %>%
           as.logical() %>%
@@ -1974,87 +1975,87 @@ k8overlapUU <- mclapply(
   dplyr::arrange(desc(Overlap)) %>%
   left_join(topTable) %>%
   left_join(upLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>%
   mutate(Norm = (Overlap / Length) * 1000) %>%
   dplyr::arrange(desc(Norm))
 ```
 
 ```{r}
-k8overlapDD <- mclapply(
-  downStrings, 
-  function(x){
-    vapply(
-      k8deDown, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  left_join(topTable) %>%
-  left_join(downLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k8overlapDD <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k8deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ```{r}
-k8overlapUD <- mclapply(
-  upStrings, 
-  function(x){
-    vapply(
-      k8deDown, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  left_join(topTable) %>%
-  left_join(upLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k8overlapUD <- mclapply(
+#   upStrings, 
+#   function(x){
+#     vapply(
+#       k8deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(upLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ```{r}
-k8overlapDU <- mclapply(
-  downStrings, 
-  function(x){
-    vapply(
-      k8deUp, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  left_join(topTable) %>%
-  left_join(downLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k8overlapDU <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k8deUp, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ### k = 9
@@ -2071,253 +2072,111 @@ k9deDown <- k9topTable %>%
 ```
 
 ```{r}
-k9overlapUU <- mclapply(
-  upStrings, 
-  function(x){
-    vapply(
-      k9deUp, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  dplyr::arrange(desc(Overlap)) %>%
-  left_join(topTable) %>%
-  left_join(upLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k9overlapUU <- mclapply(
+#   upStrings, 
+#   function(x){
+#     vapply(
+#       k9deUp, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   dplyr::arrange(desc(Overlap)) %>%
+#   left_join(topTable) %>%
+#   left_join(upLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ```{r}
-k9overlapDD <- mclapply(
-  downStrings, 
-  function(x){
-    vapply(
-      k9deDown, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  left_join(topTable) %>%
-  left_join(downLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k9overlapDD <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k9deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ```{r}
-k9overlapUD <- mclapply(
-  upStrings, 
-  function(x){
-    vapply(
-      k9deDown, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  left_join(topTable) %>%
-  left_join(upLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k9overlapUD <- mclapply(
+#   upStrings, 
+#   function(x){
+#     vapply(
+#       k9deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(upLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ```{r}
-k9overlapDU <- mclapply(
-  downStrings, 
-  function(x){
-    vapply(
-      k9deUp, 
-      function(y){
-        countPattern(y, x) %>%
-          as.logical() %>%
-          sum()
-      },
-      numeric(1)
-    ) %>%
-      sum()
-  },
-  mc.cores = cores
-) %>%
-  unlist() %>%
-  enframe(name = "Geneid", value = "Overlap") %>%
-  left_join(topTable) %>%
-  left_join(downLengths) %>%
-  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
-  mutate(Norm = (Overlap / Length) * 1000) %>%
-  dplyr::arrange(desc(Norm))
+# k9overlapDU <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k9deUp, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
 ```
 
 ## Coverage patterns
-
-### Coverage test
-
-```{r covTest}
-covTest <- function(goi){
-  
-  ## Exon info
-  counts <- dgeList$counts[goi,]
-  gm <- subset(exons_Dr, gene == goi)
-  gmRed <- gm %>% 
-    GenomicRanges::reduce()
-  st <- GenomicRanges::start(gmRed)
-  en <- GenomicRanges::end(gmRed)
-  chr <- seqnames(gmRed)@values
-  str <- gmRed %>% 
-    strand() %>%
-    .@values
-  gmRange <- mapply(function(x, y){
-    seq(x,y,1)
-  }, x = st, y = en, SIMPLIFY = FALSE) %>%
-    unlist() %>%
-    enframe(name = NULL, value = "pos")
-  
-  ## Kmer info
-  gmSeq <- getSeq(dna, gmRed)
-  merLoc <- lapply(k8deUp, function(x){
-    vmatchPattern(x, gmSeq) %>%
-      mapply(function(y,z){
-        start(y) + z
-      }, y = ., z = st) %>%
-      unlist()
-  }) %>%
-    unlist() %>%
-    lapply(
-      function(x){
-        sapply(x, function(y){
-          seq(y, y+7, 1)
-        })
-      }
-    ) %>%
-    unlist() %>%
-    unique()
-  inKmer <- gmRange$pos %in% merLoc
-  
-  ## Coverage info
-  files <- list.files(
-    "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
-    pattern = ".bam$", 
-    full.names = TRUE
-  )
-  param <- ScanBamParam(
-    what = c("pos", "qwidth"),
-    which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
-    flag = scanBamFlag(isUnmappedQuery=FALSE)
-  )
-  covFunc <- function(x){
-    prop <- order$rRNA[order$filenames == x] %>%
-      percent(accuracy = 0.1)
-    reads <- counts[order$sample[order$filenames == x]]
-    pileup(x, scanBamParam = param) %>%
-      dplyr::filter(strand == str) %>%
-      group_by(pos) %>% 
-      summarise(count = sum(count)) %>%
-      ungroup() %>%
-      mutate(
-        seqnames = chr, 
-        start = pos, 
-        end = pos, 
-        strand = str,
-        count = count/reads
-      ) %>% 
-      dplyr::select(seqnames, start, end, strand, count) %>%
-      makeGRangesFromDataFrame(keep.extra.columns = TRUE)
-  }
-  covList <- mclapply(files, covFunc, mc.cores = cores)
-  
-  ## Test
-  names <- dgeList$samples %>% 
-    dplyr::arrange(filenames) %>%
-    .$sample
-  test <- lapply(covList, function(x){
-    tibble(
-      pos = start(x),
-      cov = mcols(x)$count
-    )
-  }) %>%
-    purrr::reduce(full_join, by = "pos") %>%
-    set_colnames(c("pos", names)) %>%
-    right_join(gmRange) %>%
-    cbind(inKmer) %>%
-    as_tibble() %>%
-    pivot_longer(
-      cols = contains(c("Heter", "Hom", "WT")), 
-      names_to = "sample", 
-      values_to = "coverage"
-    ) %>%
-    left_join(dgeList$samples[,c("sample", "rRNA")], by = "sample") %>%
-    with(
-      lm(coverage ~ inKmer*rRNA)
-    ) %>%
-    summary()
-  
-  # return(test)
-  if (sum(inKmer) > 0) {
-    return(
-      tibble(
-        Geneid = goi,
-        adj.r.squared = test$adj.r.squared,
-        P = test$coefficients["inKmerTRUE:rRNA","Pr(>|t|)"]
-      )
-    )
-  } else {
-    return(
-      tibble(
-        Geneid = goi, 
-        adj.r.squared = test$adj.r.squared,
-        P = NA
-      )
-    )
-  }
-  
-}
-```
-
-```{r}
-covRes <- mclapply(deUp, covTest, mc.cores = 6) 
-covRes %>% 
-  purrr::reduce(rbind) %>%
-  dplyr::arrange(P) %>%
-  left_join(k8overlapUU, by = "Geneid") %>%
-  dplyr::select(Geneid, Symbol, -Length, -Overlap, -Norm, adj.r.squared, P) %>%
-  mutate(
-    adjP = p.adjust(P, "fdr"),
-    sig = adjP < 0.05
-  ) %>% print(n = 50)
-upGenes <- topTable %>% dplyr::filter(logFC > 0) %>% .$Geneid
-upTest <- lapply(upGenes, covTest)
-```
-
-```{r}
-geneCov("icn", 8)
-```
 
 ### Plot setup
 
@@ -2491,8 +2350,8 @@ geneCov <- function(geneSym, kVal){
       unlist()
   }) %>%
     unlist()
-  upTrack <- DataTrack(
-    name = "Up",
+  kTrack <- DataTrack(
+    name = "K-mer",
     rotation.title = 0,
     col.title = "black",
     fontface.title = 2,
@@ -2500,56 +2359,56 @@ geneCov <- function(geneSym, kVal){
     showAxis = FALSE
   )
   if (length(merLocUp) > 0) {
-    upTrack %<>%
+    kTrack %<>%
       HighlightTrack(
         trackList = ., 
         start = merLocUp,
         width = kVal,
         chromosome = chr,
         inBackground = TRUE,
-        col = "white",
+        col = "seagreen",
         fill = "seagreen",
         showAxis = FALSE
       )
   }
-  ## Down k-mers
-  merLocDown <- lapply(kDown, function(x){
-    vmatchPattern(x, gmSeq) %>%
-      mapply(function(y,z){
-        start(y) + z
-      }, y = ., z = st) %>%
-      unlist()
-  }) %>%
-    unlist()
-  downTrack <- DataTrack(
-    name = "Down",
-    rotation.title = 0,
-    col.title = "black",
-    fontface.title = 2,
-    fontsize = 14,
-    showAxis = FALSE
-  )
-  if (length(merLocDown) > 0) {
-    downTrack %<>%
-      HighlightTrack(
-        trackList = ., 
-        start = merLocDown,
-        width = kVal,
-        chromosome = chr,
-        inBackground = TRUE,
-        col = "white",
-        fill = "red3",
-        showAxis = FALSE
-      )
-  }
+  # ## Down k-mers
+  # merLocDown <- lapply(kDown, function(x){
+  #   vmatchPattern(x, gmSeq) %>%
+  #     mapply(function(y,z){
+  #       start(y) + z
+  #     }, y = ., z = st) %>%
+  #     unlist()
+  # }) %>%
+  #   unlist()
+  # downTrack <- DataTrack(
+  #   name = "Down",
+  #   rotation.title = 0,
+  #   col.title = "black",
+  #   fontface.title = 2,
+  #   fontsize = 14,
+  #   showAxis = FALSE
+  # )
+  # if (length(merLocDown) > 0) {
+  #   downTrack %<>%
+  #     HighlightTrack(
+  #       trackList = ., 
+  #       start = merLocDown,
+  #       width = kVal,
+  #       chromosome = chr,
+  #       inBackground = TRUE,
+  #       col = "white",
+  #       fill = "red3",
+  #       showAxis = FALSE
+  #     )
+  # }
   
   ## Plot the tracks
   plotTracks(
-    c(gTrack, rrTrack, rTrack, covOrd, gcTrack, upTrack, downTrack),
+    c(gTrack, rrTrack, rTrack, covOrd, gcTrack, kTrack),
     from = min(st) - 100,
     to = max(en) + 100,
     chromosome = chr,
-    sizes = c(1,0.5,length(unique(mcols(gm)$transcript))*0.25,rep(0.5, length(covOrd)),1, 0.5, 0.5),
+    sizes = c(1,0.5,length(unique(mcols(gm)$transcript))*0.25,rep(0.5, length(covOrd)),1, 0.5),
     main = sym,
     cex.main = 1.5,
     fontface.main = 1
@@ -2597,11 +2456,649 @@ geneCov <- function(geneSym, kVal){
 }
 ```
 
-### Plots
+### LM test
 
 ```{r}
-geneCov("BX649540.1", 8)
-geneCov("BX649540.1", 9)
-geneCov("BX324177.19", 8)
-geneCov("rpl29", 8)
+lmTest <- function(goi){
+  
+  ## Exon info
+  counts <- dgeList$counts[goi,]
+  gm <- subset(exons_Dr, gene == goi)
+  gmRed <- gm %>% 
+    GenomicRanges::reduce()
+  st <- GenomicRanges::start(gmRed)
+  en <- GenomicRanges::end(gmRed)
+  chr <- seqnames(gmRed)@values
+  str <- gmRed %>% 
+    strand() %>%
+    .@values
+  gmRange <- mapply(function(x, y){
+    seq(x,y,1)
+  }, x = st, y = en, SIMPLIFY = FALSE) %>%
+    unlist() %>%
+    enframe(name = NULL, value = "pos")
+  
+  ## Kmer info
+  gmSeq <- getSeq(dna, gmRed)
+  merLoc <- lapply(k8deUp, function(x){
+    vmatchPattern(x, gmSeq) %>%
+      mapply(function(y,z){
+        start(y) + z
+      }, y = ., z = st) %>%
+      unlist()
+  }) %>%
+    unlist() %>%
+    lapply(
+      function(x){
+        sapply(x, function(y){
+          seq(y, y+7, 1)
+        })
+      }
+    ) %>%
+    unlist() %>%
+    unique()
+  inKmer <- gmRange$pos %in% merLoc
+  
+  ## Coverage info
+  files <- list.files(
+    "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
+    pattern = ".bam$", 
+    full.names = TRUE
+  )
+  param <- ScanBamParam(
+    what = c("pos", "qwidth"),
+    which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
+    flag = scanBamFlag(isUnmappedQuery=FALSE)
+  )
+  covFunc <- function(x){
+    prop <- order$rRNA[order$filenames == x] %>%
+      percent(accuracy = 0.1)
+    reads <- counts[order$sample[order$filenames == x]]
+    pileup(x, scanBamParam = param) %>%
+      dplyr::filter(strand == str) %>%
+      group_by(pos) %>% 
+      summarise(count = sum(count)) %>%
+      ungroup() %>%
+      mutate(
+        seqnames = chr, 
+        start = pos, 
+        end = pos, 
+        strand = str,
+        count = count/reads
+      ) %>% 
+      dplyr::select(seqnames, start, end, strand, count) %>%
+      makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+  }
+  covList <- mclapply(files, covFunc, mc.cores = cores)
+  
+  ## lm test
+  names <- dgeList$samples %>% 
+    dplyr::arrange(filenames) %>%
+    .$sample
+  test <- lapply(covList, function(x){
+    tibble(
+      pos = start(x),
+      cov = mcols(x)$count
+    )
+  }) %>%
+    purrr::reduce(full_join, by = "pos") %>%
+    set_colnames(c("pos", names)) %>%
+    right_join(gmRange) %>%
+    cbind(inKmer) %>%
+    as_tibble() %>%
+    pivot_longer(
+      cols = contains(c("Heter", "Hom", "WT")), 
+      names_to = "sample", 
+      values_to = "coverage"
+    ) %>%
+    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample")
+  test[is.na(test)] <- as.double(0)
+  test <- test %>%
+    with(
+      lm(coverage ~ inKmer * rRNA)
+    ) %>%
+    summary()
+  return(test)
+  # if (sum(inKmer) > 0) {
+  #   return(
+  #     tibble(
+  #       Geneid = goi,
+  #       Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
+  #       Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
+  #       t = test$coefficients["inKmerTRUE:rRNA","t value"],
+  #       P = test$coefficients["inKmerTRUE:rRNA","Pr(>|t|)"]
+  #     )
+  #   )
+  # } else {
+  #   return(
+  #     tibble(
+  #       Geneid = goi,
+  #       Estimate = NA,
+  #       Std.error = NA,
+  #       t = NA,
+  #       P = NA
+  #     )
+  #   )
+  # }
+  
+}
 ```
+
+```{r}
+checkLm <- function(goi){
+  
+  ## Exon info
+  counts <- dgeList$counts[goi,]
+  gm <- subset(exons_Dr, gene == goi)
+  gmRed <- gm %>% 
+    GenomicRanges::reduce()
+  st <- GenomicRanges::start(gmRed)
+  en <- GenomicRanges::end(gmRed)
+  chr <- seqnames(gmRed)@values
+  str <- gmRed %>% 
+    strand() %>%
+    .@values
+  gmRange <- mapply(function(x, y){
+    seq(x,y,1)
+  }, x = st, y = en, SIMPLIFY = FALSE) %>%
+    unlist() %>%
+    enframe(name = NULL, value = "pos")
+  
+  ## Kmer info
+  gmSeq <- getSeq(dna, gmRed)
+  merLoc <- lapply(k8deUp, function(x){
+    vmatchPattern(x, gmSeq) %>%
+      mapply(function(y,z){
+        start(y) + z
+      }, y = ., z = st) %>%
+      unlist()
+  }) %>%
+    unlist() %>%
+    lapply(
+      function(x){
+        sapply(x, function(y){
+          seq(y, y+7, 1)
+        })
+      }
+    ) %>%
+    unlist() %>%
+    unique()
+  inKmer <- gmRange$pos %in% merLoc
+  
+  ## Coverage info
+  files <- list.files(
+    "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
+    pattern = ".bam$", 
+    full.names = TRUE
+  )
+  param <- ScanBamParam(
+    what = c("pos", "qwidth"),
+    which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
+    flag = scanBamFlag(isUnmappedQuery=FALSE)
+  )
+  covFunc <- function(x){
+    prop <- order$rRNA[order$filenames == x] %>%
+      percent(accuracy = 0.1)
+    reads <- counts[order$sample[order$filenames == x]]
+    pileup(x, scanBamParam = param) %>%
+      dplyr::filter(strand == str) %>%
+      group_by(pos) %>% 
+      summarise(count = sum(count)) %>%
+      ungroup() %>%
+      mutate(
+        seqnames = chr, 
+        start = pos, 
+        end = pos, 
+        strand = str,
+        count = count/reads
+      ) %>% 
+      dplyr::select(seqnames, start, end, strand, count) %>%
+      makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+  }
+  covList <- mclapply(files, covFunc, mc.cores = cores)
+  
+  ## lm test
+  names <- dgeList$samples %>% 
+    dplyr::arrange(filenames) %>%
+    .$sample
+  test <- lapply(covList, function(x){
+    tibble(
+      pos = start(x),
+      cov = mcols(x)$count
+    )
+  }) %>%
+    purrr::reduce(full_join, by = "pos") %>%
+    set_colnames(c("pos", names)) %>%
+    right_join(gmRange) %>%
+    cbind(inKmer) %>%
+    as_tibble() %>%
+    pivot_longer(
+      cols = contains(c("Heter", "Hom", "WT")), 
+      names_to = "sample", 
+      values_to = "coverage"
+    ) %>%
+    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample")
+  test[is.na(test)] <- as.double(0)
+  test %>%
+    with(
+      lm(coverage ~ inKmer * rRNA)
+    ) %>%
+    autoplot()
+  
+}
+```
+
+```{r}
+lmRes <- mclapply(deUp, lmTest, mc.cores = cores) 
+lmRes %>%
+  purrr::reduce(rbind) %>%
+  dplyr::arrange(P) %>%
+  left_join(k8overlapUU, by = "Geneid") %>%
+  dplyr::select(Geneid, Symbol, Estimate, Std.error, t, -Length, -Overlap, -Norm, P) %>%
+  mutate(
+    adjP = p.adjust(P, "fdr"),
+    sig = adjP < 0.05
+  )
+saveRDS(lmRes, here::here("R/files/lmRes.Rds"))
+lmRes <- readRDS(here::here("R/files/lmRes.Rds"))
+```
+
+### GLM test
+
+```{r covTest}
+glmTest <- function(goi){
+  
+  ## Exon info
+  counts <- dgeList$counts[goi,]
+  gm <- subset(exons_Dr, gene == goi)
+  gmRed <- gm %>% 
+    GenomicRanges::reduce()
+  st <- GenomicRanges::start(gmRed)
+  en <- GenomicRanges::end(gmRed)
+  chr <- seqnames(gmRed)@values
+  str <- gmRed %>% 
+    strand() %>%
+    .@values
+  gmRange <- mapply(function(x, y){
+    seq(x,y,1)
+  }, x = st, y = en, SIMPLIFY = FALSE) %>%
+    unlist() %>%
+    enframe(name = NULL, value = "pos")
+  
+  ## Kmer info
+  gmSeq <- getSeq(dna, gmRed)
+  merLoc <- lapply(k8deUp, function(x){
+    vmatchPattern(x, gmSeq) %>%
+      mapply(function(y,z){
+        start(y) + z
+      }, y = ., z = st) %>%
+      unlist()
+  }) %>%
+    unlist() %>%
+    lapply(
+      function(x){
+        sapply(x, function(y){
+          seq(y, y+7, 1)
+        })
+      }
+    ) %>%
+    unlist() %>%
+    unique()
+  inKmer <- gmRange$pos %in% merLoc
+  
+  ## Coverage info
+  files <- list.files(
+    "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
+    pattern = ".bam$", 
+    full.names = TRUE
+  )
+  param <- ScanBamParam(
+    what = c("pos", "qwidth"),
+    which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
+    flag = scanBamFlag(isUnmappedQuery=FALSE)
+  )
+  covFunc <- function(x){
+    prop <- order$rRNA[order$filenames == x] %>%
+      percent(accuracy = 0.1)
+    reads <- counts[order$sample[order$filenames == x]]
+    pileup(x, scanBamParam = param) %>%
+      dplyr::filter(strand == str) %>%
+      group_by(pos) %>% 
+      summarise(count = sum(count)) %>%
+      ungroup() %>%
+      mutate(
+        seqnames = chr, 
+        start = pos, 
+        end = pos, 
+        strand = str
+      ) %>% 
+      dplyr::select(seqnames, start, end, strand, count) %>%
+      makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+  }
+  covList <- mclapply(files, covFunc, mc.cores = cores)
+  
+  ## lm test
+  names <- dgeList$samples %>% 
+    dplyr::arrange(filenames) %>%
+    .$sample
+  test <- lapply(covList, function(x){
+    tibble(
+      pos = start(x),
+      cov = mcols(x)$count
+    )
+  }) %>%
+    purrr::reduce(full_join, by = "pos") %>%
+    set_colnames(c("pos", names)) %>%
+    right_join(gmRange) %>%
+    cbind(inKmer) %>%
+    as_tibble() %>%
+    pivot_longer(
+      cols = contains(c("Heter", "Hom", "WT")), 
+      names_to = "sample", 
+      values_to = "coverage"
+    ) %>%
+    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample")
+  test[is.na(test)] <- 0
+  test <- test %>%
+    with(
+      glm(coverage ~ inKmer * rRNA + offset(log(lib.size)), family = poisson(link = "log"))
+    ) %>%
+    summary()
+  # plot()
+  
+  # return(test)
+  
+  if (sum(inKmer) > 0) {
+    return(
+      tibble(
+        Geneid = goi,
+        Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
+        Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
+        z = test$coefficients["inKmerTRUE:rRNA","z value"],
+        P = test$coefficients["inKmerTRUE:rRNA","Pr(>|z|)"]
+      )
+    )
+  } else {
+    return(
+      tibble(
+        Geneid = goi,
+        Estimate = NA,
+        Std.error = NA,
+        z = NA,
+        P = NA
+      )
+    )
+  }
+  
+}
+```
+
+```{r covTest}
+checkGlm <- function(goi){
+  
+  ## Exon info
+  counts <- dgeList$counts[goi,]
+  gm <- subset(exons_Dr, gene == goi)
+  gmRed <- gm %>% 
+    GenomicRanges::reduce()
+  st <- GenomicRanges::start(gmRed)
+  en <- GenomicRanges::end(gmRed)
+  chr <- seqnames(gmRed)@values
+  str <- gmRed %>% 
+    strand() %>%
+    .@values
+  gmRange <- mapply(function(x, y){
+    seq(x,y,1)
+  }, x = st, y = en, SIMPLIFY = FALSE) %>%
+    unlist() %>%
+    enframe(name = NULL, value = "pos")
+  
+  ## Kmer info
+  gmSeq <- getSeq(dna, gmRed)
+  merLoc <- lapply(k8deUp, function(x){
+    vmatchPattern(x, gmSeq) %>%
+      mapply(function(y,z){
+        start(y) + z
+      }, y = ., z = st) %>%
+      unlist()
+  }) %>%
+    unlist() %>%
+    lapply(
+      function(x){
+        sapply(x, function(y){
+          seq(y, y+7, 1)
+        })
+      }
+    ) %>%
+    unlist() %>%
+    unique()
+  inKmer <- gmRange$pos %in% merLoc
+  
+  ## Coverage info
+  files <- list.files(
+    "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
+    pattern = ".bam$", 
+    full.names = TRUE
+  )
+  param <- ScanBamParam(
+    what = c("pos", "qwidth"),
+    which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
+    flag = scanBamFlag(isUnmappedQuery=FALSE)
+  )
+  covFunc <- function(x){
+    prop <- order$rRNA[order$filenames == x] %>%
+      percent(accuracy = 0.1)
+    reads <- counts[order$sample[order$filenames == x]]
+    pileup(x, scanBamParam = param) %>%
+      dplyr::filter(strand == str) %>%
+      group_by(pos) %>% 
+      summarise(count = sum(count)) %>%
+      ungroup() %>%
+      mutate(
+        seqnames = chr, 
+        start = pos, 
+        end = pos, 
+        strand = str
+      ) %>% 
+      dplyr::select(seqnames, start, end, strand, count) %>%
+      makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+  }
+  covList <- mclapply(files, covFunc, mc.cores = cores)
+  
+  ## lm test
+  names <- dgeList$samples %>% 
+    dplyr::arrange(filenames) %>%
+    .$sample
+  test <- lapply(covList, function(x){
+    tibble(
+      pos = start(x),
+      cov = mcols(x)$count
+    )
+  }) %>%
+    purrr::reduce(full_join, by = "pos") %>%
+    set_colnames(c("pos", names)) %>%
+    right_join(gmRange) %>%
+    cbind(inKmer) %>%
+    as_tibble() %>%
+    pivot_longer(
+      cols = contains(c("Heter", "Hom", "WT")), 
+      names_to = "sample", 
+      values_to = "coverage"
+    ) %>%
+    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample")
+  test[is.na(test)] <- 0
+  par(mfrow = c(2, 2))
+  test %>%
+    with(
+      glm(coverage ~ inKmer * rRNA + offset(log(lib.size)), family = poisson(link = "log"))
+    ) %>%
+    plot()
+  
+}
+```
+
+```{r}
+# glmRes <- mclapply(deUp, glmTest, mc.cores = cores) %>%
+#   purrr::reduce(rbind) %>%
+#   dplyr::arrange(P) %>%
+#   left_join(k8overlapUU, by = "Geneid") %>%
+#   dplyr::select(Geneid, Symbol, Estimate, Std.error, z, -Length, -Overlap, -Norm, P) %>%
+#   mutate(
+#     adjP = p.adjust(P, "fdr"),
+#     sig = adjP < 0.05
+#   )
+# saveRDS(glmRes, here::here("R/files/glmRes.Rds"))
+glmRes <- readRDS(here::here("R/files/glmRes.Rds"))
+```
+
+### KW test
+
+```{r}
+kwTest <- function(goi){
+  
+  ## Exon info
+  counts <- dgeList$counts[goi,]
+  gm <- subset(exons_Dr, gene == goi)
+  gmRed <- gm %>% 
+    GenomicRanges::reduce()
+  st <- GenomicRanges::start(gmRed)
+  en <- GenomicRanges::end(gmRed)
+  chr <- seqnames(gmRed)@values
+  str <- gmRed %>% 
+    strand() %>%
+    .@values
+  gmRange <- mapply(function(x, y){
+    seq(x,y,1)
+  }, x = st, y = en, SIMPLIFY = FALSE) %>%
+    unlist() %>%
+    enframe(name = NULL, value = "pos")
+  
+  ## Kmer info
+  gmSeq <- getSeq(dna, gmRed)
+  merLoc <- lapply(k8deUp, function(x){
+    vmatchPattern(x, gmSeq) %>%
+      mapply(function(y,z){
+        start(y) + z
+      }, y = ., z = st) %>%
+      unlist()
+  }) %>%
+    unlist() %>%
+    lapply(
+      function(x){
+        sapply(x, function(y){
+          seq(y, y+7, 1)
+        })
+      }
+    ) %>%
+    unlist() %>%
+    unique()
+  inKmer <- gmRange$pos %in% merLoc
+  
+  ## Coverage info
+  files <- list.files(
+    "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
+    pattern = ".bam$", 
+    full.names = TRUE
+  )
+  param <- ScanBamParam(
+    what = c("pos", "qwidth"),
+    which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
+    flag = scanBamFlag(isUnmappedQuery=FALSE)
+  )
+  covFunc <- function(x){
+    prop <- order$rRNA[order$filenames == x] %>%
+      percent(accuracy = 0.1)
+    reads <- counts[order$sample[order$filenames == x]]
+    pileup(x, scanBamParam = param) %>%
+      dplyr::filter(strand == str) %>%
+      group_by(pos) %>% 
+      summarise(count = sum(count)) %>%
+      ungroup() %>%
+      mutate(
+        seqnames = chr, 
+        start = pos, 
+        end = pos, 
+        strand = str,
+        count = count/reads
+      ) %>% 
+      dplyr::select(seqnames, start, end, strand, count) %>%
+      makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+  }
+  covList <- mclapply(files, covFunc, mc.cores = cores)
+  
+  ## lm test
+  names <- dgeList$samples %>% 
+    dplyr::arrange(filenames) %>%
+    .$sample
+  test <- lapply(covList, function(x){
+    tibble(
+      pos = start(x),
+      cov = mcols(x)$count
+    )
+  }) %>%
+    purrr::reduce(full_join, by = "pos") %>%
+    set_colnames(c("pos", names)) %>%
+    right_join(gmRange) %>%
+    cbind(inKmer) %>%
+    as_tibble() %>%
+    pivot_longer(
+      cols = contains(c("Heter", "Hom", "WT")), 
+      names_to = "sample", 
+      values_to = "coverage"
+    ) %>%
+    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample")
+  test[is.na(test)] <- as.double(0)
+  kmerT <- test %>%
+    dplyr::filter(inKmer) %>%
+    with(
+      kruskal.test(coverage ~ rRNA)
+    )
+  kmerF <- test %>%
+    dplyr::filter(!inKmer) %>%
+    with(
+      kruskal.test(coverage ~ rRNA)
+    )
+  
+  return(
+    tibble(
+      Geneid = goi,
+      kmerT.p = kmerT$p.value,
+      kmerF.p = kmerF$p.value
+    )
+  )
+  
+  # if (sum(inKmer) > 0) {
+  #   return(
+  #     tibble(
+  #       Geneid = goi,
+  #       kmerT.p = kmerT$p.value,
+  #       kmerF.p = kmerF$p.value
+  #     )
+  #   )
+  # } else {
+  #   return(
+  #     tibble(
+  #       Geneid = goi,
+  #       kmerT.p = NA,
+  #       kmerF.p = NA
+  #     )
+  #   )
+  # }
+  
+}
+```
+
+```{r}
+kwRes <- mclapply(deUp, kwTest, mc.cores = 6) %>%
+  purrr::reduce(rbind) %>%
+  dplyr::arrange(P) %>%
+  left_join(k8overlapUU, by = "Geneid") %>%
+  dplyr::select(Geneid, Symbol, -Length, -Overlap, -Norm, P) %>%
+  mutate(
+    adjP = p.adjust(P, "fdr"),
+    sig = adjP < 0.05
+  )
+saveRDS(kwRes, here::here("R/files/kwRes.Rds"))
+kwRes <- readRDS(here::here("R/files/kwRes.Rds"))
+```
+
