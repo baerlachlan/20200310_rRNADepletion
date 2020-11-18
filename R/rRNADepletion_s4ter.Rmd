@@ -2205,16 +2205,16 @@ order <- dgeList$samples %>%
 ```
 
 ```{r}
-geneCov <- function(geneSym, kVal){
+geneCov <- function(geneId, kVal, col){
   
   ## Define user input
-  sym <- geneSym
+  goi <- geneId
   kUp <- get(paste0("k", kVal, "deUp"))
   kDown <- get(paste0("k", kVal, "deDown"))
   
   ## Gene region & genome axis tracks
-  goi <- genesGR_Dr[mcols(genesGR_Dr)$gene_name == sym,]$gene_id %>%
-    .[1] ## Some symbols have multiple gene IDs, let's take the first
+  sym <- mcols(dgeList$genes)[goi,] %>%
+    .$gene_name
   counts <- dgeList$counts[goi,]
   gm <- subset(exons_Dr, gene == goi) 
   # %>% subset(transcript %in% rownames(dgeFiltTx))
@@ -2319,13 +2319,13 @@ geneCov <- function(geneSym, kVal){
         start = pos, 
         end = pos, 
         strand = str,
-        count = count/reads
+        norm = count/reads
       ) %>% 
-      dplyr::select(seqnames, start, end, strand, count) %>%
+      dplyr::select(seqnames, start, end, strand, norm) %>%
       makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
       DataTrack(
         type = c("heatmap"),
-        gradient = viridis(20),
+        gradient = viridis(100, option = col),
         ncolor = 20,
         cex = 0.2, 
         name = prop,
@@ -2558,28 +2558,30 @@ lmTest <- function(goi){
       lm(coverage ~ inKmer * rRNA)
     ) %>%
     summary()
-  return(test)
-  # if (sum(inKmer) > 0) {
-  #   return(
-  #     tibble(
-  #       Geneid = goi,
-  #       Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
-  #       Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
-  #       t = test$coefficients["inKmerTRUE:rRNA","t value"],
-  #       P = test$coefficients["inKmerTRUE:rRNA","Pr(>|t|)"]
-  #     )
-  #   )
-  # } else {
-  #   return(
-  #     tibble(
-  #       Geneid = goi,
-  #       Estimate = NA,
-  #       Std.error = NA,
-  #       t = NA,
-  #       P = NA
-  #     )
-  #   )
-  # }
+  
+  if (sum(inKmer) > 0) {
+    return(
+      tibble(
+        Geneid = goi,
+        Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
+        Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
+        t = test$coefficients["inKmerTRUE:rRNA","t value"],
+        P = test$coefficients["inKmerTRUE:rRNA","Pr(>|t|)"],
+        adj.R.squared = test$adj.r.squared
+      )
+    )
+  } else {
+    return(
+      tibble(
+        Geneid = goi,
+        Estimate = NA,
+        Std.error = NA,
+        t = NA,
+        P = NA,
+        adj.R.squared = NA
+      )
+    )
+  }
   
 }
 ```
@@ -2778,6 +2780,8 @@ glmTest <- function(goi){
   covList <- mclapply(files, covFunc, mc.cores = cores)
   
   ## lm test
+  reads <- dgeList$counts["ENSDARG00000071566",] %>%
+    enframe(name = "sample", value = "reads")
   names <- dgeList$samples %>% 
     dplyr::arrange(filenames) %>%
     .$sample
@@ -2797,38 +2801,37 @@ glmTest <- function(goi){
       names_to = "sample", 
       values_to = "coverage"
     ) %>%
-    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample")
+    left_join(dgeList$samples[,c("sample", "rRNA", "lib.size")], by = "sample") %>%
+    left_join(reads, by = "sample")
   test[is.na(test)] <- 0
-  test <- test %>%
+  
+  # test <- 
+  test %>%
     with(
-      glm(coverage ~ inKmer * rRNA + offset(log(lib.size)), family = poisson(link = "log"))
-    ) %>%
-    summary()
-  # plot()
-  
+      glm(coverage ~ inKmer * rRNA + offset(log(reads)), family = poisson(link = "log"))
+    ) 
   # return(test)
-  
-  if (sum(inKmer) > 0) {
-    return(
-      tibble(
-        Geneid = goi,
-        Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
-        Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
-        z = test$coefficients["inKmerTRUE:rRNA","z value"],
-        P = test$coefficients["inKmerTRUE:rRNA","Pr(>|z|)"]
-      )
-    )
-  } else {
-    return(
-      tibble(
-        Geneid = goi,
-        Estimate = NA,
-        Std.error = NA,
-        z = NA,
-        P = NA
-      )
-    )
-  }
+  # if (sum(inKmer) > 0) {
+  #   return(
+  #     tibble(
+  #       Geneid = goi,
+  #       Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
+  #       Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
+  #       z = test$coefficients["inKmerTRUE:rRNA","z value"],
+  #       P = test$coefficients["inKmerTRUE:rRNA","Pr(>|z|)"]
+  #     )
+  #   )
+  # } else {
+  #   return(
+  #     tibble(
+  #       Geneid = goi,
+  #       Estimate = NA,
+  #       Std.error = NA,
+  #       z = NA,
+  #       P = NA
+  #     )
+  #   )
+  # }
   
 }
 ```
@@ -2949,6 +2952,20 @@ checkGlm <- function(goi){
 #   )
 # saveRDS(glmRes, here::here("R/files/glmRes.Rds"))
 glmRes <- readRDS(here::here("R/files/glmRes.Rds"))
+```
+
+```{r}
+geneCov(glmRes$Geneid[32], 8)
+geneCov(glmRes$Geneid[41], 8)
+geneCov(glmRes$Geneid[78], 8)
+geneCov(glmRes$Geneid[80], 8)
+geneCov(glmRes$Geneid[104], 8)
+geneCov(glmRes$Geneid[116], 8)
+geneCov(glmRes$Geneid[141], 8, "B")
+geneCov(glmRes$Geneid[146], 8, "B")
+geneCov(glmRes$Geneid[168], 8, "B")
+geneCov(glmRes$Geneid[220], 8, "B")
+geneCov(glmRes$Geneid[223], 8, "B")
 ```
 
 ### KW test
@@ -3102,3 +3119,199 @@ saveRDS(kwRes, here::here("R/files/kwRes.Rds"))
 kwRes <- readRDS(here::here("R/files/kwRes.Rds"))
 ```
 
+### ttmep
+
+```{r}
+## Define user input
+kVal <- 8
+goi <- glmRes$Geneid[168]
+kUp <- k8deUp
+
+## Gene region & genome axis tracks
+sym <- mcols(dgeList$genes)[goi,] %>%
+  .$gene_name
+counts <- dgeList$counts[goi,]
+gm <- subset(exons_Dr, gene == goi)
+gmRed <- gm %>% 
+  GenomicRanges::reduce()
+st <- GenomicRanges::start(gmRed)
+en <- GenomicRanges::end(gmRed)
+chr <- seqnames(gmRed)@values
+str <- gmRed %>% 
+  strand() %>%
+  .@values
+gTrack <- GenomeAxisTrack()
+rrTrack <- GeneRegionTrack(
+  gmRed,
+  name = "Gene model",
+  rotation.title = 0,
+  col.title = "black",
+  fontface.title = 2,
+  fontsize = 14,
+  fill = "darkorange"
+)
+rTrack <- GeneRegionTrack(
+  gm,
+  name = "Gene model",
+  rotation.title = 0,
+  col.title = "black",
+  fontface.title = 2,
+  fontsize = 14,
+  fill = "darkorange"
+)
+
+## GC content track
+win <- slidingWindows(gmRed, width = 1) %>% 
+  unlist()
+start <- win %>%
+  start()
+end <- win %>%
+  end()
+seq <- getSeq(dna, win)
+gc <- seq %>%
+  letterFrequency(letters = "GC", OR = "") %>%
+  .[,1]
+tbl <- tibble(
+  start = start,
+  end = end,
+  gc = gc
+) %>% 
+  mutate(
+    seqnames = chr,
+    strand = str,
+    cumsum = cumsum(gc),
+    cummean = cummean(gc),
+    lag = dplyr::lag(cumsum, n = 50, default = NA),
+    lead = dplyr::lead(cumsum, n = 50, default = NA),
+    gcsum = lead - lag,
+    gcprop = gcsum / 101
+  ) 
+gcTrack <- tbl %>% 
+  dplyr::select(seqnames, start, end, strand, gcprop) %>%
+  makeGRangesFromDataFrame(
+    keep.extra.columns = TRUE
+  ) %>%
+  DataTrack(
+    type = c("b"),
+    ylim = c(0, 1), 
+    cex = 0.2,
+    cex.axis = 0.3,
+    name = "GC %",
+    col.title="black",
+    fontface.title=2,
+    fontsize=14,
+    grid = TRUE,
+    lwd.grid = 0.5,
+    lty.grid = "dashed",
+    v = 0
+  )
+
+## Coverage tracks
+files <- list.files(
+  "/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam", 
+  pattern = ".bam$", 
+  full.names = TRUE
+)
+param <- ScanBamParam(
+  what = c("pos", "qwidth"),
+  which = GRanges(seqnames = chr, ranges = IRanges(st, en), strand = str),
+  flag=scanBamFlag(isUnmappedQuery=FALSE)
+)
+covFunc <- function(x){
+  prop <- order$rRNA[order$filenames == x] %>%
+    percent(accuracy = 0.1)
+  reads <- counts[order$sample[order$filenames == x]]
+  pileup(x, scanBamParam = param) %>%
+    dplyr::filter(strand == str) %>%
+    group_by(pos) %>% 
+    summarise(count = sum(count)) %>%
+    ungroup() %>%
+    mutate(
+      seqnames = chr, 
+      start = pos, 
+      end = pos, 
+      strand = str,
+      norm = count/reads
+    ) %>% 
+    dplyr::select(seqnames, start, end, strand, norm) %>%
+    makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
+    DataTrack(
+      type = c("heatmap"),
+      gradient = viridis(100, option = "B"),
+      ncolor = 20,
+      cex = 0.2, 
+      name = prop,
+      rotation.title = 0,
+      col.title = "black",
+      fontface.title = 2,
+      fontsize = 14,
+      showAxis = FALSE
+    )
+}
+covList <- mclapply(files, covFunc, mc.cores = cores) 
+covOrd <- covList[as.integer(order$order)]
+
+## k-mer track
+gmSeq <- getSeq(dna, gmRed)
+## Up k-mers
+merLocUp <- lapply(kUp, function(x){
+  vmatchPattern(x, gmSeq) %>%
+    mapply(function(y,z){
+      start(y) + z
+    }, y = ., z = st) %>%
+    unlist()
+}) %>%
+  unlist()
+kTrack <- DataTrack(
+  name = "K-mer",
+  rotation.title = 0,
+  col.title = "black",
+  fontface.title = 2,
+  fontsize = 14,
+  showAxis = FALSE
+)
+if (length(merLocUp) > 0) {
+  kTrack %<>%
+    HighlightTrack(
+      trackList = ., 
+      start = merLocUp,
+      width = kVal,
+      chromosome = chr,
+      inBackground = TRUE,
+      col = "seagreen",
+      fill = "seagreen",
+      showAxis = FALSE
+    )
+}
+
+## Plot the tracks
+plotTracks(
+  c(gTrack, rTrack, covOrd, kTrack),
+  from = min(st) - 100,
+  to = max(en) + 100,
+  chromosome = chr,
+  sizes = c(1,1,rep(0.5, length(covOrd)), 0.5),
+  main = sym,
+  cex.main = 1.5,
+  fontface.main = 1
+)
+```
+
+```{r}
+data <- grep("_R1", fqName(rawFqc))
+lineCols <- RColorBrewer::brewer.pal(min(12, n), 
+                "Paired")
+            lineCols <- colorRampPalette(lineCols)(n)
+            lineCols <- c("#000000", lineCols)
+  plotGcContent(
+    x = rawFqc[data], 
+    plotType = "line",
+    gcType = "Transcriptome",
+    species = "Drerio"
+  ) +
+    labs(title = "GC Distribution", subtitle = c()) +
+    scale_color_manual(values = lineCols,
+                labels = c("Theoretical Distribution", "Sample 1", "Sample 2", "Sample 3", "Sample 4", "Sample 5", "Sample 6",
+                                  "Sample 7", "Sample 8", "Sample 9", "Sample 10", "Sample 11", "Sample 12")) +
+    theme()
+```
