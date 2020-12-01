@@ -214,50 +214,50 @@ echo "All directories checked and created"
 ##                         rRNA proportions with BWA                          ##
 ##----------------------------------------------------------------------------##
 
-## Aligning and sorting
-for R1 in ${TRIMDIR}/fastq/*.fastq.gz                                                       
-do
-
-  BNAME=$(basename ${R1%_R1.fastq.gz})
-  R2=${R1%_R1.fastq.gz}_R2.fastq.gz
-  out=${BWA}/bam/${BNAME}.sorted.bam
-  echo -e "bwa will align:\t${R1}"
-  echo -e "bwa will also align:\t${R2}"
-  echo -e "Output file will be:\t${out}"
-
-  ## Align and return reads as .bam
-  bwa mem -t ${CORES} ${RRNA} ${R1} ${R2} \
-  | samtools view -u -h \
-  | samtools sort -o ${out}
-
-done
-
-## Run FastQC
-fastqc -t ${CORES} -f bam_mapped -o ${BWA}/FastQC --noextract ${BWA}/bam/*.bam
-
-# ## Indexing, flagstat, and conversion of unmapped reads to fastq for further alignment
-# for BAM in ${BWA}/bam/*.bam                                                         
+# ## Aligning and sorting
+# for R1 in ${TRIMDIR}/fastq/*.fastq.gz                                                       
 # do
 
-#   outlog=${BWA}/log/$(basename ${BAM%.sorted.bam})
-#   outbam=${BWA}/bam/$(basename ${BAM%.sorted.bam})
-#   outfastq=${BWA}/fastq/$(basename ${BAM%.sorted.bam})
+#   BNAME=$(basename ${R1%_R1.fastq.gz})
+#   R2=${R1%_R1.fastq.gz}_R2.fastq.gz
+#   out=${BWA}/bam/${BNAME}.sorted.bam
+#   echo -e "bwa will align:\t${R1}"
+#   echo -e "bwa will also align:\t${R2}"
+#   echo -e "Output file will be:\t${out}"
 
-#   samtools index ${BAM}
-#   samtools flagstat ${BAM} > ${outlog}.flagstat 
-#   awk -F '[(|%]' 'NR == 5 {print $2}' ${outlog}.flagstat > ${outlog}.mapped
-
-#   ## Output only reads where both mate pairs were not mapped as fastq
-#   ## Reads need to be sorted by name (-n) to retain pair structure
-#   ## This code was found from https://gist.github.com/darencard/72ddd9e6c08aaff5ff64ca512a04a6dd
-#   samtools view -u -h -f 12 -F 256 ${BAM} \
-#   | samtools sort -n \
-#   | samtools fastq --threads ${CORES} -c 6 -1 ${outfastq}_R1.fastq.gz -2 ${outfastq}_R2.fastq.gz
+#   ## Align and return reads as .bam
+#   bwa mem -t ${CORES} ${RRNA} ${R1} ${R2} \
+#   | samtools view -u -h \
+#   | samtools sort -o ${out}
 
 # done
 
-# ## Concatenate all mapping stats including the filenames and mapped proportions
-# grep -H "" ${BWA}/log/*.mapped > ${BWA}/log/samples.mapped.all
+# ## Run FastQC
+# fastqc -t ${CORES} -f bam_mapped -o ${BWA}/FastQC --noextract ${BWA}/bam/*.bam
+
+## Indexing, flagstat, and conversion of unmapped reads to fastq for further alignment
+for BAM in ${BWA}/bam/*.bam                                                         
+do
+
+  outlog=${BWA}/log/$(basename ${BAM%.sorted.bam})
+  outbam=${BWA}/bam/$(basename ${BAM%.sorted.bam})
+  outfastq=${BWA}/fastq/$(basename ${BAM%.sorted.bam})
+
+  samtools index ${BAM}
+  samtools flagstat ${BAM} > ${outlog}.flagstat 
+  awk -F '[(|%]' 'NR == 5 {print $2}' ${outlog}.flagstat > ${outlog}.mapped
+
+  ## Output only reads where both mate pairs were not mapped as fastq
+  ## Reads need to be sorted by name (-n) to retain pair structure
+  ## This code was found from https://gist.github.com/darencard/72ddd9e6c08aaff5ff64ca512a04a6dd
+  samtools view -u -h -f 12 -F 256 ${BAM} \
+  | samtools sort -n \
+  | samtools fastq --threads ${CORES} -c 6 -1 ${outfastq}_R1.fastq.gz -2 ${outfastq}_R2.fastq.gz
+
+done
+
+## Concatenate all mapping stats including the filenames and mapped proportions
+grep -H "" ${BWA}/log/*.mapped > ${BWA}/log/samples.mapped.all
 
 ##----------------------------------------------------------------------------##
 ##                         STAR second-pass alignment                         ##

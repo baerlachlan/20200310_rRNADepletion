@@ -1,0 +1,12 @@
+Status	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/1_Ps2Ex3M1_Heter_6month_F3_80_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/4_Ps2Ex3M1_Heter_6month_F3_89_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/12_Ps2Ex3M1_WT_6month_F3_95_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/3_Ps2Ex3M1_Heter_6month_F3_84_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/10_Ps2Ex3M1_WT_6month_F3_86_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/6_Ps2Ex3M1_Hom_6month_F3_82_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/2_Ps2Ex3M1_Heter_6month_F3_81_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/8_Ps2Ex3M1_Hom_6month_F3_85_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/9_Ps2Ex3M1_WT_6month_F3_79_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/5_Ps2Ex3M1_Hom_6month_F3_78_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/7_Ps2Ex3M1_Hom_6month_F3_83_FemAligned.sortedByCoord.out.bam	/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/bam/11_Ps2Ex3M1_WT_6month_F3_88_FemAligned.sortedByCoord.out.bam
+Assigned	10590963	10812172	11516020	10794410	13087070	10095264	11013429	11294645	9618449	10171310	10260668	11181154
+Unassigned_Ambiguity	37924	41109	43302	37984	54947	37889	37139	43221	40896	38362	34852	41621
+Unassigned_MultiMapping	4343873	4459244	3732973	6131741	3120393	3688875	4367335	4256946	3395616	4191901	4010399	4493328
+Unassigned_NoFeatures	11279715	12793892	11096627	7911367	11672273	10291169	10289591	10508908	10572919	12184936	10390303	11653083
+Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Nonjunction	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0

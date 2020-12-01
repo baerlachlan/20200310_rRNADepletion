@@ -100,6 +100,7 @@ checkAndMake ${STAR2}/bam
 checkAndMake ${STAR2}/fastq
 checkAndMake ${STAR2}/FastQC
 checkAndMake ${STAR2}/log
+checkAndMake ${STAR2}/featureCounts
 
 ## Jellyfish
 JELLYFQ=${PROJROOT}/5_jellyfishFq
@@ -273,42 +274,68 @@ echo "All directories checked and created"
 ## Of course some non-rRNA reads that do not map will be lost too, but it will stop 
 ## any bias in kmer counts due to the presence of rRNA.
 
-## Aligning, filtering and sorting
-for R1 in ${BWA}/fastq/*R1.fastq.gz
- do
+# ## Aligning, filtering and sorting
+# for R1 in ${BWA}/fastq/*R1.fastq.gz
+#  do
 
- BNAME=$(basename ${R1%_R1.fastq.gz})
- R2=${R1%_R1.fastq.gz}_R2.fastq.gz
- echo -e "STAR will align:\t${R1}"
- echo -e "STAR will also align:\t${R2}"
+#  BNAME=$(basename ${R1%_R1.fastq.gz})
+#  R2=${R1%_R1.fastq.gz}_R2.fastq.gz
+#  echo -e "STAR will align:\t${R1}"
+#  echo -e "STAR will also align:\t${R2}"
 
-  STAR \
-    --runThreadN ${CORES} \
-    --genomeDir ${REFS}/ensembl-release-101/danio_rerio/star \
-    --readFilesIn ${R1} ${R2} \
-    --readFilesCommand gunzip -c \
-    --outFileNamePrefix ${STAR2}/bam/${BNAME} \
-    --outSAMtype BAM SortedByCoordinate
+#   STAR \
+#     --runThreadN ${CORES} \
+#     --genomeDir ${REFS}/ensembl-release-101/danio_rerio/star \
+#     --readFilesIn ${R1} ${R2} \
+#     --readFilesCommand gunzip -c \
+#     --outFileNamePrefix ${STAR2}/bam/${BNAME} \
+#     --outSAMtype BAM SortedByCoordinate
 
- done
+#  done
 
-## Move the log files into their own folder
-mv ${STAR2}/bam/*out ${STAR2}/log
-mv ${STAR2}/bam/*tab ${STAR2}/log
+# ## Move the log files into their own folder
+# mv ${STAR2}/bam/*out ${STAR2}/log
+# mv ${STAR2}/bam/*tab ${STAR2}/log
 
-## Fastqc and indexing
-for BAM in ${STAR2}/bam/*.bam
-do
+# ## Fastqc and indexing
+# for BAM in ${STAR2}/bam/*.bam
+# do
 
-  fastqc -t ${CORES} -f bam_mapped -o ${STAR2}/FastQC --noextract ${BAM}
-  samtools index ${BAM}
+#   fastqc -t ${CORES} -f bam_mapped -o ${STAR2}/FastQC --noextract ${BAM}
+#   samtools index ${BAM}
 
-  ## Conversion of mapped reads to fastq for kmer counting
-  ## SAM Flag 256 removes any reads not in the primary alignment
-  outfastq=${STAR2}/fastq/$(basename ${BAM%Aligned.sortedByCoord.out.bam})
-  samtools fastq -F 256 --threads ${CORES} -c 6 -1 ${outfastq}_R1.fastq.gz -2 ${outfastq}_R2.fastq.gz ${BAM}
+#   ## Conversion of mapped reads to fastq for kmer counting
+#   ## SAM Flag 256 removes any reads not in the primary alignment
+#   outfastq=${STAR2}/fastq/$(basename ${BAM%Aligned.sortedByCoord.out.bam})
+#   samtools fastq -F 256 --threads ${CORES} -c 6 -1 ${outfastq}_R1.fastq.gz -2 ${outfastq}_R2.fastq.gz ${BAM}
 
-done
+# done
+
+##----------------------------------------------------------------------------##
+##                         featureCounts second-pass                          ##
+##----------------------------------------------------------------------------##
+
+## Feature Counts - obtaining all sorted bam files
+sampleList=`find ${STAR2}/bam -name "*out.bam" | tr '\n' ' '`
+
+## Extract gtf for featureCounts
+zcat ${GTF} > temp.gtf
+
+## Running featureCounts on the sorted bam files
+featureCounts -Q 10 \
+  -s 2 \
+  -T ${CORES} \
+  -p \
+  --fracOverlap 1 \
+  -a temp.gtf \
+  -o ${STAR2}/featureCounts/counts.out ${sampleList}
+
+## Remove the temporary gtf
+rm temp.gtf
+
+ ## Storing the output in a single file
+cut -f1,7- ${STAR2}/featureCounts/counts.out | \
+  sed 1d > ${STAR2}/featureCounts/genes.out
 
 ##----------------------------------------------------------------------------##
 ##                                   Salmon                                   ##
