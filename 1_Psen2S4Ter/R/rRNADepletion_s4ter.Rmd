@@ -2779,7 +2779,7 @@ glmTest <- function(goi){
   }
   covList <- mclapply(files, covFunc, mc.cores = cores)
   
-  ## lm test
+  ## test
   reads <- dgeList$counts["ENSDARG00000071566",] %>%
     enframe(name = "sample", value = "reads")
   names <- dgeList$samples %>% 
@@ -2805,33 +2805,32 @@ glmTest <- function(goi){
     left_join(reads, by = "sample")
   test[is.na(test)] <- 0
   
-  # test <- 
-  test %>%
+  test <- test %>%
     with(
       glm(coverage ~ inKmer * rRNA + offset(log(reads)), family = poisson(link = "log"))
     ) 
-  # return(test)
-  # if (sum(inKmer) > 0) {
-  #   return(
-  #     tibble(
-  #       Geneid = goi,
-  #       Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
-  #       Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
-  #       z = test$coefficients["inKmerTRUE:rRNA","z value"],
-  #       P = test$coefficients["inKmerTRUE:rRNA","Pr(>|z|)"]
-  #     )
-  #   )
-  # } else {
-  #   return(
-  #     tibble(
-  #       Geneid = goi,
-  #       Estimate = NA,
-  #       Std.error = NA,
-  #       z = NA,
-  #       P = NA
-  #     )
-  #   )
-  # }
+  
+  if (sum(inKmer) > 0) {
+    return(
+      tibble(
+        Geneid = goi,
+        Estimate = test$coefficients["inKmerTRUE:rRNA","Estimate"],
+        Std.error = test$coefficients["inKmerTRUE:rRNA", "Std. Error"],
+        z = test$coefficients["inKmerTRUE:rRNA","z value"],
+        P = test$coefficients["inKmerTRUE:rRNA","Pr(>|z|)"]
+      )
+    )
+  } else {
+    return(
+      tibble(
+        Geneid = goi,
+        Estimate = NA,
+        Std.error = NA,
+        z = NA,
+        P = NA
+      )
+    )
+  }
   
 }
 ```
