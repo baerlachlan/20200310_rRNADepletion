@@ -1,0 +1,474 @@
+---
+title: "rRNADepletion_s4ter"
+author: "Lachlan Baer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    fig_width: 8
+    fig_height: 6
+    fig_align: "center"
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r packages}
+library(tidyverse)
+library(magrittr)
+library(ngsReports)
+library(here)
+library(scales)
+library(ggpubr)
+library(kableExtra)
+library(AnnotationHub)
+library(ensembldb)
+library(edgeR)
+library(corrplot)
+library(DT)
+library(pander)
+library(ggrepel)
+library(pheatmap)
+library(ggdendro)
+library(Biostrings)
+library(Gviz)
+library(Rsamtools)
+library(viridis)
+library(ggfortify)
+```
+
+```{r options}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+cores <- detectCores() - 1
+```
+
+# GC exploration
+
+```{r}
+## Calculate GC proportion of kmer
+gcKmer <- function(x){
+  x %>%
+    BString() %>%
+    letterFrequency(letters = "GC", as.prob = TRUE) %>%
+    unname()
+}
+```
+
+```{r}
+# ## This chunk takes about 15 mins to run on 6 threads
+# ## Objects are saved as .Rds files to save time 
+# k5topTable$mer %>% 
+#   mclapply(gcKmer, mc.cores = cores) %>%
+#   set_names(k5topTable$mer) %>%
+#   unlist() %>%
+#   enframe(name = "mer", value = "gcProp") %>%
+#   saveRDS("R/output/k5gc.Rds")
+# k6topTable$mer %>% 
+#   mclapply(gcKmer, mc.cores = cores) %>%
+#   set_names(k6topTable$mer) %>%
+#   unlist() %>%
+#   enframe(name = "mer", value = "gcProp") %>%
+#   saveRDS("R/output/k6gc.Rds")
+# k7topTable$mer %>% 
+#   mclapply(gcKmer, mc.cores = cores) %>%
+#   set_names(k7topTable$mer) %>%
+#   unlist() %>%
+#   enframe(name = "mer", value = "gcProp") %>%
+#   saveRDS("R/output/k7gc.Rds")
+# k8topTable$mer %>% 
+#   mclapply(gcKmer, mc.cores = cores) %>%
+#   set_names(k8topTable$mer) %>%
+#   unlist() %>%
+#   enframe(name = "mer", value = "gcProp") %>%
+#   saveRDS("R/output/k8gc.Rds")
+# k9topTable$mer %>% 
+#   mclapply(gcKmer, mc.cores = cores) %>%
+#   set_names(k9topTable$mer) %>%
+#   unlist() %>%
+#   enframe(name = "mer", value = "gcProp") %>%
+#   saveRDS("R/output/k9gc.Rds")
+# k10topTable$mer %>% 
+#   mclapply(gcKmer, mc.cores = cores) %>%
+#   set_names(k10topTable$mer) %>%
+#   unlist() %>%
+#   enframe(name = "mer", value = "gcProp") %>%
+#   saveRDS("R/output/k10gc.Rds")
+```
+
+```{r}
+k5gc <- readRDS("R/output/k5gc.Rds")
+k6gc <- readRDS("R/output/k6gc.Rds")
+k7gc <- readRDS("R/output/k7gc.Rds")
+k8gc <- readRDS("R/output/k8gc.Rds")
+k9gc <- readRDS("R/output/k9gc.Rds")
+k10gc <- readRDS("R/output/k10gc.Rds")
+```
+
+```{r}
+k8topTable %>%
+  left_join(k8gc) %>%
+  dplyr::arrange(DE) %>%
+  ggplot(aes(gcProp, logFC)) +
+  geom_point(aes(colour = DE), alpha = 0.5) +
+  scale_colour_manual(values = c("black", "red")) +
+  labs(title = "k = 8")
+```
+
+```{r}
+k8topTable %>%
+  mutate(stat = -sign(logFC)*log10(P.Value)) %>%
+  dplyr::arrange(DE) %>%
+  left_join(k8gc) %>%
+  ggplot(aes(gcProp, stat)) +
+  geom_point(aes(colour = DE), alpha = 0.4) +
+  scale_x_continuous(labels = percent) +
+  scale_colour_manual(values = c("black", "red")) +
+  labs(title = "k = 8")
+```
+
+```{r}
+gcPos <- function(x){
+  topT <- get(paste0("k", x, "topTable"))
+  gc <- get(paste0("k", x, "gc"))
+  topT %>%
+    dplyr::filter(DE) %>%
+    dplyr::filter(logFC > 0) %>%
+    left_join(gc) %>%
+    ggplot(aes(gcProp)) +
+    geom_density() +
+    scale_x_continuous(labels = percent) +
+    coord_cartesian(xlim = c(0, 1)) +
+    labs(title = paste0("k = ", x, ", logFC > 0"))
+}
+gcNeg <- function(x){
+  topT <- get(paste0("k", x, "topTable"))
+  gc <- get(paste0("k", x, "gc"))
+  topT %>%
+    dplyr::filter(DE) %>%
+    dplyr::filter(logFC < 0) %>%
+    left_join(gc) %>%
+    ggplot(aes(gcProp)) +
+    geom_density() +
+    scale_x_continuous(labels = percent) +
+    coord_cartesian(xlim = c(0, 1)) +
+    labs(title = paste0("k = ", x, ", logFC < 0"))
+}
+```
+
+```{r, fig.height=12}
+a <- gcNeg(7)
+b <- gcPos(7)
+c <- gcNeg(8)
+d <- gcPos(8)
+e <- gcNeg(9)
+f <- gcPos(9)
+g <- gcNeg(10)
+h <- gcPos(10)
+ggarrange(nrow = 4, ncol = 2, a, b, c, d, e, f, g, h) %>%
+  annotate_figure("GC content distribution of DE kmers")
+```
+
+# DE overlap
+
+## DE sequences
+
+```{r dna}
+dna <- getGenomeTwoBitFile(ensDb_Dr)
+```
+
+```{r deUp}
+deUp <- topTable %>%
+  dplyr::filter(DE) %>%
+  dplyr::filter(logFC > 0) %>%
+  .$Geneid
+upExons <- exonsBy(ensDb_Dr, by = "gene", filter = GeneIdFilter(deUp)) %>%
+  lapply(function(x){
+    GenomicRanges::reduce(x)
+  }) %>%
+  GRangesList()
+upStrings <- lapply(
+  upExons, 
+  function(x){
+    getSeq(dna, x) %>%
+      unlist()
+  }
+) %>%
+  DNAStringSet()
+upLengths <- vapply(upStrings, length, numeric(1)) %>%
+  enframe(name = "Geneid", value = "Length")
+```
+
+```{r deDown}
+deDown <- topTable %>%
+  dplyr::filter(DE) %>%
+  dplyr::filter(logFC < 0) %>%
+  .$Geneid
+downExons <- exonsBy(ensDb_Dr, by = "gene", filter = GeneIdFilter(deDown)) %>%
+  lapply(function(x){
+    GenomicRanges::reduce(x)
+  }) %>%
+  GRangesList()
+downStrings <- lapply(
+  downExons, 
+  function(x){
+    getSeq(dna, x) %>%
+      unlist() 
+  }
+) %>%
+  DNAStringSet()
+downLengths <- vapply(downStrings, length, numeric(1)) %>%
+  enframe(name = "Geneid", value = "Length")
+```
+
+## k = 8
+
+```{r}
+k8deUp <- k8topTable %>%
+  dplyr::filter(DE) %>%
+  dplyr::filter(logFC > 0) %>%
+  .$mer
+k8deDown <- k8topTable %>%
+  dplyr::filter(DE) %>%
+  dplyr::filter(logFC < 0) %>%
+  .$mer
+```
+
+```{r}
+k8overlapUU <- mclapply(
+  upStrings,
+  function(x){
+    vapply(
+      k8deUp,
+      function(y){
+        countPattern(y, x) %>%
+          as.logical() %>%
+          sum()
+      },
+      numeric(1)
+    ) %>%
+      sum()
+  },
+  mc.cores = cores
+) %>%
+  unlist() %>%
+  enframe(name = "Geneid", value = "Overlap") %>%
+  dplyr::arrange(desc(Overlap)) %>%
+  left_join(topTable) %>%
+  left_join(upLengths) %>%
+  dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>%
+  mutate(Norm = (Overlap / Length) * 1000) %>%
+  dplyr::arrange(desc(Norm))
+```
+
+```{r}
+# k8overlapDD <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k8deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
+```{r}
+# k8overlapUD <- mclapply(
+#   upStrings, 
+#   function(x){
+#     vapply(
+#       k8deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(upLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
+```{r}
+# k8overlapDU <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k8deUp, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
+## k = 9
+
+```{r}
+k9deUp <- k9topTable %>%
+  dplyr::filter(DE) %>%
+  dplyr::filter(logFC > 0) %>%
+  .$mer
+k9deDown <- k9topTable %>%
+  dplyr::filter(DE) %>%
+  dplyr::filter(logFC < 0) %>%
+  .$mer
+```
+
+```{r}
+# k9overlapUU <- mclapply(
+#   upStrings, 
+#   function(x){
+#     vapply(
+#       k9deUp, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   dplyr::arrange(desc(Overlap)) %>%
+#   left_join(topTable) %>%
+#   left_join(upLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
+```{r}
+# k9overlapDD <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k9deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
+```{r}
+# k9overlapUD <- mclapply(
+#   upStrings, 
+#   function(x){
+#     vapply(
+#       k9deDown, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(upLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
+```{r}
+# k9overlapDU <- mclapply(
+#   downStrings, 
+#   function(x){
+#     vapply(
+#       k9deUp, 
+#       function(y){
+#         countPattern(y, x) %>%
+#           as.logical() %>%
+#           sum()
+#       },
+#       numeric(1)
+#     ) %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "Overlap") %>%
+#   left_join(topTable) %>%
+#   left_join(downLengths) %>%
+#   dplyr::select(Geneid, Symbol, gene_biotype, AveExpr, logFC, P.Value, Bonf, Length, Overlap) %>% 
+#   mutate(Norm = (Overlap / Length) * 1000) %>%
+#   dplyr::arrange(desc(Norm))
+```
+
