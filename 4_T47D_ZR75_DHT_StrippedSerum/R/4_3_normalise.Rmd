@@ -1,0 +1,205 @@
+---
+title: "rRNADepletion_StrippedSerum"
+author: "Lachlan Baer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    fig_width: 8
+    fig_height: 6
+    fig_align: "center"
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r packages}
+library(tidyverse)
+library(magrittr)
+library(parallel)
+library(here)
+library(scales)
+library(AnnotationHub)
+library(Biostrings)
+library(Rsamtools)
+```
+
+```{r options}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+cores <- detectCores() - 2
+```
+
+```{r loadObjects}
+load(here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/4_1_DE.RData"))
+load(here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/4_2_kmer.RData"))
+```
+
+```{r ah}
+ah <- AnnotationHub() %>%
+  subset(species == "Homo sapiens") %>%
+  subset(rdataclass == "EnsDb")
+ensDb <- ah[["AH83216"]]
+```
+
+# Exploration
+
+Now that differential expression of $k$-mers has been detected, the next step is to develop a normalisation method that can lessen the extent of gene-level differential expression bias due to presence of particular $k$-mers. The initial aim of this exploration is to define a single value per gene, $\kappa$, that represents the magnitude of bias due to the genes constituent $k$-mers.
+
+## Using logFC
+
+In an initial attempt to develop a value for $\kappa$, logFC values from previously derived $k$-mer differential expression testing will be evaluated. Firstly, for each gene's coding sequence, a count for the presence of all detected $k$-mers will be calculated. This count, $n$, will then be multiplied by the $k$-mers logFC value to determine $\kappa$: \[\kappa = n_1LFC_1 + n_2LFC_2 + n_3LFC_3\]
+
+```{r ids}
+ids <- res_r$Geneid
+```
+
+```{r}
+## Coding sequences were saved to speed up document
+cds <- exonsBy(ensDb, by = "gene", filter = GeneIdFilter(ids)) %>%
+  lapply(function(x){
+    GenomicRanges::reduce(x)
+  }) %>%
+  GRangesList()
+saveRDS(cds, here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/cds.Rds"))
+cds <- readRDS(here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/cds.Rds"))
+```
+
+```{r}
+seqs <- mclapply(
+  cds, 
+  function(x){
+    getSeq(
+      FaFile(
+        file = "/hpcfs/users/a1647910/refs/ensembl-release-101/homo_sapiens/Homo_sapiens.GRCh38.dna.primary_assembly.fa", 
+        index = "/hpcfs/users/a1647910/refs/ensembl-release-101/homo_sapiens/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai"), 
+      x
+    ) %>%
+      unlist() 
+  },
+  mc.cores = cores
+)
+```
+
+### k = 5
+
+```{r}
+k5mers <- k5topTable$mer
+```
+
+```{r}
+# k5list <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k5mers,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     ) 
+#   },
+#   mc.cores = cores
+# )
+# saveRDS(k5list, here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k5list.Rds"))
+k5list <- readRDS(here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k5list.Rds"))
+```
+
+```{r}
+k5bias <- mclapply(
+  k5list,
+  function(x){
+    x %>%
+      enframe(name = "mer", value = "n") %>%
+      left_join(k5topTable) %>%
+      dplyr::select(mer, n, logFC) %>%
+      mutate(bias = n * logFC) %>%
+      .$bias %>%
+      sum()
+  },
+  mc.cores = cores
+) %>%
+  unlist() %>%
+  enframe(name = "Geneid", value = "bias")
+## 2176.81 sec elapsed
+```
+
+```{r}
+k5bias %>%
+  left_join(res_r) %>%
+  mutate(bias = bias / maxLen) %>%
+  ggplot(aes(bias, -log10(P.Value))) +
+  geom_point()
+
+k5bias %>%
+  left_join(res_r) %>%
+  ggplot(aes(bias, log10(maxLen))) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+### k = 7
+
+```{r}
+k7mers <- k7topTable$mer
+```
+
+```{r}
+k7list <- mclapply(
+  seqs,
+  function(x){
+    vapply(
+      k7mers,
+      function(y){countPattern(y, x)},
+      numeric(1)
+    )
+  },
+  mc.cores = cores
+)
+saveRDS(k7list, here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k7list.Rds"))
+k7list <- readRDS(here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k7list.Rds"))
+k7bias <- mclapply(
+  k7list,
+  function(x){
+    x %>%
+      enframe(name = "mer", value = "n") %>%
+      left_join(k7topTable) %>%
+      dplyr::select(mer, n, logFC) %>%
+      mutate(bias = n * logFC) %>%
+      .$bias %>%
+      sum()
+  },
+  mc.cores = cores
+) %>%
+  unlist() %>%
+  enframe(name = "Geneid", value = "bias")
+```
+
+```{r}
+k7bias %>%
+  left_join(res_r) %>%
+  mutate(bias = bias / maxLen) %>%
+  ggplot(aes(log10(maxLen), -log10(P.Value))) +
+  geom_point()
+```
+
+```{r}
+k7bias %>%
+  dplyr::rename(k7bias = bias) %>%
+  left_join(k5bias) %>%
+  ggplot(aes(k7bias, bias)) +
+  geom_point()
+```

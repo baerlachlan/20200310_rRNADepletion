@@ -47,7 +47,7 @@ library(ggdendro)
 ```{r options}
 if (interactive()) setwd(here::here())
 theme_set(theme_bw())
-cores <- detectCores() - 1
+cores <- detectCores() - 2
 ```
 
 ```{r loadObjects}
@@ -1234,6 +1234,12 @@ k10topTable %>%
 
 ```{r saveObjects}
 save(
+  k5counts,
+  k6counts,
+  k7counts,
+  k8counts,
+  k9counts,
+  k10counts,
   k5topTable,
   k6topTable,
   k7topTable,

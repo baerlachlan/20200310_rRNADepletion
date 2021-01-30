@@ -1,5 +1,5 @@
 ---
-title: "rRNADepletion_s4ter"
+title: "rRNADepletion_StrippedSerum"
 author: "Lachlan Baer"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
@@ -47,7 +47,7 @@ library(ggdendro)
 ```{r options}
 if (interactive()) setwd(here::here())
 theme_set(theme_bw())
-cores <- detectCores() - 1
+cores <- detectCores() - 2
 ```
 
 ```{r loadObjects}
@@ -1141,7 +1141,7 @@ k8topTable %>%
   #   aes(label = mer, color = "black")
   # ) +
   labs(x = "logFC", y = expression(paste(-log[10], "(p)")), title = "k = 8") +
-  theme_bw() +
+  theme_bw() +r
   theme(legend.position = "none")
 ```
 
@@ -1231,6 +1231,12 @@ k10topTable %>%
 
 ```{r saveObjects}
 save(
+  k5counts,
+  k6counts,
+  k7counts,
+  k8counts,
+  k9counts,
+  k10counts,
   k5topTable,
   k6topTable,
   k7topTable,

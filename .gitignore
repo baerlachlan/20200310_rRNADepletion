@@ -1,4 +1,7 @@
-## General
+## Project specific
+oldR/
+k*list.Rds
+*.RData
 
 # *tar #This was ignoring 3_alignedDataStar
 *tar.gz

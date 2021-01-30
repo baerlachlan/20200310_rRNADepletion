@@ -1,0 +1,670 @@
+---
+title: "rRNADepletion_s4ter"
+author: "Lachlan Baer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    fig_width: 8
+    fig_height: 6
+    fig_align: "center"
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE, 
+  fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r packages}
+library(tidyverse)
+library(magrittr)
+library(parallel)
+library(here)
+library(scales)
+library(AnnotationHub)
+library(Biostrings)
+library(Rsamtools)
+library(cqn)
+library(DT)
+library(edgeR)
+library(msigdbr)
+library(fgsea)
+```
+
+```{r options}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+cores <- detectCores() - 2
+```
+
+```{r loadObjects}
+load(here::here("1_Psen2S4Ter/R/output/1_1_DE.RData"))
+load(here::here("1_Psen2S4Ter/R/output/1_2_kmer.RData"))
+```
+
+```{r ah}
+ah <- AnnotationHub() %>%
+  subset(species == "Danio rerio") %>%
+  subset(rdataclass == "EnsDb")
+ensDb <- ah[["AH83189"]]
+```
+
+# Exploration
+
+Now that differential expression of $k$-mers has been detected, the next step is to develop a normalisation method that can lessen the extent of gene-level differential expression bias due to presence of particular $k$-mers. The initial aim of this exploration is to define a single value per gene, $\kappa$, that represents the magnitude of bias due to the genes constituent $k$-mers.
+
+## Using logFC
+
+In an initial attempt to develop a value for $\kappa$, logFC values from previously derived $k$-mer differential expression testing will be evaluated. Firstly, for each gene's coding sequence, a count for the presence of all detected $k$-mers will be calculated. This count, $n$, will then be multiplied by the $k$-mers logFC value to determine $\kappa$: \[\kappa = n_1LFC_1 + n_2LFC_2 + n_3LFC_3\]
+
+```{r ids}
+ids <- res_r$Geneid
+```
+
+```{r}
+# ## Coding sequences were saved to speed up document
+# cds <- exonsBy(ensDb, by = "gene", filter = GeneIdFilter(ids)) %>%
+#   lapply(function(x){
+#     GenomicRanges::reduce(x)
+#   }) %>%
+#   GRangesList()
+# saveRDS(cds, here::here("1_Psen2S4Ter/R/output/cds.Rds"))
+```
+
+```{r}
+# cds <- readRDS(here::here("1_Psen2S4Ter/R/output/cds.Rds"))
+# seqs <- mclapply(
+#   cds,
+#   function(x){
+#     getSeq(
+#       FaFile(
+#         file = "/hpcfs/users/a1647910/refs/ensembl-release-101/danio_rerio/Danio_rerio.GRCz11.dna.primary_assembly.fa",
+#         index = "/hpcfs/users/a1647910/refs/ensembl-release-101/danio_rerio/Danio_rerio.GRCz11.dna.primary_assembly.fa.fai"),
+#       x
+#     ) %>%
+#       unlist()
+#   },
+#   mc.cores = cores
+# )
+```
+
+### k = 5
+
+```{r}
+k5mers <- k5topTable$mer
+```
+
+```{r}
+# k5list <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k5mers,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     ) 
+#   },
+#   mc.cores = cores
+# )
+# saveRDS(k5list, here::here("1_Psen2S4Ter/R/output/k5list.Rds"))
+k5list <- readRDS(here::here("1_Psen2S4Ter/R/output/k5list.Rds"))
+```
+
+```{r}
+k5bias <- mclapply(
+  k5list,
+  function(x){
+    x %>%
+      enframe(name = "mer", value = "n") %>%
+      left_join(k5topTable) %>%
+      dplyr::select(mer, n, logFC) %>%
+      mutate(bias = n * logFC) %>%
+      .$bias %>%
+      sum()
+  },
+  mc.cores = cores
+) %>%
+  unlist() %>%
+  enframe(name = "Geneid", value = "bias")
+## 2176.81 sec elapsed
+```
+
+```{r}
+k5bias %>%
+  left_join(res_r) %>%
+  mutate(bias = bias / maxLen) %>%
+  ggplot(aes(bias, -log10(P.Value))) +
+  geom_point()
+
+k5bias %>%
+  left_join(res_r) %>%
+  ggplot(aes(bias, log10(maxLen))) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+################################################################################
+
+```{r logFC}
+# glfc <- tibble(Geneid = rownames(k5Mat)) %>% 
+#   left_join(res_r) %>% 
+#   .$logFC
+# klfc <- tibble(Geneid = rownames(k5Mat)) %>% 
+#   left_join(res_r) %>% 
+#   .$logFC
+```
+
+```{r}
+# k5list <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k5mers,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     ) 
+#   },
+#   mc.cores = cores
+# )
+# ## 2168.777 sec elapsed
+# k5Mat <- do.call(rbind, k5list)
+# kBias <- t(t(k5Mat) %*% fcTable$logFC) %>%
+#   as.data.frame() %>%
+#   unlist()
+# k5Mat %*% kBias %>% 
+#   as_tibble(rownames = "Geneid")
+```
+
+### k = 7
+
+```{r}
+k7mers <- k7topTable$mer
+```
+
+```{r}
+# k7list <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k7mers,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     )
+#   },
+#   mc.cores = cores
+# )
+# saveRDS(k7list, here::here("1_Psen2S4Ter/R/output/k7list.Rds"))
+k7list <- readRDS(here::here("1_Psen2S4Ter/R/output/k7list.Rds"))
+k7bias <- mclapply(
+  k7list,
+  function(x){
+    x %>%
+      enframe(name = "mer", value = "n") %>%
+      left_join(k7topTable) %>%
+      dplyr::select(mer, n, logFC) %>%
+      mutate(bias = n * logFC) %>%
+      .$bias %>%
+      sum()
+  },
+  mc.cores = cores
+) %>%
+  unlist() %>%
+  enframe(name = "Geneid", value = "bias")
+```
+
+```{r}
+k7bias %>%
+  left_join(res_r) %>%
+  mutate(bias = bias / maxLen) %>%
+  ggplot(aes(log10(maxLen), -log10(P.Value))) +
+  geom_point()
+```
+
+```{r}
+k7bias %>%
+  dplyr::rename(k7bias = bias) %>%
+  left_join(k5bias) %>%
+  ggplot(aes(k7bias, bias)) +
+  geom_point()
+```
+
+### k = 8
+
+```{r}
+# k8mers <- k8topTable$mer
+```
+
+```{r}
+# k8list <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k8mers,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     )
+#   },
+#   mc.cores = cores
+# )
+# saveRDS(k8list, here::here("1_Psen2S4Ter/R/output/k8list.Rds"))
+# k8list <- readRDS(here::here("1_Psen2S4Ter/R/output/k8list.Rds"))
+# k8bias <- mclapply(
+#   k8list,
+#   function(x){
+#     x %>%
+#       enframe(name = "mer", value = "n") %>%
+#       left_join(k8topTable) %>%
+#       dplyr::select(mer, n, logFC) %>%
+#       mutate(bias = n * logFC) %>%
+#       .$bias %>%
+#       sum()
+#   },
+#   mc.cores = cores
+# ) %>%
+#   unlist() %>%
+#   enframe(name = "Geneid", value = "bias")
+# ## 65206.859 sec elapsed (18 hours)
+```
+
+```{r}
+# k8bias %>%
+#   left_join(res_r) %>%
+#   mutate(bias = bias / maxLen) %>%
+#   ggplot(aes(log10(maxLen), -log10(P.Value))) +
+#   geom_point()
+```
+
+# CQN
+
+```{r}
+## Used in meeting
+k5bias <- k5bias %>%
+  left_join(res_r) %>%
+  mutate(biasLen = bias / maxLen)
+k7bias <- k7bias %>%
+  left_join(res_r) %>%
+  mutate(biasLen = bias / maxLen)
+```
+
+```{r}
+cqn <- cqn(
+  dgeFilt$counts, 
+  x = k7bias$biasLen,
+  lengths = mcols(dgeFilt$genes)$maxLen,
+  sizeFactors = dgeFilt$samples$lib.size
+)
+```
+
+```{r}
+dgeFilt$offset <- cqn$glm.offset
+```
+
+```{r}
+displayRes_de <- function(x){
+  de <- x %>%
+    dplyr::filter(DE)
+  de %>%
+    dplyr::slice(1:1000) %>%
+    dplyr::select(-gene_biotype, -coef, -DE) %>%
+    mutate(across(c("P.Value", "FDR", "Bonf"), ~ sprintf("%.2e", .x))) %>%
+    datatable(
+      options = list(pageLength = 10), 
+      class = "striped hover condensed responsive", 
+      filter = "top",
+      caption = paste0(
+        x$coef[1],
+        ": ",
+        nrow(de),
+        " of ",
+        nrow(x),
+        " genes were classified as differentially expressed ",
+        "with a FDR < 0.05. ",
+        "If more than 1000 genes were classified as DE, only the top 1000 are shown."
+      )
+    ) %>%
+    formatRound(c("logFC", "logCPM", "F"), digits = 2)
+}
+```
+
+```{r}
+dgeCqn <- dgeFilt
+dgeCqn$offset <- cqn$glm.offset
+design <- model.matrix(~rRNA, data = dgeCqn$samples)
+topTableCqn <- estimateGLMCommonDisp(dgeCqn) %>%
+  glmFit(design) %>%
+  glmLRT() %>%
+  topTags(n = Inf, adjust.method = "fdr", sort.by = "p") %>%
+  .$table %>%
+  as_tibble() %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  mutate(Bonf = p.adjust(PValue, "bonferroni")) %>%
+  mutate(DE = Bonf < 0.05) %>%
+  unite(Location, c(seqnames, start, end, width, strand), sep = ":") %>%
+  dplyr::select(
+    Geneid = gene_id,
+    Symbol = gene_name,
+    logFC,
+    P.Value = PValue,
+    FDR,
+    Location,
+    DE,
+    everything()
+  ) %>%
+  as_tibble()
+```
+
+## rRNA
+
+```{r}
+designCqn_r <- model.matrix(~rRNA, data = dgeFilt$samples)
+```
+
+```{r}
+fitCqn_r <- dgeFilt %>%
+  estimateDisp(design = designCqn_r) %>%
+  glmQLFit() 
+```
+
+```{r}
+resCqn_r <- glmQLFTest(fitCqn_r) %>%
+  topTags(n = Inf) %>%
+  .[["table"]] %>%
+  rename_all(
+    str_remove, pattern = "ID."
+  ) %>%
+  dplyr::select(
+    Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+    P.Value = PValue, FDR, aveLen, maxLen, aveGc, longestGc
+  ) %>%
+  as_tibble() %>%
+  mutate(
+    Bonf = p.adjust(P.Value, "bonf"),
+    DE = FDR < 0.05
+  )
+```
+
+```{r}
+resCqn_r %>%
+  dplyr::filter(DE) %>%
+  dplyr::slice(1:1000) %>%
+  dplyr::select(-gene_biotype, -DE) %>%
+  mutate(across(c("P.Value", "FDR", "Bonf"), ~ sprintf("%.2e", .x))) %>%
+  datatable(
+    options = list(pageLength = 10), 
+    class = "striped hover condensed responsive", 
+    filter = "top",
+    caption = paste0(
+      "rRNA: ",
+      nrow(dplyr::filter(resCqn_r, DE)),
+      " of ",
+      nrow(.),
+      " genes were classified as differentially expressed ",
+      "with a FDR < 0.05. ",
+      "If more than 1000 genes were classified as DE, only the top 1000 are shown."
+    )
+  ) %>%
+  formatRound(c("logFC", "logCPM", "F"), digits = 2)
+```
+
+
+## Genotype
+
+```{r}
+designCqn_g <- model.matrix(~group, data = dgeFilt$samples)
+```
+
+```{r}
+fitCqn_g <- dgeFilt %>%
+  estimateDisp(design = designCqn_g) %>%
+  glmQLFit() 
+```
+
+```{r}
+resCqn_g <- colnames(designCqn_g) %>%
+  str_subset("Intercept", negate = TRUE) %>%
+  sapply(function(x){
+    glmQLFTest(fitCqn_g, coef = x) %>%
+      topTags(n = Inf) %>%
+      .[["table"]] %>%
+      rename_all(
+        str_remove, pattern = "ID."
+      ) %>%
+      dplyr::select(
+        Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+        P.Value = PValue, FDR
+      ) %>%
+      as_tibble() %>%
+      mutate(
+        Bonf = p.adjust(P.Value, "bonf"), 
+        coef = x,
+        DE = FDR < 0.05
+      )
+  },
+  simplify = FALSE)
+```
+
+```{r}
+displayRes_de(resCqn_g$groupHeter)
+displayRes_de(resCqn_g$groupHom)
+```
+
+# Enrichment
+
+```{r}
+entrezGenes <- mcols(dgeList$genes) %>%
+  as.data.frame() %>%
+  dplyr::filter(!is.na(entrezid)) %>%
+  unnest(cols = entrezid) %>%
+  dplyr::rename(entrez_gene = entrezid)
+```
+
+```{r}
+ranksCqn_r <- resCqn_r %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+```
+
+```{r}
+ranksCqn_g <- resCqn_g %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+```
+
+```{r}
+displayRes_enrich <- function(x, cap){
+  x %>%
+    unnest(cols = leadingEdge) %>%
+    group_by(pathway) %>%
+    mutate(
+      leadingSize = n(),
+      pathway = str_remove(pathway, "HALLMARK_|KEGG_|WP_"),
+      pathway = str_trunc(pathway, 33)
+    ) %>%
+    distinct(pathway, .keep_all = TRUE) %>%
+    dplyr::select(-leadingEdge) %>%
+    mutate(across(c("pval", "FDR", "padj"), ~ sprintf("%.2e", .x))) %>%
+    datatable(
+      options = list(pageLength = 10), 
+      class = "striped hover condensed responsive", 
+      filter = "top",
+      caption = paste(cap)
+    ) %>%
+    formatRound(c("log2err", "ES", "NES"), digits = 2)
+}
+```
+
+## Databases
+
+```{r}
+hm <- msigdbr("Danio rerio", category = "H")  %>% 
+  left_join(entrezGenes) %>%
+  dplyr::filter(!is.na(gene_id)) %>%
+  distinct(gs_name, gene_id, .keep_all = TRUE)
+hmByGene <- hm %>%
+  split(f = .$gene_id) %>%
+  lapply(extract2, "gs_name")
+hmByID <- hm %>%
+  split(f = .$gs_name) %>%
+  lapply(extract2, "gene_id")
+```
+
+```{r}
+kg <- msigdbr("Danio rerio", category = "C2", subcategory = "CP:KEGG")  %>% 
+  left_join(entrezGenes) %>%
+  dplyr::filter(!is.na(gene_id)) %>%
+  distinct(gs_name, gene_id, .keep_all = TRUE)
+kgByGene <- kg  %>%
+  split(f = .$gene_id) %>%
+  lapply(extract2, "gs_name")
+kgByID <- kg  %>%
+  split(f = .$gs_name) %>%
+  lapply(extract2, "gene_id")
+```
+
+```{r}
+wk <- msigdbr("Danio rerio", category = "C2", subcategory = "CP:WIKIPATHWAYS")  %>% 
+  left_join(entrezGenes) %>%
+  dplyr::filter(!is.na(gene_id)) %>%
+  distinct(gs_name, gene_id, .keep_all = TRUE)
+wkByGene <- wk  %>%
+  split(f = .$gene_id) %>%
+  lapply(extract2, "gs_name")
+wkByID <- wk  %>%
+  split(f = .$gs_name) %>%
+  lapply(extract2, "gene_id")
+```
+
+```{r}
+gsSizes <- bind_rows(hm, kg, wk) %>% 
+  dplyr::select(gs_name, gene_symbol, gene_id) %>% 
+  chop(c(gene_symbol, gene_id)) %>%
+  mutate(
+    gs_size = vapply(gene_symbol, length, integer(1))
+  )
+```
+
+## Hallmark
+
+### rRNA
+
+```{r}
+fgseaCqn_r_hm <-fgsea(hmByID, ranksCqn_r, eps = 0) %>%
+  as_tibble() %>%
+  dplyr::rename(FDR = padj) %>%
+  mutate(padj = p.adjust(pval, "bonferroni")) %>%
+  dplyr::arrange(pval)
+```
+
+```{r}
+displayRes_enrich(fgseaCqn_r_hm, "rRNA")
+```
+
+### Genotype
+
+```{r}
+fgseaCqn_g_hm <- ranksCqn_g %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgseaCqn_g_hm$groupHeter, "groupHeter")
+displayRes_enrich(fgseaCqn_g_hm$groupHom, "groupHom")
+```
+
+## KEGG
+
+### rRNA
+
+```{r}
+fgseaCqn_r_kg <-fgsea(kgByID, ranksCqn_r, eps = 0) %>%
+  as_tibble() %>%
+  dplyr::rename(FDR = padj) %>%
+  mutate(padj = p.adjust(pval, "bonferroni")) %>%
+  dplyr::arrange(pval)
+```
+
+```{r}
+displayRes_enrich(fgseaCqn_r_kg, "rRNA")
+```
+
+### Genotype
+
+```{r}
+fgseaCqn_g_kg <- ranksCqn_g %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgseaCqn_g_kg$groupHeter, "groupHeter")
+displayRes_enrich(fgseaCqn_g_kg$groupHom, "groupHom")
+```
+
+## Wikipathways
+
+### rRNA
+
+```{r}
+fgseaCqn_r_wk <-fgsea(wkByID, ranksCqn_r, eps = 0) %>%
+  as_tibble() %>%
+  dplyr::rename(FDR = padj) %>%
+  mutate(padj = p.adjust(pval, "bonferroni")) %>%
+  dplyr::arrange(pval)
+```
+
+```{r}
+displayRes_enrich(fgseaCqn_r_wk, "rRNA")
+```
+
+### Genotype
+
+```{r}
+fgseaCqn_g_wk <- ranksCqn_g %>%
+  lapply(function(x){
+    fgsea(wkByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgseaCqn_g_wk$groupHeter, "groupHeter")
+displayRes_enrich(fgseaCqn_g_wk$groupHom, "groupHom")
+```
+
+# Session info
+
+```{r seshInfo}
+sessionInfo()
+```

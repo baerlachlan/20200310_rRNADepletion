@@ -1,6 +1,6 @@
 #!bin/bash
 
-## This script was merges raw FASTQ files from the T47D_ZR75_DHT_StrippedSerum dataset for each sample that was split over 2 lanes
+## This script merges raw FASTQ files from the T47D_ZR75_DHT_StrippedSerum dataset for each sample that was split over 2 lanes
 
 ## Directory
 PROJROOT=/hpcfs/users/a1647910/20200310_rRNADepletion/4_T47D_ZR75_DHT_StrippedSerum
