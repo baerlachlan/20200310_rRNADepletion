@@ -158,18 +158,18 @@ k7mers <- k7topTable$mer
 ```
 
 ```{r}
-k7list <- mclapply(
-  seqs,
-  function(x){
-    vapply(
-      k7mers,
-      function(y){countPattern(y, x)},
-      numeric(1)
-    )
-  },
-  mc.cores = cores
-)
-saveRDS(k7list, here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k7list.Rds"))
+# k7list <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k7mers,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     )
+#   },
+#   mc.cores = cores
+# )
+# saveRDS(k7list, here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k7list.Rds"))
 k7list <- readRDS(here::here("4_T47D_ZR75_DHT_StrippedSerum/R/output/k7list.Rds"))
 k7bias <- mclapply(
   k7list,
@@ -188,18 +188,176 @@ k7bias <- mclapply(
   enframe(name = "Geneid", value = "bias")
 ```
 
+# CQN
+
 ```{r}
-k7bias %>%
+## Used in meeting
+k5bias <- k5bias %>%
   left_join(res_r) %>%
-  mutate(bias = bias / maxLen) %>%
-  ggplot(aes(log10(maxLen), -log10(P.Value))) +
-  geom_point()
+  mutate(biasLen = bias / maxLen)
+k7bias <- k7bias %>%
+  left_join(res_r) %>%
+  mutate(biasLen = bias / maxLen)
 ```
 
 ```{r}
-k7bias %>%
-  dplyr::rename(k7bias = bias) %>%
-  left_join(k5bias) %>%
-  ggplot(aes(k7bias, bias)) +
-  geom_point()
+cqn <- cqn(
+  dgeFilt$counts, 
+  x = k7bias$biasLen,
+  lengths = mcols(dgeFilt$genes)$maxLen,
+  sizeFactors = dgeFilt$samples$lib.size
+)
+```
+
+```{r}
+dgeFilt$offset <- cqn$glm.offset
+```
+
+```{r}
+displayRes_de <- function(x){
+  de <- x %>%
+    dplyr::filter(DE)
+  de %>%
+    dplyr::slice(1:1000) %>%
+    dplyr::select(-gene_biotype, -coef, -DE) %>%
+    mutate(across(c("P.Value", "FDR", "Bonf"), ~ sprintf("%.2e", .x))) %>%
+    datatable(
+      options = list(pageLength = 10), 
+      class = "striped hover condensed responsive", 
+      filter = "top",
+      caption = paste0(
+        x$coef[1],
+        ": ",
+        nrow(de),
+        " of ",
+        nrow(x),
+        " genes were classified as differentially expressed ",
+        "with a FDR < 0.05. ",
+        "If more than 1000 genes were classified as DE, only the top 1000 are shown."
+      )
+    ) %>%
+    formatRound(c("logFC", "logCPM", "F"), digits = 2)
+}
+```
+
+```{r}
+dgeCqn <- dgeFilt
+dgeCqn$offset <- cqn$glm.offset
+design <- model.matrix(~rRNA, data = dgeCqn$samples)
+topTableCqn <- estimateGLMCommonDisp(dgeCqn) %>%
+  glmFit(design) %>%
+  glmLRT() %>%
+  topTags(n = Inf, adjust.method = "fdr", sort.by = "p") %>%
+  .$table %>%
+  as_tibble() %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  mutate(Bonf = p.adjust(PValue, "bonferroni")) %>%
+  mutate(DE = Bonf < 0.05) %>%
+  unite(Location, c(seqnames, start, end, width, strand), sep = ":") %>%
+  dplyr::select(
+    Geneid = gene_id,
+    Symbol = gene_name,
+    logFC,
+    P.Value = PValue,
+    FDR,
+    Location,
+    DE,
+    everything()
+  ) %>%
+  as_tibble()
+```
+
+## rRNA
+
+```{r}
+designCqn_r <- model.matrix(~rRNA, data = dgeFilt$samples)
+```
+
+```{r}
+fitCqn_r <- dgeFilt %>%
+  estimateDisp(design = designCqn_r) %>%
+  glmQLFit() 
+```
+
+```{r}
+resCqn_r <- glmQLFTest(fitCqn_r) %>%
+  topTags(n = Inf) %>%
+  .[["table"]] %>%
+  rename_all(
+    str_remove, pattern = "ID."
+  ) %>%
+  dplyr::select(
+    Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+    P.Value = PValue, FDR, aveLen, maxLen, aveGc, longestGc
+  ) %>%
+  as_tibble() %>%
+  mutate(
+    Bonf = p.adjust(P.Value, "bonf"),
+    DE = FDR < 0.05
+  )
+```
+
+```{r}
+resCqn_r %>%
+  dplyr::filter(DE) %>%
+  dplyr::slice(1:1000) %>%
+  dplyr::select(-gene_biotype, -DE) %>%
+  mutate(across(c("P.Value", "FDR", "Bonf"), ~ sprintf("%.2e", .x))) %>%
+  datatable(
+    options = list(pageLength = 10), 
+    class = "striped hover condensed responsive", 
+    filter = "top",
+    caption = paste0(
+      "rRNA: ",
+      nrow(dplyr::filter(resCqn_r, DE)),
+      " of ",
+      nrow(.),
+      " genes were classified as differentially expressed ",
+      "with a FDR < 0.05. ",
+      "If more than 1000 genes were classified as DE, only the top 1000 are shown."
+    )
+  ) %>%
+  formatRound(c("logFC", "logCPM", "F"), digits = 2)
+```
+
+
+## Genotype
+
+```{r}
+designCqn_g <- model.matrix(~group, data = dgeFilt$samples)
+```
+
+```{r}
+fitCqn_g <- dgeFilt %>%
+  estimateDisp(design = designCqn_g) %>%
+  glmQLFit() 
+```
+
+```{r}
+resCqn_g <- colnames(designCqn_g) %>%
+  str_subset("Intercept", negate = TRUE) %>%
+  sapply(function(x){
+    glmQLFTest(fitCqn_g, coef = x) %>%
+      topTags(n = Inf) %>%
+      .[["table"]] %>%
+      rename_all(
+        str_remove, pattern = "ID."
+      ) %>%
+      dplyr::select(
+        Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+        P.Value = PValue, FDR
+      ) %>%
+      as_tibble() %>%
+      mutate(
+        Bonf = p.adjust(P.Value, "bonf"), 
+        coef = x,
+        DE = FDR < 0.05
+      )
+  },
+  simplify = FALSE)
+```
+
+```{r}
+displayRes_de(resCqn_g$groupHeter)
+displayRes_de(resCqn_g$groupHom)
 ```

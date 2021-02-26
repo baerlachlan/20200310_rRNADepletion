@@ -85,20 +85,20 @@ ids <- res_r$Geneid
 ```
 
 ```{r}
-# cds <- readRDS(here::here("1_Psen2S4Ter/R/output/cds.Rds"))
-# seqs <- mclapply(
-#   cds,
-#   function(x){
-#     getSeq(
-#       FaFile(
-#         file = "/hpcfs/users/a1647910/refs/ensembl-release-101/danio_rerio/Danio_rerio.GRCz11.dna.primary_assembly.fa",
-#         index = "/hpcfs/users/a1647910/refs/ensembl-release-101/danio_rerio/Danio_rerio.GRCz11.dna.primary_assembly.fa.fai"),
-#       x
-#     ) %>%
-#       unlist()
-#   },
-#   mc.cores = cores
-# )
+cds <- readRDS(here::here("1_Psen2S4Ter/R/output/cds.Rds"))
+seqs <- mclapply(
+  cds,
+  function(x){
+    getSeq(
+      FaFile(
+        file = "/hpcfs/users/a1647910/refs/ensembl-release-101/danio_rerio/Danio_rerio.GRCz11.dna.primary_assembly.fa",
+        index = "/hpcfs/users/a1647910/refs/ensembl-release-101/danio_rerio/Danio_rerio.GRCz11.dna.primary_assembly.fa.fai"),
+      x
+    ) %>%
+      unlist()
+  },
+  mc.cores = cores
+)
 ```
 
 ### k = 5
@@ -239,6 +239,45 @@ k7bias %>%
   left_join(k5bias) %>%
   ggplot(aes(k7bias, bias)) +
   geom_point()
+```
+
+### k = 7 (DE only)
+
+```{r}
+k7mersDE <- k7topTable %>%
+  dplyr::filter(DE) %>%
+  .$mer
+```
+
+```{r}
+# k7listDE <- mclapply(
+#   seqs,
+#   function(x){
+#     vapply(
+#       k7mersDE,
+#       function(y){countPattern(y, x)},
+#       numeric(1)
+#     )
+#   },
+#   mc.cores = cores
+# )
+# saveRDS(k7listDE, here::here("1_Psen2S4Ter/R/output/k7listDE.Rds"))
+k7listDE <- readRDS(here::here("1_Psen2S4Ter/R/output/k7listDE.Rds"))
+k7biasDE <- mclapply(
+  k7listDE,
+  function(x){
+    x %>%
+      enframe(name = "mer", value = "n") %>%
+      left_join(k7topTable) %>%
+      dplyr::select(mer, n, logFC) %>%
+      mutate(bias = n * logFC) %>%
+      .$bias %>%
+      sum()
+  },
+  mc.cores = cores
+) %>%
+  unlist() %>%
+  enframe(name = "Geneid", value = "bias")
 ```
 
 ### k = 8
@@ -419,7 +458,6 @@ resCqn_r %>%
   formatRound(c("logFC", "logCPM", "F"), digits = 2)
 ```
 
-
 ## Genotype
 
 ```{r}
@@ -473,9 +511,9 @@ entrezGenes <- mcols(dgeList$genes) %>%
 
 ```{r}
 ranksCqn_r <- resCqn_r %>%
-      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
-      dplyr::arrange(stat) %>%
-      with(structure(stat, names = Geneid))
+  mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+  dplyr::arrange(stat) %>%
+  with(structure(stat, names = Geneid))
 ```
 
 ```{r}

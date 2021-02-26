@@ -226,9 +226,6 @@ k6dge$samples %<>%
   mutate(sample = rowname) %>%
   left_join(addInfo) %>%
   column_to_rownames("rowname")
-k6dge$samples$group <- colnames(k6dge) %>%
-  str_extract("(D|V)") %>%
-  factor(levels = c("D", "V"))
 ```
 
 ### Properties
@@ -906,6 +903,212 @@ k10eBayes <- eBayes(k10fit)
 ```{r k10topTable}
 k10topTable <- k10eBayes %>%
   topTable(coef = colnames(k10design)[2], sort.by = "p", n = Inf) %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  rownames_to_column("mer") %>%
+  mutate(BY = p.adjust(P.Value, "BY")) %>%
+  mutate(DE = BY < 0.05) %>%
+  dplyr::select(
+    mer,
+    AveExpr,
+    logFC,
+    P.Value,
+    FDR = adj.P.Val,
+    BY,
+    t,
+    DE,
+    everything(),
+    -B
+  ) %>%
+  as_tibble()
+```
+
+# Temp for seminar
+
+## k = 5
+
+```{r}
+k5dge_T <- k5dge[,k5dge$samples$cell_line == "T-47D"]
+```
+
+```{r k5DE}
+k5design_T <- model.matrix(~rRNA, data = k5dge_T$samples)
+k5voom_T <- voom(k5dge_T, design = k5design_T)
+k5fit_T <- lmFit(k5voom_T, design = k5design_T)
+k5eBayes_T <- eBayes(k5fit_T)
+```
+
+```{r k5topTable}
+k5topTable_T <- k5eBayes_T %>%
+  topTable(coef = colnames(k5design_T)[2], sort.by = "p", n = Inf) %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  rownames_to_column("mer") %>%
+  mutate(BY = p.adjust(P.Value, "BY")) %>%
+  mutate(DE = BY < 0.05) %>%
+  dplyr::select(
+    mer,
+    AveExpr,
+    logFC,
+    P.Value,
+    FDR = adj.P.Val,
+    BY,
+    t,
+    DE,
+    everything(),
+    -B
+  ) %>%
+  as_tibble()
+```
+
+```{r}
+k5dge_Z <- k5dge[,k5dge$samples$cell_line == "ZR-75-1"]
+```
+
+```{r k5DE}
+k5design_Z <- model.matrix(~rRNA, data = k5dge_Z$samples)
+k5voom_Z <- voom(k5dge_Z, design = k5design_Z)
+k5fit_Z <- lmFit(k5voom_Z, design = k5design_Z)
+k5eBayes_Z <- eBayes(k5fit_Z)
+```
+
+```{r k5topTable}
+k5topTable_Z <- k5eBayes_Z %>%
+  topTable(coef = colnames(k5design_Z)[2], sort.by = "p", n = Inf) %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  rownames_to_column("mer") %>%
+  mutate(BY = p.adjust(P.Value, "BY")) %>%
+  mutate(DE = BY < 0.05) %>%
+  dplyr::select(
+    mer,
+    AveExpr,
+    logFC,
+    P.Value,
+    FDR = adj.P.Val,
+    BY,
+    t,
+    DE,
+    everything(),
+    -B
+  ) %>%
+  as_tibble()
+```
+
+## k = 6
+
+```{r}
+k6dge_T <- k6dge[,k6dge$samples$cell_line == "T-47D"]
+```
+
+```{r k6DE}
+k6design_T <- model.matrix(~rRNA, data = k6dge_T$samples)
+k6voom_T <- voom(k6dge_T, design = k6design_T)
+k6fit_T <- lmFit(k6voom_T, design = k6design_T)
+k6eBayes_T <- eBayes(k6fit_T)
+```
+
+```{r k6topTable}
+k6topTable_T <- k6eBayes_T %>%
+  topTable(coef = colnames(k6design_T)[2], sort.by = "p", n = Inf) %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  rownames_to_column("mer") %>%
+  mutate(BY = p.adjust(P.Value, "BY")) %>%
+  mutate(DE = BY < 0.05) %>%
+  dplyr::select(
+    mer,
+    AveExpr,
+    logFC,
+    P.Value,
+    FDR = adj.P.Val,
+    BY,
+    t,
+    DE,
+    everything(),
+    -B
+  ) %>%
+  as_tibble()
+```
+
+```{r}
+k6dge_Z <- k6dge[,k6dge$samples$cell_line == "ZR-75-1"]
+```
+
+```{r k6DE}
+k6design_Z <- model.matrix(~rRNA, data = k6dge_Z$samples)
+k6voom_Z <- voom(k6dge_Z, design = k6design_Z)
+k6fit_Z <- lmFit(k6voom_Z, design = k6design_Z)
+k6eBayes_Z <- eBayes(k6fit_Z)
+```
+
+```{r k6topTable}
+k6topTable_Z <- k6eBayes_Z %>%
+  topTable(coef = colnames(k6design_Z)[2], sort.by = "p", n = Inf) %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  rownames_to_column("mer") %>%
+  mutate(BY = p.adjust(P.Value, "BY")) %>%
+  mutate(DE = BY < 0.05) %>%
+  dplyr::select(
+    mer,
+    AveExpr,
+    logFC,
+    P.Value,
+    FDR = adj.P.Val,
+    BY,
+    t,
+    DE,
+    everything(),
+    -B
+  ) %>%
+  as_tibble()
+```
+
+## k = 7
+
+```{r}
+k7dge_T <- k7dge[,k7dge$samples$cell_line == "T-47D"]
+```
+
+```{r k7DE}
+k7design_T <- model.matrix(~rRNA, data = k7dge_T$samples)
+k7voom_T <- voom(k7dge_T, design = k7design_T)
+k7fit_T <- lmFit(k7voom_T, design = k7design_T)
+k7eBayes_T <- eBayes(k7fit_T)
+```
+
+```{r k7topTable}
+k7topTable_T <- k7eBayes_T %>%
+  topTable(coef = colnames(k7design_T)[2], sort.by = "p", n = Inf) %>%
+  set_colnames(str_remove(colnames(.), "ID\\.")) %>%
+  rownames_to_column("mer") %>%
+  mutate(BY = p.adjust(P.Value, "BY")) %>%
+  mutate(DE = BY < 0.05) %>%
+  dplyr::select(
+    mer,
+    AveExpr,
+    logFC,
+    P.Value,
+    FDR = adj.P.Val,
+    BY,
+    t,
+    DE,
+    everything(),
+    -B
+  ) %>%
+  as_tibble()
+```
+
+```{r}
+k7dge_Z <- k7dge[,k7dge$samples$cell_line == "T-47D"]
+```
+
+```{r k7DE}
+k7design_Z <- model.matrix(~rRNA, data = k7dge_Z$samples)
+k7voom_Z <- voom(k7dge_Z, design = k7design_Z)
+k7fit_Z <- lmFit(k7voom_Z, design = k7design_Z)
+k7eBayes_Z <- eBayes(k7fit_Z)
+```
+
+```{r k7topTable}
+k7topTable_Z <- k7eBayes_Z %>%
+  topTable(coef = colnames(k7design_Z)[2], sort.by = "p", n = Inf) %>%
   set_colnames(str_remove(colnames(.), "ID\\.")) %>%
   rownames_to_column("mer") %>%
   mutate(BY = p.adjust(P.Value, "BY")) %>%

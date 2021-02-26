@@ -113,7 +113,7 @@ This is a polyA RNA-seq dataset generated from two families of zebrafish at diff
 
 ```{r files}
 files <- list.files(
-  path = "/hpcfs/users/a1647910/20200910_Hypoxia/0_rawData/FastQC",
+  path = "/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/0_rawData/FastQC",
   pattern = "zip",
   full.names = TRUE
 )
@@ -166,7 +166,7 @@ Raw libraries were trimmed using `cutadapt v1.14` to remove Illumina adapter seq
 
 ```{r trimFqc}
 trimFqc <- list.files(
-  path = "/hpcfs/users/a1647910/20200910_Hypoxia/1_trimmedData/FastQC",
+  path = "/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/1_trimmedData/FastQC",
   pattern = "zip",
   full.names = TRUE
 ) %>%
@@ -195,7 +195,7 @@ Trimmed reads were:
 
 ```{r rRnaProp}
 bwaMapped <- read.delim(
-  "/hpcfs/users/a1647910/20200910_Hypoxia/3_bwa/log/samples.mapped.all", 
+  "/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/3_bwa/log/samples.mapped.all", 
   sep = ":", 
   col.names = c("sample", "proportion"), 
   header = FALSE
