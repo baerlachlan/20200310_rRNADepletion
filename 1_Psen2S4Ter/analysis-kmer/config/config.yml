@@ -1,0 +1,18 @@
+fastq_ext: ".fastq.gz"
+
+pair_tags: ["_R1", "_R2"]
+
+ref:
+  species: "danio_rerio"
+  assembly: "GRCz11"
+  ensembl_release: 101
+  rrna: "/hpcfs/users/a1647910/20200310_rRNADepletion/rRNA_ref/rRNA_Ens_SILVA.fa"
+
+trim:
+  phred_qual: 20
+  length: 35
+  extra: ""
+
+align:
+  read_length: 150
+  extra: ""

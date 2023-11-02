@@ -1,0 +1,28 @@
+import os
+
+
+configfile: "config/config.yml"
+
+samples = os.listdir("/hpcfs/users/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/raw_data/fastq")
+samples = [sample.replace(config["fastq_ext"], "") for sample in samples]
+for tag in config["pair_tags"]:
+    samples = [sample.replace(tag, "") for sample in samples]
+samples = list(dict.fromkeys(samples))  ## Remove duplicates
+
+wildcard_constraints:
+    SAMPLE = "|".join([sample for sample in samples]),
+    PAIRTAG = "|".join([tag for tag in config["pair_tags"]])
+
+localrules: get_refs
+
+rule all:
+    input:
+        multiext("results/count/counts.out", "", ".summary"),
+        expand("results/jellyfish/k{K_SIZE}/{SAMPLE}.dumps", K_SIZE=["5", "6", "7", "8", "9", "10", "11", "12"], SAMPLE=samples),
+
+include: "rules/refs.smk"
+include: "rules/trim.smk"
+include: "rules/bwa.smk"
+include: "rules/star.smk"
+include: "rules/count.smk"
+include: "rules/jellyfish.smk"

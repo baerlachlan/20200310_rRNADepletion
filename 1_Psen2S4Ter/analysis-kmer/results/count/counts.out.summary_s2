@@ -1,0 +1,15 @@
+Status	results/star/bam/12_Ps2Ex3M1_WT_6month_07_07_2016_F3_95_Fem.bam	results/star/bam/2_Ps2Ex3M1_Heter_6month_07_07_2016_F3_81_Fem.bam	results/star/bam/3_Ps2Ex3M1_Heter_6month_07_07_2016_F3_84_Fem.bam	results/star/bam/9_Ps2Ex3M1_WT_6month_07_07_2016_F3_79_Fem.bam	results/star/bam/4_Ps2Ex3M1_Heter_6month_07_07_2016_F3_89_Fem.bam	results/star/bam/5_Ps2Ex3M1_Hom_6month_07_07_2016_F3_78_Fem.bam	results/star/bam/10_Ps2Ex3M1_WT_6month_07_07_2016_F3_86_Fem.bam	results/star/bam/7_Ps2Ex3M1_Hom_6month_07_07_2016_F3_83_Fem.bam	results/star/bam/8_Ps2Ex3M1_Hom_6month_07_07_2016_F3_85_Fem.bam	results/star/bam/11_Ps2Ex3M1_WT_6month_07_07_2016_F3_88_Fem.bam	results/star/bam/6_Ps2Ex3M1_Hom_6month_07_07_2016_F3_82_Fem.bam	results/star/bam/1_Ps2Ex3M1_Heter_6month_07_07_2016_F3_80_Fem.bam
+Assigned	11727137	11187429	10989122	9785071	10964310	10318730	13386948	10433775	11444376	11384814	10238559	10742993
+Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Read_Type	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Singleton	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MultiMapping	3783393	4437687	6234654	3434033	4522934	4248887	3164365	4074127	4315657	4559739	3738838	4414629
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NoFeatures	7828168	7327045	5289772	7799792	9598575	9279143	8183503	7581683	7417516	8454525	7518219	8320911
+Unassigned_Overlapping_Length	3406263	3102107	2705369	2877971	3338308	3051602	3555865	2943879	3236182	3340627	2897587	3125255
+Unassigned_Ambiguity	43884	37506	38492	41504	41488	38645	56053	35247	43649	42299	38353	38389

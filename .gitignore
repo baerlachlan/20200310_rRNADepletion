@@ -1,7 +1,18 @@
+## Python or snakemake workflow related
+**/.snakemake/
+*__pycache__*
+**.snakemake_timestamp
+**/workflow/log
+**/resources
+
 ## Project specific
 oldR/
 k*list.Rds
 *.RData
+*.fa
+*.fasta
+**/star/log/*
+**/results/jellyfish/*
 
 # *tar #This was ignoring 3_alignedDataStar
 *tar.gz
@@ -16,7 +27,7 @@ k*list.Rds
 *cram
 *bw
 *gtf
-slurm/
+# slurm/
 .Rproj.user
 .Rhistory
 *star_index*
