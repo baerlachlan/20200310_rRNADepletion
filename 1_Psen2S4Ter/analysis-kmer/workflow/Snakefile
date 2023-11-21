@@ -26,8 +26,12 @@ rule all:
             EXT=["zip", "html"]
             ),
         expand(
-            "results/{DATA}/{SAMPLE}_fastqc.{EXT}",
-            DATA=["bwa/FastQC_bam", "star/FastQC_bam"],
+            "results/star/FastQC_bam/{SAMPLE}_fastqc.{EXT}",
+            SAMPLE=samples,
+            EXT=["zip", "html"]
+            ),
+        expand(
+            "results/bwa/FastQC_bam/{SAMPLE}.sorted_fastqc.{EXT}",
             SAMPLE=samples,
             EXT=["zip", "html"]
             ),

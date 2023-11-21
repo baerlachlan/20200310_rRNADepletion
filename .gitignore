@@ -15,18 +15,18 @@ k*list.Rds
 **/results/jellyfish/*
 
 # *tar #This was ignoring 3_alignedDataStar
-*tar.gz
-*fq.gz
-*fa.gz
-*fastq.gz
-*truncated.gz
-*discarded.gz
-*sam
-*bam
-*bai
-*cram
-*bw
-*gtf
+*.tar.gz
+*.fq.gz
+*.fa.gz
+*.fastq.gz
+*.truncated.gz
+*.discarded.gz
+*.sam
+*.bam
+*.bai
+*.cram
+*.bw
+*.gtf
 # slurm/
 .Rproj.user
 .Rhistory
