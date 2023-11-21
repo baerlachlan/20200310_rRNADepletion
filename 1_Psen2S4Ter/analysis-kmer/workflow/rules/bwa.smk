@@ -29,8 +29,8 @@ rule bwa_unmapped_to_fq:
     input:
         bam = rules.bwa_align.output.bam
     output:
-        r1 = "results/bwa/fastq/{SAMPLE}_R1.fastq.gz",
-        r2 = "results/bwa/fastq/{SAMPLE}_R2.fastq.gz"
+        r1 = "results/bwa/fastq/{SAMPLE}_R1" + config["fastq_ext"],
+        r2 = "results/bwa/fastq/{SAMPLE}_R2" + config["fastq_ext"]
     conda:
         "../envs/samtools.yml"
     resources:

@@ -18,9 +18,23 @@ localrules: get_refs
 rule all:
     input:
         multiext("results/count/counts.out", "", ".summary"),
+        expand(
+            "results/{DATA}/{SAMPLE}{PAIRTAG}_fastqc.{EXT}",
+            DATA=["raw_data/FastQC", "trim_data/FastQC", "bwa/FastQC_fastq", "star/FastQC_fastq"],
+            SAMPLE=samples,
+            PAIRTAG=config["pair_tags"],
+            EXT=["zip", "html"]
+            ),
+        expand(
+            "results/{DATA}/{SAMPLE}_fastqc.{EXT}",
+            DATA=["bwa/FastQC_bam", "star/FastQC_bam"],
+            SAMPLE=samples,
+            EXT=["zip", "html"]
+            ),
         expand("results/jellyfish/k{K_SIZE}/{SAMPLE}.dumps", K_SIZE=["5", "6", "7", "8", "9", "10", "11", "12"], SAMPLE=samples),
 
 include: "rules/refs.smk"
+include: "rules/fastqc.smk"
 include: "rules/trim.smk"
 include: "rules/bwa.smk"
 include: "rules/star.smk"
