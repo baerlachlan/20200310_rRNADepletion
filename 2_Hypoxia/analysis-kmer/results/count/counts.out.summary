@@ -1,0 +1,15 @@
+Status	results/star/bam/24-MORGAN-24Q-PN4_S10_R1_001.bam	results/star/bam/19-MORGAN-24P-PN3_S1_R1_001.bam	results/star/bam/11-MORGAN-6P-PH3_S1_R1_001.bam	results/star/bam/5-MORGAN-6Q-PN1_S3_R1_001.bam	results/star/bam/9-MORGAN-6P-PH1_S7_R1_001.bam	results/star/bam/22-MORGAN-24Q-PN2_S6_R1_001.bam	results/star/bam/23-MORGAN-24Q-PN3_S9_R1_001.bam	results/star/bam/17-MORGAN-24P-PN1_S8_R1_001.bam	results/star/bam/4-MORGAN-6P-PN4_S8_R1_001.bam	results/star/bam/25-MORGAN-24P-PH1_S8_R1_001.bam	results/star/bam/6-MORGAN-6Q-PN2_S4_R1_001.bam	results/star/bam/18-MORGAN-24P-PN2_S9_R1_001.bam	results/star/bam/15-MORGAN-6Q-PH3_S4_R1_001.bam	results/star/bam/2-MORGAN-6P-PN2_S5_R1_001.bam	results/star/bam/21-MORGAN-24Q-PN1_S10_R1_001.bam	results/star/bam/28-MORGAN-24P-PH4_S4_R1_001.bam	results/star/bam/32-MORGAN-24Q-PH4_S3_R1_001.bam	results/star/bam/16-MORGAN-6Q-PH4_S6_R1_001.bam	results/star/bam/31-MORGAN-24Q-PH3_S1_R1_001.bam	results/star/bam/12-MORGAN-6P-PH4_S2_R1_001.bam	results/star/bam/29-MORGAN-24Q-PH1_S2_R1_001.bam	results/star/bam/30-MORGAN-24Q-PH2_S11_R1_001.bam	results/star/bam/27-MORGAN-24P-PH3_S5_R1_001.bam	results/star/bam/13-MORGAN-6Q-PH1_S7_R1_001.bam	results/star/bam/14-MORGAN-6Q-PH2_S5_R1_001.bam	results/star/bam/3-MORGAN-6P-PN3_S10_R1_001.bam	results/star/bam/10-MORGAN-6P-PH2_S9_R1_001.bam	results/star/bam/20-MORGAN-24P-PN4_S3_R1_001.bam	results/star/bam/26-MORGAN-24P-PH2_S7_R1_001.bam	results/star/bam/7-MORGAN-6Q-PN3_S6_R1_001.bam	results/star/bam/1-MORGAN-6P-PN1_S2_R1_001.bam	results/star/bam/8-MORGAN-6Q-PN4_S11_R1_001.bam
+Assigned	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Read_Type	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Singleton	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MultiMapping	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NoFeatures	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Overlapping_Length	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Ambiguity	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0

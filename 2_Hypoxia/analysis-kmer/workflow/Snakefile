@@ -1,0 +1,37 @@
+import os
+
+
+configfile: "config/config.yml"
+
+samples = os.listdir("/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/raw_data/fastq")
+samples = [sample.replace(config["fastq_ext"], "") for sample in samples]
+samples = list(dict.fromkeys(samples))  ## Remove duplicates
+
+wildcard_constraints:
+    SAMPLE = "|".join([sample for sample in samples])
+
+localrules: get_refs
+
+rule all:
+    input:
+        multiext("results/count/counts.out", "", ".summary"),
+        expand(
+            "results/{DATA}/{SAMPLE}_fastqc.{EXT}",
+            DATA=["raw_data/FastQC", "trim_data/FastQC", "bwa/FastQC_fastq", "star/FastQC_bam", "star/FastQC_fastq"],
+            SAMPLE=samples,
+            EXT=["zip", "html"]
+            ),
+        expand(
+            "results/bwa/FastQC_bam/{SAMPLE}.sorted_fastqc.{EXT}",
+            SAMPLE=samples,
+            EXT=["zip", "html"]
+            ),
+        expand("results/jellyfish/k{K_SIZE}/{SAMPLE}.dumps", K_SIZE=["5", "6", "7", "8", "9", "10", "11", "12"], SAMPLE=samples),
+
+include: "rules/refs.smk"
+include: "rules/fastqc.smk"
+include: "rules/trim.smk"
+include: "rules/bwa.smk"
+include: "rules/star.smk"
+include: "rules/count.smk"
+include: "rules/jellyfish.smk"
