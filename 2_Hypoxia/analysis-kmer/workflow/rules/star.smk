@@ -49,5 +49,5 @@ rule star_mapped_to_fq:
         time = "00-04:00:00",
     shell:
         """
-        samtools fastq -F 256 --threads {resources.cpu} -c 6 -1 {output.r1} {input.bam}
+        samtools fastq -F 4 --threads {resources.cpu} -c 6 -0 {output.r1} {input.bam}
         """

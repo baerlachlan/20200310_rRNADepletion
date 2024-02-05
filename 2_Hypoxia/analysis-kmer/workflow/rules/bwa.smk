@@ -38,7 +38,5 @@ rule bwa_unmapped_to_fq:
         time = "00-01:00:00",
     shell:
         """
-        samtools view -u -h -f 12 -F 256 {input.bam} \
-        | samtools sort -n \
-        | samtools fastq --threads {resources.cpu} -c 6 -1 {output.r1}
+        samtools fastq -f 4 --threads {resources.cpu} -c 6 -0 {output.r1} {input.bam}
         """
