@@ -1,0 +1,15 @@
+Status	results/align/bam/WT_86_Fem.bam	results/align/bam/WT_88_Fem.bam	results/align/bam/WT_95_Fem.bam	results/align/bam/Heter_80_Fem.bam	results/align/bam/Heter_81_Fem.bam	results/align/bam/Heter_84_Fem.bam	results/align/bam/Heter_89_Fem.bam	results/align/bam/Hom_78_Fem.bam	results/align/bam/Hom_82_Fem.bam	results/align/bam/Hom_83_Fem.bam	results/align/bam/Hom_85_Fem.bam	results/align/bam/WT_79_Fem.bam
+Assigned	16527201	15616953	15600644	16180984	17446180	16132523	16579844	15550166	15091109	16348100	17052091	12199691
+Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Read_Type	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Singleton	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MultiMapping	5158209	12970777	7987305	14146391	13325009	20957398	14590069	13658580	10224788	12405429	13107655	8000132
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NoFeatures	8246339	9346726	8408098	9584291	8616413	7743099	10548187	10268180	8379030	8693372	8486229	8151975
+Unassigned_Overlapping_Length	3711486	3583062	3621218	3410547	3425582	2993343	3675321	3342016	3145948	3250620	3520954	3017684
+Unassigned_Ambiguity	56010	42320	43915	38394	37501	38498	41493	38655	38366	35246	43662	41515

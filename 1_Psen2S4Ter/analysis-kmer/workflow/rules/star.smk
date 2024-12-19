@@ -12,16 +12,15 @@ rule star_align:
         align_dir = "results/star"
     conda:
         "../envs/star.yml"
+    threads: 16
     resources:
-        cpu = 16,
-        ntasks = 1,
         mem_mb = 32000,
-        time = "00-04:00:00",
+        runtime = 240,
     shell:
         """
         STAR \
             --genomeDir {input.star_index}\
-            --runThreadN {resources.cpu} \
+            --runThreadN {threads} \
             --readFilesIn {input.r1} {input.r2} \
             --readFilesCommand "gunzip -c" \
             --outSAMtype BAM Unsorted \
@@ -41,15 +40,14 @@ rule star_mapped_to_fq:
         bam = rules.star_align.output.bam
     output:
         r1 = "results/star/fastq/{SAMPLE}_R1" + config["fastq_ext"],
-        r2 = "results/star/fastq/{SAMPLE}_R2" + config["fastq_ext"]
+        r2 = "results/star/fastq/{SAMPLE}_R2" + config["fastq_ext"],
     conda:
         "../envs/samtools.yml"
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
         mem_mb = 8000,
-        time = "00-04:00:00",
+        runtime = 240,
     shell:
         """
-        samtools fastq -F 256 --threads {resources.cpu} -c 6 -1 {output.r1} -2 {output.r2} {input.bam}
+        samtools fastq -F 256 --threads {threads} -c 6 -1 {output.r1} -2 {output.r2} {input.bam}
         """

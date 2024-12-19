@@ -12,11 +12,10 @@ rule trim:
         extra = config["trim"]["extra"],
     conda:
         "../envs/trim.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
         mem_mb = 4000,
-        time = "00-02:00:00",
+        runtime = 120,
     shell:
         """
         fastp \

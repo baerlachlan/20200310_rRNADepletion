@@ -39,15 +39,14 @@ rule get_refs:
     input:
         ref_rrna = rrna,
     output:
-        ref_fa = temp(fa_path),
-        ref_gtf = temp(gtf_path),
+        ref_fa = fa_path,
+        ref_gtf = gtf_path,
         ref_rrna = rrna_path
     params:
         fa_gz_url = fa_gz_url,
         fa_gz_path = fa_gz_path,
         gtf_url = gtf_url,
-    threads:
-        1
+    threads: 1
     shell:
         """
         rsync -avP {params.fa_gz_url} {params.fa_gz_path}
@@ -61,22 +60,21 @@ rule star_index:
         ref_fa = rules.get_refs.output.ref_fa,
         ref_gtf = rules.get_refs.output.ref_gtf,
     output:
-        temp(directory("resources/star")),
+        directory("resources/star"),
     params:
         overhang = config["align"]["read_length"] - 1,
     conda:
         "../envs/star.yml"
+    threads: 16
     resources:
-        cpu = 16,
-        ntasks = 1,
         mem_mb = 32000,
-        time = "00-01:30:00",
+        runtime = 90,
     shell:
         """
         zcat {input.ref_gtf} > temp.gtf
 
         STAR \
-            --runThreadN {resources.cpu} \
+            --runThreadN {threads} \
             --runMode genomeGenerate \
             --genomeDir {output} \
             --genomeFastaFiles {input.ref_fa} \
@@ -93,11 +91,10 @@ rule bwa_index:
         multiext(rules.get_refs.output.ref_rrna, ".amb", ".ann", ".bwt", ".pac", ".sa"),
     conda:
         "../envs/bwa.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
         mem_mb = 1000,
-        time = "00-00:10:00",
+        runtime = 10,
     shell:
         """
         bwa index {input}

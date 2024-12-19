@@ -11,14 +11,13 @@ rule bwa_align:
         rrna_props = "results/bwa/rrna_props/{SAMPLE}.rrna"
     conda:
         "../envs/bwa.yml"
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
         mem_mb = 16000,
-        time = "00-02:00:00",
+        runtime = 120,
     shell:
         """
-        bwa mem -t {resources.cpu} {input.ref_rrna} {input.r1} {input.r2} \
+        bwa mem -t {threads} {input.ref_rrna} {input.r1} {input.r2} \
         | samtools sort -o {output.bam} -
         samtools index {output.bam}
         samtools flagstat {output.bam} > {output.log}
@@ -33,14 +32,13 @@ rule bwa_unmapped_to_fq:
         r2 = "results/bwa/fastq/{SAMPLE}_R2" + config["fastq_ext"]
     conda:
         "../envs/samtools.yml"
+    threads: 8
     resources:
-        cpu = 8,
-        ntasks = 1,
         mem_mb = 16000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
-        samtools view -u -h -f 12 -F 256 {input.bam} \
+        samtools view -u -h -f 12 {input.bam} \
         | samtools sort -n \
-        | samtools fastq --threads {resources.cpu} -c 6 -1 {output.r1} -2 {output.r2}
+        | samtools fastq --threads {threads} -c 6 -1 {output.r1} -2 {output.r2}
         """

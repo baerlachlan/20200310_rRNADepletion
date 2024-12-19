@@ -7,16 +7,15 @@ rule count:
         counts_summary = "results/count/counts.out.summary",
     conda:
         "../envs/count.yml"
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
         mem_mb = 8000,
-        time = "00-02:00:00",
+        runtime = 120,
     shell:
         """
         featureCounts -Q 10 \
             -s 0 \
-            -T {resources.cpu} \
+            -T {threads} \
             -p \
             --fracOverlap 1 \
             -a {input.ref_gtf} \

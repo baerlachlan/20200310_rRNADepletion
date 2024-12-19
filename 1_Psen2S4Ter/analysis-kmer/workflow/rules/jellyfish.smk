@@ -9,14 +9,13 @@ rule jellyfish_k5:
         k_size = 5
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -31,14 +30,13 @@ rule jellyfish_k6:
         k_size = 6
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -53,14 +51,15 @@ rule jellyfish_k7:
         k_size = 7
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
+        # cpu = 4,
+        # ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -75,14 +74,15 @@ rule jellyfish_k8:
         k_size = 8
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
+        # cpu = 4,
+        # ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -97,14 +97,15 @@ rule jellyfish_k9:
         k_size = 9
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
+        # cpu = 4,
+        # ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -119,14 +120,15 @@ rule jellyfish_k10:
         k_size = 10
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
+        # cpu = 4,
+        # ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -141,14 +143,15 @@ rule jellyfish_k11:
         k_size = 11
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
+        # cpu = 4,
+        # ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """
 
@@ -163,13 +166,14 @@ rule jellyfish_k12:
         k_size = 12
     conda:
         "../envs/jellyfish.yml",
+    threads: 4
     resources:
-        cpu = 4,
-        ntasks = 1,
+        # cpu = 4,
+        # ntasks = 1,
         mem_mb = 16000,
-        time = "00-04:00:00"
+        runtime = 240
     shell:
         """
-        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {resources.cpu} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
+        jellyfish count -m {params.k_size} -s 8G --bf-size 8G -C -t {threads} -o {output.k_counts} <(zcat {input.r1}) <(zcat {input.r2})
         jellyfish dump -c {output.k_counts} > {output.dumps}
         """

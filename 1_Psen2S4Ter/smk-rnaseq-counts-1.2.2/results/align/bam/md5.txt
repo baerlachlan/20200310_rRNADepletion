@@ -1,0 +1,12 @@
+97bf1f325d9f91d5792867e8264f1b1f  results/align/bam/WT_86_Fem.bam
+c81d5f6acf2a8461aa8067eb91038d81  results/align/bam/WT_95_Fem.bam
+d985c9376ab07e41703df242bc22f2c6  results/align/bam/WT_88_Fem.bam
+684dc26ff51947fea1585e325be8313a  results/align/bam/Heter_81_Fem.bam
+3ad958cd0ae90ca7774a89ddee90d12d  results/align/bam/Hom_78_Fem.bam
+6eb5c40bb72f79a69786ff031cf76b07  results/align/bam/Heter_80_Fem.bam
+87af5b915d895bbf85077c208e8b191d  results/align/bam/Heter_84_Fem.bam
+30ca473d0b4d8ba63b1c191e00425462  results/align/bam/Heter_89_Fem.bam
+92cd24095513670ea7784d8b0c4b904a  results/align/bam/Hom_82_Fem.bam
+d4128d63536b4a5f42f83d9233ad4966  results/align/bam/WT_79_Fem.bam
+bf2ba3bfa42da1f58e1d5553c83bb584  results/align/bam/Hom_83_Fem.bam
+a1c6f5260a917d9e33e2df6c90a02176  results/align/bam/Hom_85_Fem.bam

@@ -1,5 +1,5 @@
-Status	results/star/bam/12_Ps2Ex3M1_WT_6month_07_07_2016_F3_95_Fem.bam	results/star/bam/2_Ps2Ex3M1_Heter_6month_07_07_2016_F3_81_Fem.bam	results/star/bam/3_Ps2Ex3M1_Heter_6month_07_07_2016_F3_84_Fem.bam	results/star/bam/9_Ps2Ex3M1_WT_6month_07_07_2016_F3_79_Fem.bam	results/star/bam/4_Ps2Ex3M1_Heter_6month_07_07_2016_F3_89_Fem.bam	results/star/bam/5_Ps2Ex3M1_Hom_6month_07_07_2016_F3_78_Fem.bam	results/star/bam/10_Ps2Ex3M1_WT_6month_07_07_2016_F3_86_Fem.bam	results/star/bam/7_Ps2Ex3M1_Hom_6month_07_07_2016_F3_83_Fem.bam	results/star/bam/8_Ps2Ex3M1_Hom_6month_07_07_2016_F3_85_Fem.bam	results/star/bam/11_Ps2Ex3M1_WT_6month_07_07_2016_F3_88_Fem.bam	results/star/bam/6_Ps2Ex3M1_Hom_6month_07_07_2016_F3_82_Fem.bam	results/star/bam/1_Ps2Ex3M1_Heter_6month_07_07_2016_F3_80_Fem.bam
-Assigned	11837310	11272757	11037658	9890330	11053144	10391261	13555975	10511270	11523122	11465018	10313562	10819467
+Status	results/star/bam/10_Ps2Ex3M1_WT_6month_07_07_2016_F3_86_Fem.bam	results/star/bam/5_Ps2Ex3M1_Hom_6month_07_07_2016_F3_78_Fem.bam	results/star/bam/2_Ps2Ex3M1_Heter_6month_07_07_2016_F3_81_Fem.bam	results/star/bam/11_Ps2Ex3M1_WT_6month_07_07_2016_F3_88_Fem.bam	results/star/bam/12_Ps2Ex3M1_WT_6month_07_07_2016_F3_95_Fem.bam	results/star/bam/1_Ps2Ex3M1_Heter_6month_07_07_2016_F3_80_Fem.bam	results/star/bam/4_Ps2Ex3M1_Heter_6month_07_07_2016_F3_89_Fem.bam	results/star/bam/7_Ps2Ex3M1_Hom_6month_07_07_2016_F3_83_Fem.bam	results/star/bam/8_Ps2Ex3M1_Hom_6month_07_07_2016_F3_85_Fem.bam	results/star/bam/6_Ps2Ex3M1_Hom_6month_07_07_2016_F3_82_Fem.bam	results/star/bam/9_Ps2Ex3M1_WT_6month_07_07_2016_F3_79_Fem.bam	results/star/bam/3_Ps2Ex3M1_Heter_6month_07_07_2016_F3_84_Fem.bam
+Assigned	13555975	10391261	11272757	11465018	11837310	10819467	11053144	10511270	11523122	10313562	9890330	11037658
 Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0
 Unassigned_Read_Type	0	0	0	0	0	0	0	0	0	0	0	0
 Unassigned_Singleton	0	0	0	0	0	0	0	0	0	0	0	0
@@ -7,9 +7,9 @@ Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0
 Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0
 Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0
 Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0
-Unassigned_MultiMapping	3783393	4437687	6234654	3434033	4522934	4248887	3164365	4074127	4315657	4559739	3738838	4414629
+Unassigned_MultiMapping	3164365	4248887	4437687	4559739	3783393	4414629	4522934	4074127	4315657	3738838	3434033	6234654
 Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0
 Unassigned_NonSplit	0	0	0	0	0	0	0	0	0	0	0	0
-Unassigned_NoFeatures	7563710	7093101	5120753	7564120	9356940	9066594	7847416	7365844	7192968	8223997	7308741	8100170
-Unassigned_Overlapping_Length	3506722	3188859	2766478	2967206	3436396	3141101	3663007	3028583	3322192	3434608	2979527	3214551
-Unassigned_Ambiguity	97710	99370	97866	82682	96201	89164	115971	88887	103441	98642	90888	93360
+Unassigned_NoFeatures	7847416	9066594	7093101	8223997	7563710	8100170	9356940	7365844	7192968	7308741	7564120	5120753
+Unassigned_Overlapping_Length	3663007	3141101	3188859	3434608	3506722	3214551	3436396	3028583	3322192	2979527	2967206	2766478
+Unassigned_Ambiguity	115971	89164	99370	98642	97710	93360	96201	88887	103441	90888	82682	97866

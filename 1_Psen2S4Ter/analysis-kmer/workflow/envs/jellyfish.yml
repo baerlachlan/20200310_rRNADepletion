@@ -1,6 +1,6 @@
 channels:
  - bioconda
  - conda-forge
- - defaults
+ - nodefaults
 dependencies:
  - jellyfish=2.2.10

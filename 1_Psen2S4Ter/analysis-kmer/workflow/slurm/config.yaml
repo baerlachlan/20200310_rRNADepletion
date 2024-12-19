@@ -4,7 +4,7 @@ cluster:
     --account=biosci
     --partition=batch
     --nodes=1
-    --cpus-per-task={resources.cpu}
+    --cpus-per-task={threads}
     --ntasks={resources.ntasks}
     --mem={resources.mem_mb}M
     --time={resources.time}

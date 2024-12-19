@@ -7,15 +7,16 @@ rule fastqc_raw:
         outDir = "results/raw_data/FastQC",
     conda:
         "../envs/fastqc.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
+        # cpu = 1,
+        # ntasks = 1,
         mem_mb = 2000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
         HOME=/hpcfs/users/$USER
-        fastqc -t {resources.cpu} -o {params.outDir} --noextract {input}
+        fastqc -t {threads} -o {params.outDir} --noextract {input}
         """
 
 rule fastqc_trim:
@@ -27,15 +28,16 @@ rule fastqc_trim:
         outDir = "results/trim_data/FastQC",
     conda:
         "../envs/fastqc.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
+        # cpu = 1,
+        # ntasks = 1,
         mem_mb = 2000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
         HOME=/hpcfs/users/$USER
-        fastqc -t {resources.cpu} -o {params.outDir} --noextract {input}
+        fastqc -t {threads} -o {params.outDir} --noextract {input}
         """
 
 rule fastqc_bwa_bam:
@@ -47,15 +49,14 @@ rule fastqc_bwa_bam:
         outDir = "results/bwa/FastQC_bam",
     conda:
         "../envs/fastqc.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
         mem_mb = 2000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
         HOME=/hpcfs/users/$USER
-        fastqc -t {resources.cpu} -o {params.outDir} --noextract {input}
+        fastqc -t {threads} -o {params.outDir} --noextract {input}
         """
 
 rule fastqc_bwa_fastq:
@@ -67,15 +68,14 @@ rule fastqc_bwa_fastq:
         outDir = "results/bwa/FastQC_fastq",
     conda:
         "../envs/fastqc.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
         mem_mb = 2000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
         HOME=/hpcfs/users/$USER
-        fastqc -t {resources.cpu} -o {params.outDir} --noextract {input}
+        fastqc -t {threads} -o {params.outDir} --noextract {input}
         """
 
 rule fastqc_star_bam:
@@ -87,15 +87,14 @@ rule fastqc_star_bam:
         outDir = "results/star/FastQC_bam",
     conda:
         "../envs/fastqc.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
         mem_mb = 2000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
         HOME=/hpcfs/users/$USER
-        fastqc -t {resources.cpu} -o {params.outDir} --noextract {input}
+        fastqc -t {threads} -o {params.outDir} --noextract {input}
         """
 
 rule fastqc_star_fastq:
@@ -107,13 +106,12 @@ rule fastqc_star_fastq:
         outDir = "results/star/FastQC_fastq",
     conda:
         "../envs/fastqc.yml"
+    threads: 1
     resources:
-        cpu = 1,
-        ntasks = 1,
         mem_mb = 2000,
-        time = "00-01:00:00",
+        runtime = 60,
     shell:
         """
         HOME=/hpcfs/users/$USER
-        fastqc -t {resources.cpu} -o {params.outDir} --noextract {input}
+        fastqc -t {threads} -o {params.outDir} --noextract {input}
         """
