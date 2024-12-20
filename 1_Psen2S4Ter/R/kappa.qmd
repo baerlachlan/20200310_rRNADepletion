@@ -1,0 +1,339 @@
+---
+title: "rRNADepletion_s4ter"
+author: "Lachlan Baer"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    fig_width: 8
+    fig_height: 6
+    fig_align: "center"
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    error = FALSE, 
+    fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r packages}
+library(tidyverse)
+library(magrittr)
+library(parallel)
+library(here)
+library(scales)
+library(AnnotationHub)
+library(Biostrings)
+library(Rsamtools)
+library(cqn)
+library(DT)
+library(edgeR)
+library(msigdbr)
+library(fgsea)
+```
+
+```{r options}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+```
+
+```{r ah}
+# ah <- AnnotationHub() %>%
+#   subset(species == "Danio rerio") %>%
+#   subset(rdataclass == "EnsDb")
+# ensDb <- ah[["AH83189"]]
+```
+
+# Load data
+
+```{r load_data}
+dgeFilt <- readRDS(here("1_Psen2S4Ter/Rdata/dgeFilt.Rds"))
+k5topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k5topTable.Rds"))
+k6topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k6topTable.Rds"))
+k7topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k7topTable.Rds"))
+k8topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k8topTable.Rds"))
+k9topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k9topTable.Rds"))
+k10topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k10topTable.Rds"))
+k11topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k11topTable.Rds"))
+k12topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k12topTable.Rds"))
+```
+
+# Exploration
+
+Now that differential expression of $k$-mers has been detected, the next step is to develop a normalisation method that can lessen the extent of gene-level differential expression bias due to presence of particular $k$-mers. The initial aim of this exploration is to define a single value per gene, $\kappa$, that represents the magnitude of bias due to the genes constituent $k$-mers.
+
+In an initial attempt to develop a value for $\kappa$, logFC values from previously derived $k$-mer differential expression testing will be evaluated. Firstly, for each gene's coding sequence, a count for the presence of all detected $k$-mers will be calculated. This count, $n$, will then be multiplied by the $k$-mers logFC value to determine $\kappa$: \[\kappa = n_1LFC_1 + n_2LFC_2 + n_3LFC_3\]
+
+## k = 5
+
+```{r lfc_k5}
+lfc_k5 <- structure(k5topTable$logFC, names = k5topTable$mer)
+```
+
+```{r kappa_k5}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))) {
+    kappa_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))
+} else {
+    kappa_k5 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k5/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k5[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 6
+
+```{r lfc_k6}
+lfc_k6 <- structure(k6topTable$logFC, names = k6topTable$mer)
+```
+
+```{r kappa_k6}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))) {
+    kappa_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))
+} else {
+    kappa_k6 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k6/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k6[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 7
+
+```{r lfc_k7}
+lfc_k7 <- structure(k7topTable$logFC, names = k7topTable$mer)
+```
+
+```{r kappa_k7}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))) {
+    kappa_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))
+} else {
+    kappa_k7 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k7/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k7[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 8
+
+```{r lfc_k8}
+lfc_k8 <- structure(k8topTable$logFC, names = k8topTable$mer)
+```
+
+```{r kappa_k8}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))) {
+    kappa_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))
+} else {
+    kappa_k8 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k8/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k8[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 9
+
+```{r lfc_k9}
+lfc_k9 <- structure(k9topTable$logFC, names = k9topTable$mer)
+```
+
+```{r kappa_k9}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))) {
+    kappa_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))
+} else {
+    kappa_k9 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k9/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k9[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 10
+
+```{r lfc_k10}
+lfc_k10 <- structure(k10topTable$logFC, names = k10topTable$mer)
+```
+
+```{r kappa_k10}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))) {
+    kappa_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))
+} else {
+    kappa_k10 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k10/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k10[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 11
+
+```{r lfc_k11}
+lfc_k11 <- structure(k11topTable$logFC, names = k11topTable$mer)
+```
+
+```{r kappa_k11}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))) {
+    kappa_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))
+} else {
+    kappa_k11 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k11/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k11[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## k = 12
+
+```{r lfc_k12}
+lfc_k12 <- structure(k12topTable$logFC, names = k12topTable$mer)
+```
+
+```{r kappa_k12}
+if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))) {
+    kappa_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))
+} else {
+    kappa_k12 <- vapply(rownames(dgeFilt), \(x){
+        scan <- scan(
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k12/", x, ".dumps"
+            )),
+            what = list(character(1), numeric(1))
+        )
+        mer_counts <- structure(scan[[2]], names = scan[[1]])
+        sum(lfc_k12[names(mer_counts)] * mer_counts)
+    }, numeric(1))
+}
+```
+
+## Differential expression
+
+```{r}
+cqn <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k5[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn)
+```
+
+```{r}
+dgeFilt$offset <- cqn$glm.offset
+```
+
+```{r}
+design_g <- model.matrix(~group, data = dgeFilt$samples)
+```
+
+```{r}
+disp_g <- estimateDisp(dgeFilt, design_g)
+plotBCV(disp_g)
+```
+
+```{r}
+fit_g <- glmQLFit(disp_g)
+plotQLDisp(fit_g)
+```
+
+```{r}
+res_g <- colnames(design_g) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g$groupHeter)
+displayRes_de(res_g$groupHom)
+```
+
+# Data export
+
+```{r data_export}
+saveRDS(kappa_k5, here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))
+saveRDS(kappa_k6, here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))
+saveRDS(kappa_k7, here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))
+saveRDS(kappa_k8, here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))
+saveRDS(kappa_k9, here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))
+saveRDS(kappa_k10, here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))
+saveRDS(kappa_k11, here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))
+saveRDS(kappa_k12, here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))
+```
+
+# Session info
+
+```{r seshInfo}
+sessionInfo()
+```

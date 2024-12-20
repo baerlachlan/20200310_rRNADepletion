@@ -1,0 +1,134 @@
+gene_ids, = glob_wildcards("results/seqs/{ID}.fa")
+
+rule all:
+	input:
+		# expand("results/dumps/k{K_SIZE}/{ID}.dumps", K_SIZE=["5", "6", "7"], ID=gene_ids)
+		expand("results/dumps/k{K_SIZE}/{ID}.dumps", K_SIZE=["5", "6", "7", "8", "9", "10", "11", "12"], ID=gene_ids)
+
+rule jellyfish_k5:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k5/{ID}.jf",
+        dumps = "results/dumps/k5/{ID}.dumps",
+    params:
+        k_size = 5
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k6:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k6/{ID}.jf",
+        dumps = "results/dumps/k6/{ID}.dumps",
+    params:
+        k_size = 6
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k7:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k7/{ID}.jf",
+        dumps = "results/dumps/k7/{ID}.dumps",
+    params:
+        k_size = 7
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k8:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k8/{ID}.jf",
+        dumps = "results/dumps/k8/{ID}.dumps",
+    params:
+        k_size = 8
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k9:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k9/{ID}.jf",
+        dumps = "results/dumps/k9/{ID}.dumps",
+    params:
+        k_size = 9
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k10:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k10/{ID}.jf",
+        dumps = "results/dumps/k10/{ID}.dumps",
+    params:
+        k_size = 10
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k11:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k11/{ID}.jf",
+        dumps = "results/dumps/k11/{ID}.dumps",
+    params:
+        k_size = 11
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """
+
+rule jellyfish_k12:
+    input:
+        seq = "results/seqs/{ID}.fa",
+    output:
+        counts = "results/counts/k12/{ID}.jf",
+        dumps = "results/dumps/k12/{ID}.dumps",
+    params:
+        k_size = 12
+    conda:
+        "envs/jellyfish.yml",
+    shell:
+        """
+        jellyfish count -m {params.k_size} -s 1G --bf-size 1G -C -t {threads} -o {output.counts} <(cat {input.seq})
+        jellyfish dump -c {output.counts} > {output.dumps}
+        """

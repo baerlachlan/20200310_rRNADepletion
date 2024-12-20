@@ -1,0 +1,43 @@
+project:
+  title: "rRNADepletion_s4ter"
+  type: website
+  output-dir: ../docs
+  render:
+    - index.qmd
+    - qc.qmd
+    - qc_rRNA_removed.qmd
+    - de.qmd
+    - kmer.qmd
+
+website:
+  back-to-top-navigation: true
+  sidebar:
+    style: "floating"
+    search: true
+    border: true
+    contents:
+      - text: Home
+        href: index.qmd
+      - text: QC
+        href: qc.qmd
+      - text: QC (rRNA removed)
+        href: qc_rRNA_removed.qmd
+      - text: DGE
+        href: de.qmd
+      - text: k-mer
+        href: kmer.qmd
+    tools:
+      - icon: github
+        href: https://github.com/baerlachlan/241107_THOC_Raman
+  search:
+    location: sidebar
+    type: overlay
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    # css: custom.css
+    toc: true
+    toc-depth: 5

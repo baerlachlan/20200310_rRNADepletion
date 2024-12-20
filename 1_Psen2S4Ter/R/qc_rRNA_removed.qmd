@@ -1,0 +1,596 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "Quality control (rRNA removed)"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+# Setup
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    error = FALSE,
+    fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+```{r pkgs}
+suppressPackageStartupMessages({
+    ## Common packages
+    library(tidyverse)
+    library(magrittr)
+    library(here)
+    library(kableExtra)
+    library(RColorBrewer)
+    library(ggpubr)
+    library(scales)
+    library(AnnotationHub)
+    library(ggrepel)
+    library(ggtext)
+    library(glue)
+    library(DT)
+    library(pander)
+    library(reactable)
+    ## Document-specific packages
+    library(ngsReports)
+})
+```
+
+```{r opts}
+theme_set(theme_bw())
+```
+
+```{r lb_reactable}
+lb_reactable <- function(
+        tbl, highlight = TRUE, striped = TRUE, compact = TRUE,
+        wrap = FALSE, resizable = TRUE, searchable = TRUE,
+        style = list(fontFamily = "Calibri, sans-serif"), ...
+){
+    reactable(
+        tbl,
+        highlight = highlight, striped = striped, compact = compact,
+        wrap = wrap, resizable = TRUE, searchable = TRUE,
+        style = style, ...
+    )
+}
+tooltip <- function(value, tooltip) {
+    tags$abbr(
+        style = "text-decoration: underline; text-decoration-style: solid; cursor: help",
+        title = tooltip,
+        value
+    )
+}
+react_format <- function(format, digits = 2){
+    function(val, ind, col_name){
+        formatC(val, digits = digits, format = format)
+    }
+}
+react_numeric <- function(format, digits = 2){
+    colDef(cell = function(val, ind, col_name){
+        formatC(val, digits = digits, format = format)
+    })
+}
+```
+
+# Quality control
+
+This document outlines the quality control checks that were performed on data at various stages of the pre-processing workflow.
+
+The procedure for generating gene-level counts from raw RNA-seq data can be summarised as: 
+
+<center>
+raw reads (.fastq.gz) $\rightarrow$ trimmed reads (.fastq.gz) $\rightarrow$ aligned reads (.bam) $\rightarrow$ counts (.tsv)
+</center>
+
+# Metadata
+
+```{r meta}
+meta <- read_tsv(
+    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/samples.tsv"
+) %>%
+    mutate(
+        group = fct_relevel(group, "WT")
+    )
+meta %>%
+    kable(
+        align = "l",
+        caption = "Sample metadata"
+    ) %>%
+    kable_styling(
+        bootstrap_options = c("striped", "hover", "condensed", "responsive")
+    )
+```
+
+```{r}
+pal <- brewer.pal(8, "Set2")[
+    1:length(levels(meta$group))
+] %>%
+    set_names(levels(meta$group))
+```
+
+# FastQC reports
+
+## Load data
+
+```{r fqc_raw}
+#| results: hide
+fqc_raw <- list.files(
+    path = "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/raw_data/FastQC",
+    pattern = "zip",
+    full.names = TRUE
+)
+## Fix raw FQC zip file structure caused by workflow renaming of FQC files
+## Otherwise we encounter a bug in ngsReports
+fqc_raw %>%
+    lapply(\(x){
+        contents <- unzip(x, list = TRUE)
+        old_dir <- str_remove(contents$Name[1], "/$")
+        new_dir <- str_remove(basename(x), ".zip$")
+        if (old_dir != new_dir) {
+            unzip(x)
+            file.remove(x)
+            system(paste('mv', old_dir, new_dir))
+            files_to_zip <- list.files(here(old_dir), full.names = TRUE)
+            zip(x, new_dir)
+            unlink(new_dir, recursive = TRUE)
+        }
+    })
+fqc_raw <- fqc_raw %>%
+    FastqcDataList()
+## Rename fqc_raw to names used by workflow
+sample_rename <- read_tsv(here("/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/units.tsv")) %>%
+    pivot_longer(cols = c("fq1", "fq2"), values_to = "fq") %>%
+    dplyr::select(new = sample, old = fq, everything()) %>%
+    mutate(
+        old = basename(old),
+        new = ifelse(
+            str_detect(old, "_R1.fastq.gz$"),
+            paste0(new, "_", unit, "_R1.fastq.gz"),
+            paste0(new, "_", unit, "_R2.fastq.gz")
+        )
+    )
+fqName(fqc_raw) <- vapply(fqName(fqc_raw), \(x){
+    sample_rename$new[sample_rename$old == x]
+}, character(1), USE.NAMES = FALSE)
+fqc_raw <- fqc_raw %>%
+    .[str_detect(fqName(.), paste(meta$sample, collapse = "|"))]
+```
+
+```{r fqc_unmapped}
+fqc_unmapped <- list.files(
+    path = here("/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/bwa/FastQC_fastq"),
+    pattern = "zip",
+    full.names = TRUE
+) %>%
+    FastqcDataList()
+fqName(fqc_unmapped) <- vapply(fqName(fqc_unmapped), \(x){
+    sample_rename$new[sample_rename$old == x]
+}, character(1), USE.NAMES = FALSE)
+fqc_unmapped <- fqc_unmapped %>%
+    .[str_detect(fqName(.), paste(meta$sample, collapse = "|"))]
+```
+
+```{r fqc_mapped}
+fqc_mapped <- list.files(
+    path = here("/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/star/FastQC_fastq/"),
+    pattern = "zip",
+    full.names = TRUE
+) %>%
+    FastqcDataList()
+fqName(fqc_mapped) <- vapply(fqName(fqc_mapped), \(x){
+    sample_rename$new[sample_rename$old == x]
+}, character(1), USE.NAMES = FALSE)
+fqc_mapped <- fqc_mapped %>%
+    .[str_detect(fqName(.), paste(meta$sample, collapse = "|"))]
+```
+
+The following plots were produced directly from FastQC zip archives with the `ngsReports` package.
+
+Direct comparisons between different stages of pre-processing can be made by toggling the tabs above the figures.
+
+## Read totals
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r read_totals_raw}
+#| fig-height: !expr 'length(fqc_raw) * 0.25 + 1'
+
+plotReadTotals(fqc_raw)
+```
+
+### rRNA removed (unmapped)
+
+```{r read_totals_trim}
+#| fig-height: !expr 'length(fqc_unmapped) * 0.25 + 1'
+
+plotReadTotals(fqc_unmapped)
+```
+
+### rRNA removed (mapped)
+
+```{r read_totals_align}
+#| fig-height: !expr 'length(fqc_mapped) * 0.25 + 1'
+
+plotReadTotals(fqc_mapped)
+```
+
+:::
+
+## FastQC summary
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r summary_raw}
+#| fig-height: !expr 'length(fqc_raw) * 0.25 + 2'
+
+plotSummary(fqc_raw)
+```
+
+### rRNA removed (unmapped)
+
+```{r summary_trim}
+#| fig-height: !expr 'length(fqc_unmapped) * 0.25 + 2'
+
+plotSummary(fqc_unmapped)
+```
+
+### rRNA removed (mapped)
+
+```{r summary_align}
+#| fig-height: !expr 'length(fqc_mapped) * 0.25 + 2'
+
+plotSummary(fqc_mapped)
+```
+
+:::
+
+FastQC reports are well-known to return WARN or FAIL when there is no actual reason for concern.
+
+We assess each QC category individually in the following plots.
+
+## Sequence length distribution
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r seq_len_distn_raw}
+plotSeqLengthDistn(fqc_raw, plotType = "cdf") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (unmapped)
+
+```{r seq_len_distn_trim}
+plotSeqLengthDistn(fqc_unmapped, plotType = "cdf") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (mapped)
+
+```{r seq_len_distn_align}
+plotSeqLengthDistn(fqc_mapped, plotType = "cdf") +
+    theme(legend.position = "none")
+```
+
+:::
+
+
+## Per base sequence qualities
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r base_quals_raw}
+#| fig-height: !expr 'length(fqc_raw) * 0.5 + 1'
+
+plotBaseQuals(fqc_raw, plotType = "boxplot")
+```
+
+### rRNA removed (unmapped)
+
+```{r base_quals_trim}
+#| fig-height: !expr 'length(fqc_unmapped) * 0.5 + 1'
+
+plotBaseQuals(fqc_unmapped, plotType = "boxplot")
+```
+
+### rRNA removed (mapped)
+
+```{r base_quals_align}
+#| fig-height: !expr 'length(fqc_mapped) * 0.5 + 1'
+
+plotBaseQuals(fqc_mapped, plotType = "boxplot")
+```
+
+:::
+
+## Mean sequence quality per read
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r seq_quals_raw}
+plotSeqQuals(fqc_raw, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (unmapped)
+
+```{r seq_quals_trim}
+plotSeqQuals(fqc_unmapped, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (mapped)
+
+```{r seq_quals_align}
+plotSeqQuals(fqc_mapped, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+:::
+
+## Per base sequence content
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r seq_content_raw}
+#| fig-height: !expr 'length(fqc_raw) * 0.5 + 1'
+
+plotSeqContent(fqc_raw, plotType = "line")
+```
+
+### rRNA removed (unmapped)
+
+```{r seq_content_trim}
+#| fig-height: !expr 'length(fqc_unmapped) * 0.5 + 1'
+
+plotSeqContent(fqc_unmapped, plotType = "line")
+```
+
+### rRNA removed (mapped)
+
+```{r seq_content_align}
+#| fig-height: !expr 'length(fqc_mapped) * 0.5 + 1'
+
+plotSeqContent(fqc_mapped, plotType = "line")
+```
+
+:::
+
+## Adapter content
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r adapter_content_raw}
+plotAdapterContent(fqc_raw, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (unmapped)
+
+```{r adapter_content_trim}
+plotAdapterContent(fqc_unmapped, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (mapped)
+
+```{r adapter_content_align}
+plotAdapterContent(fqc_mapped, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+:::
+
+## Sequence duplication levels
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r dup_levels_raw}
+plotDupLevels(fqc_raw, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (unmapped)
+
+```{r dup_levels_trim}
+plotDupLevels(fqc_unmapped, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+### rRNA removed (mapped)
+
+```{r dup_levels_align}
+plotDupLevels(fqc_mapped, plotType = "line") +
+    theme(legend.position = "none")
+```
+
+:::
+
+## GC content
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r gc_content_raw}
+#| fig-height: !expr 'length(fqc_raw) * 0.25 + 1'
+
+plotGcContent(fqc_raw)
+```
+
+### rRNA removed (unmapped)
+
+```{r gc_content_trim}
+#| fig-height: !expr 'length(fqc_unmapped) * 0.25 + 1'
+
+plotGcContent(fqc_unmapped)
+```
+
+### rRNA removed (mapped)
+
+```{r gc_content_align}
+#| fig-height: !expr 'length(fqc_mapped) * 0.25 + 1'
+
+plotGcContent(fqc_mapped)
+```
+
+:::
+
+::: {.panel-tabset}
+
+### Raw
+
+```{r gc_content_2_raw}
+plotGcContent(
+    fqc_raw, plotType = "line",  gcType = "Transcriptome", usePlotly = TRUE
+)
+```
+
+### rRNA removed (unmapped)
+
+```{r gc_content_2_trim}
+plotGcContent(
+    fqc_unmapped, plotType = "line",  gcType = "Transcriptome", usePlotly = TRUE
+)
+```
+
+### rRNA removed (mapped)
+
+```{r gc_content_2_align}
+plotGcContent(
+    fqc_mapped, plotType = "line",  gcType = "Transcriptome", usePlotly = TRUE
+)
+```
+
+:::
+
+# Gene-level statistics
+
+## Alignments
+
+```{r star_logs}
+star_logs <- list.files(
+    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/star/log",
+    pattern = "Log.final.out",
+    full.names = TRUE
+) %>%
+    importNgsLogs(type = "star") %>%
+    mutate(
+        Filename = str_remove(Filename, "\\d+_Ps2Ex3M1_"),
+        Filename = str_remove(Filename, "_6month_07_07_2016_F3"),
+        Filename = str_remove(Filename, "Log.final.out")
+    ) %>%
+    dplyr::filter(Filename %in% meta$sample)
+```
+
+```{r star_mapping}
+#| fig-height: !expr 'nrow(star_logs) * 0.5 + 1'
+
+star_logs %>%
+    dplyr::select(sample = Filename, everything()) %>%
+    left_join(meta[,c("sample", "group")]) %>%
+    ggplot(aes(sample, Uniquely_Mapped_Reads_Number)) +
+    geom_bar(aes(fill = group), stat = "identity") +
+    scale_y_continuous(
+        labels = scales::comma,
+        breaks = seq(0, 1e9, 2.5e7),
+        expand = expansion(c(0, 0.09))
+    ) +
+    scale_fill_manual(values = pal) +
+    coord_flip() +
+    labs(
+        title = "Uniquely mapped reads (STAR)",
+        x = "Sample",
+        y = "Number of uniquely mapped reads",
+        fill = "Group"
+    ) +
+    theme(
+        axis.text.x = element_text(angle = -40, , vjust = 1, hjust = 0)
+    )
+```
+
+```{r star_summary}
+#| fig-height: !expr 'nrow(star_logs) * 0.5 + 1'
+
+star_logs %>%
+    mutate(
+        `Uniquely mapped` = Uniquely_Mapped_Reads_Number,
+        `Multi mapped` = rowSums(across(c(
+            Number_Of_Reads_Mapped_To_Multiple_Loci,
+            Number_Of_Reads_Mapped_To_Too_Many_Loci
+        ))),
+        Unmapped = rowSums(across(c(
+            Number_Of_Reads_Unmapped_Too_Many_Mismatches,
+            Number_Of_Reads_Unmapped_Too_Short,
+            Number_Of_Reads_Unmapped_Other
+        )))
+    ) %>%
+    dplyr::select(
+        sample = Filename, `Uniquely mapped`, `Multi mapped`, Unmapped
+    ) %>%
+    pivot_longer(
+        cols = -sample,
+        names_to = "Type",
+        values_to = "number"
+    ) %>%
+    mutate(
+        Type = str_to_sentence(str_replace_all(Type, "_", " ")),
+        Type = factor(Type, levels = c(
+            ## The last factor will be plotted LHS
+            "Unmapped", "Multi mapped", "Uniquely mapped"
+        ))
+    ) %>%
+    ggplot(aes(x = sample, y = number, fill = Type)) +
+    geom_bar(position = "fill", stat = "identity") +
+    coord_flip() +
+    scale_fill_manual(
+        values = brewer.pal(9, "Pastel1")[c(4, 2, 3)],
+        breaks = c(
+            "Uniquely mapped", "Multi mapped",  "Unmapped"
+        )
+    ) +
+    labs(
+        title = "Alignment summary (STAR)",
+        x = "Sample",
+        y = "Read proportions"
+    ) +
+    scale_y_continuous(
+        labels = scales::percent,
+        breaks = seq(0, 1, 0.1),
+        expand = expansion(c(0, 0))
+    )
+```
+
+# Session information
+
+```{r session_info}
+sessionInfo() %>%
+    pander()
+```

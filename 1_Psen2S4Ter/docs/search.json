@@ -1,0 +1,512 @@
+[
+  {
+    "objectID": "kmer.html",
+    "href": "kmer.html",
+    "title": "rRNADepletion_s4ter",
+    "section": "",
+    "text": "Code\nlibrary(tidyverse)\nlibrary(magrittr)\nlibrary(parallel)\nlibrary(pander)\nlibrary(here)\nlibrary(scales)\nlibrary(ggpubr)\nlibrary(kableExtra)\nlibrary(edgeR)\nlibrary(DT)\nlibrary(ggrepel)\nlibrary(pheatmap)\nlibrary(ggdendro)\n\n\n\n\nCode\nif (interactive()) setwd(here::here())\ntheme_set(theme_bw())\n\n\n\n\nCode\n# load(\n#     here::here(\"1_Psen2S4Ter/R/output/1_1_DE.RData\")\n# )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-5",
+    "href": "kmer.html#k-5",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 5",
+    "text": "k = 5\n\nCounts\n\n\nCode\nk5files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k5\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk5counts &lt;- lapply(k5files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk5dge &lt;- k5counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk5dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk5dge$samples$group &lt;- colnames(k5dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk5dist &lt;- k5dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 5-mers\")\n\n\n\n\nCode\nk5labels &lt;- k5dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk5heat &lt;- k5dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"5-mer counts heatmap\", labels_row = k5labels)\nk5heat$tree_row$labels &lt;- k5labels\nk5den &lt;- ggdendrogram(k5heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 5-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk5pca &lt;- k5dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k5pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\nk5pcaPlot &lt;- k5pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k5dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k5pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k5pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 5\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk5pcaRrna &lt;- k5pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k5dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k5pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 5\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\nCode\nk5design &lt;- model.matrix(~rRNA, data = k5dge$samples)\nk5disp &lt;- estimateDisp(k5dge, k5design)\nk5fit &lt;- glmQLFit(k5disp)\nk5topTable &lt;- glmQLFTest(k5fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-6",
+    "href": "kmer.html#k-6",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 6",
+    "text": "k = 6\n\nCounts\n\n\nCode\nk6files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k6\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk6counts &lt;- lapply(k6files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk6dge &lt;- k6counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk6dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk6dge$samples$group &lt;- colnames(k6dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk6dist &lt;- k6dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 6-mers\")\n\n\n\n\nCode\nk6labels &lt;- k6dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk6heat &lt;- k6dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"6-mer counts heatmap\", labels_row = k6labels)\nk6heat$tree_row$labels &lt;- k6labels\nk6den &lt;- ggdendrogram(k6heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 6-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk6pca &lt;- k6dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k6pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk6pcaPlot &lt;- k6pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k6dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k6pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k6pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 6\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk6pcaRrna &lt;- k6pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k6dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k6pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 6\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nk6design &lt;- model.matrix(~rRNA, data = k6dge$samples)\nk6disp &lt;- estimateDisp(k6dge, k6design)\nk6fit &lt;- glmQLFit(k6disp)\nk6topTable &lt;- glmQLFTest(k6fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-7",
+    "href": "kmer.html#k-7",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 7",
+    "text": "k = 7\n\nCounts\n\n\nCode\nk7files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k7\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk7counts &lt;- lapply(k7files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk7dge &lt;- k7counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk7dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk7dge$samples$group &lt;- colnames(k7dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk7dist &lt;- k7dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 7-mers\")\n\n\n\n\nCode\nk7labels &lt;- k7dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk7heat &lt;- k7dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"7-mer counts heatmap\", labels_row = k7labels)\nk7heat$tree_row$labels &lt;- k7labels\nk7den &lt;- ggdendrogram(k7heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 7-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk7pca &lt;- k7dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k7pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk7pcaPlot &lt;- k7pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k7dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k7pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k7pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 7\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk7pcaRrna &lt;- k7pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k7dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k7pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 7\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nk7design &lt;- model.matrix(~rRNA, data = k7dge$samples)\nk7disp &lt;- estimateDisp(k7dge, k7design)\nk7fit &lt;- glmQLFit(k7disp)\nk7topTable &lt;- glmQLFTest(k7fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-8",
+    "href": "kmer.html#k-8",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 8",
+    "text": "k = 8\n\nCounts\n\n\nCode\nk8files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k8\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk8counts &lt;- lapply(k8files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk8dge &lt;- k8counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk8dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk8dge$samples$group &lt;- colnames(k8dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk8dist &lt;- k8dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 8-mers\")\n\n\n\n\nCode\nk8labels &lt;- k8dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk8heat &lt;- k8dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"8-mer counts heatmap\", labels_row = k8labels)\nk8heat$tree_row$labels &lt;- k8labels\nk8den &lt;- ggdendrogram(k8heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 8-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk8pca &lt;- k8dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k8pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk8pcaPlot &lt;- k8pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k8dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k8pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k8pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 8\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk8pcaRrna &lt;- k8pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k8dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k8pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 8\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nk8design &lt;- model.matrix(~rRNA, data = k8dge$samples)\nk8disp &lt;- estimateDisp(k8dge, k8design)\nk8fit &lt;- glmQLFit(k8disp)\nk8topTable &lt;- glmQLFTest(k8fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-9",
+    "href": "kmer.html#k-9",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 9",
+    "text": "k = 9\n\nCounts\n\n\nCode\nk9files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k9\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk9counts &lt;- lapply(k9files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk9dge &lt;- k9counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk9dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk9dge$samples$group &lt;- colnames(k9dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk9dist &lt;- k9dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 9-mers\")\n\n\n\n\nCode\nk9labels &lt;- k9dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk9heat &lt;- k9dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"9-mer counts heatmap\", labels_row = k9labels)\nk9heat$tree_row$labels &lt;- k9labels\nk9den &lt;- ggdendrogram(k9heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 9-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk9pca &lt;- k9dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k9pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk9pcaPlot &lt;- k9pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k9dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k9pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k9pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 9\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk9pcaRrna &lt;- k9pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k9dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k9pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 9\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\nCode\nk9design &lt;- model.matrix(~rRNA, data = k9dge$samples)\nk9disp &lt;- estimateDisp(k9dge, k9design)\nk9fit &lt;- glmQLFit(k9disp)\nk9topTable &lt;- glmQLFTest(k9fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-10",
+    "href": "kmer.html#k-10",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 10",
+    "text": "k = 10\n\nCounts\n\n\nCode\nk10files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k10\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk10counts &lt;- lapply(k10files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk10dge &lt;- k10counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk10dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk10dge$samples$group &lt;- colnames(k10dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk10dist &lt;- k10dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 10-mers\")\n\n\n\n\nCode\nk10labels &lt;- k10dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk10heat &lt;- k10dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"10-mer counts heatmap\", labels_row = k10labels)\nk10heat$tree_row$labels &lt;- k10labels\nk10den &lt;- ggdendrogram(k10heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 10-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk10pca &lt;- k10dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k10pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk10pcaPlot &lt;- k10pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k10dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k10pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k10pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 10\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk10pcaRrna &lt;- k10pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k10dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k10pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 10\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nk10design &lt;- model.matrix(~rRNA, data = k10dge$samples)\nk10disp &lt;- estimateDisp(k10dge, k10design)\nk10fit &lt;- glmQLFit(k10disp)\nk10topTable &lt;- glmQLFTest(k10fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-11",
+    "href": "kmer.html#k-11",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 11",
+    "text": "k = 11\n\nCounts\n\n\nCode\nk11files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k11\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk11counts &lt;- lapply(k11files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk11dge &lt;- k11counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    replace(is.na(.), 0) %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk11dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk11dge$samples$group &lt;- colnames(k11dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk11dist &lt;- k11dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 11-mers\")\n\n\n\n\nCode\nk11labels &lt;- k11dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk11heat &lt;- k11dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"11-mer counts heatmap\", labels_row = k11labels)\nk11heat$tree_row$labels &lt;- k11labels\nk11den &lt;- ggdendrogram(k11heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 11-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk11pca &lt;- k11dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k11pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk11pcaPlot &lt;- k11pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k11dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k11pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k11pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 11\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk11pcaRrna &lt;- k11pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k11dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k11pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 11\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\nCode\nk11design &lt;- model.matrix(~rRNA, data = k11dge$samples)\nk11disp &lt;- estimateDisp(k11dge, k11design)\nk11fit &lt;- glmQLFit(k11disp)\nk11topTable &lt;- glmQLFTest(k11fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-12",
+    "href": "kmer.html#k-12",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 12",
+    "text": "k = 12\n\nCounts\n\n\nCode\nk12files &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k12\",\n    pattern = \".dumps\", full.names = TRUE\n)\nk12counts &lt;- lapply(k12files, function(x){\n    read_delim(x, col_names = c(\"mer\", basename(x)), delim = \" \") %&gt;%\n        set_colnames(str_remove_all(colnames(.), \"_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\\\.dumps\"))\n}) %&gt;%\n    purrr::reduce(full_join) %&gt;%\n    dplyr::select(mer, contains(c(\"WT\", \"Heter\")))\n\n\n\n\nCode\nk12dge &lt;- k12counts %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"mer\") %&gt;%\n    replace(is.na(.), 0) %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\nk12dge$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\nk12dge$samples$group &lt;- colnames(k12dge) %&gt;%\n    str_extract(\"(WT|Heter)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\"))\n\n\n\n\nProperties\n\n\nCode\nk12dist &lt;- k12dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    pivot_longer(everything(), names_to = \"sample\", values_to = \"count\") %&gt;%\n    ggplot(aes(x=count, colour = sample)) +\n    geom_density() +\n    labs(x = \"intensity\", title = \"Distribution of 12-mers\")\n\n\n\n\nCode\nk12labels &lt;- k12dge$samples %&gt;% \n    mutate(label = paste0(sample, \"\\n\", percent(rRNA, accuracy = 0.01), \" rRNA\")) %&gt;% \n    .$label\nk12heat &lt;- k12dge %&gt;% \n    cpm(log = TRUE) %&gt;%\n    as.data.frame() %&gt;%\n    t() %&gt;%\n    pheatmap(silent = TRUE, cluster_cols = FALSE,\n             show_colnames = FALSE, fontsize = 9,\n             fontsize_row = 10, border_color = NA,\n             main = \"12-mer counts heatmap\", labels_row = k12labels)\nk12heat$tree_row$labels &lt;- k12labels\nk12den &lt;- ggdendrogram(k12heat$tree_row, rotate = TRUE) +\n    labs(title = \"Hierarchical clustering of 12-mer counts\") +\n    theme(plot.title = element_text(size = 12))\n\n\n\n\nCode\n# Assess cpm values to make sure PCA results are not heavily skewed by highly expressed genes\nk12pca &lt;- k12dge %&gt;%\n    cpm(log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\n# Quick inspection to check whether first two PCA components capture most of the variability\nsummary(k12pca)$importance %&gt;% pander(split.tables = Inf)\n\n\n\n\nCode\n# Plot PCA\nk12pcaPlot &lt;- k12pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k12dge$samples) %&gt;%\n    ggplot(aes(PC1, PC2, colour = group, label = rRNA)) +\n    geom_point(alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k12pca)$importance[2, \"PC1\"]), \")\"),\n        y = paste0(\"PC2 (\", percent(summary(k12pca)$importance[2, \"PC2\"]), \")\"),\n        colour = \"Genotype\",\n        title = \"k = 12\"\n    ) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nCode\nk12pcaRrna &lt;- k12pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    as_tibble() %&gt;%\n    dplyr::select(sample, PC1, PC2) %&gt;%\n    left_join(k12dge$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), alpha = 0.8, size = 3) +\n    geom_text_repel(show.legend = FALSE) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(k12pca)$importance[2, \"PC1\"]), \")\"),\n        y = \"rRNA proportion\",\n        colour = \"Genotype\",\n        title = \"k = 12\"\n    ) +\n    scale_y_continuous(labels = percent) +\n    scale_colour_discrete(labels = c(\"Wildtype\", \"Mutant\"))\n\n\n\n\nDifferential expression\n\n\nCode\nk12design &lt;- model.matrix(~rRNA, data = k12dge$samples)\nk12disp &lt;- estimateDisp(k12dge, k12design)\nk12fit &lt;- glmQLFit(k12disp)\nk12topTable &lt;- glmQLFTest(k12fit) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rownames_to_column(\"mer\") %&gt;%\n    dplyr::select(\n        mer,\n        logFC,\n        logCPM,\n        F,\n        P.Value = PValue,\n        FDR,\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        BY = p.adjust(P.Value, \"BY\"),\n        DE = BY &lt; 0.05\n    )",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-5-1",
+    "href": "kmer.html#k-5-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 5",
+    "text": "k = 5\n\n\nCode\ntopRes(k5topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 5-mers.\",\n           nrow(dplyr::filter(k5topTable, DE)),\n           \"of\",\n           nrow(k5topTable),\n           \"detected sequences were classified as DE with BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk5topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 5\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk5topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            # dplyr::filter(-log10(P.Value) &gt; 4 | logFC &gt; 4 | logFC &lt; -2),\n            dplyr::filter(-log10(P.Value) &gt; 4 | logFC &gt; 3 | logFC &lt; -2.5),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 5\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-6-1",
+    "href": "kmer.html#k-6-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 6",
+    "text": "k = 6\n\n\nCode\ntopRes(k6topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 6-mers.\",\n           nrow(dplyr::filter(k6topTable, DE)),\n           \"of\",\n           nrow(k6topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk6topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 6\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are some differences.\n\n\n\n\n\n\nCode\nk6topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(-log10(P.Value) &gt; 6 | logFC &gt; 6 | logFC &lt; -2.3),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 6\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-7-1",
+    "href": "kmer.html#k-7-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 7",
+    "text": "k = 7\n\n\nCode\ntopRes(k7topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 7-mers.\",\n           nrow(dplyr::filter(k7topTable, DE)),\n           \"of\",\n           nrow(k7topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk7topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 7\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk7topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(-log10(P.Value) &gt; 6.4 | logFC &gt; 10 | logFC &lt; -5),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 7\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-8-1",
+    "href": "kmer.html#k-8-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 8",
+    "text": "k = 8\n\n\nCode\ntopRes(k8topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 8-mers.\",\n           nrow(dplyr::filter(k8topTable, DE)),\n           \"of\",\n           nrow(k8topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk8topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 8\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk8topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(-log10(P.Value) &gt; 7.2 | logFC &gt; 12.5 | logFC &lt; -8),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 8\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-9-1",
+    "href": "kmer.html#k-9-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 9",
+    "text": "k = 9\n\n\nCode\ntopRes(k9topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 9-mers.\",\n           nrow(dplyr::filter(k9topTable, DE)),\n           \"of\",\n           nrow(k9topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk9topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 9\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk9topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(DE & -log10(P.Value) &gt; 7.5 | logFC &lt; -10 | logFC &gt; 15),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 9\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-10-1",
+    "href": "kmer.html#k-10-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 10",
+    "text": "k = 10\n\n\nCode\ntopRes(k10topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 10-mers.\",\n           nrow(dplyr::filter(k10topTable, DE)),\n           \"of\",\n           nrow(k10topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk10topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 10\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk10topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(-log10(P.Value) &gt; 8.5 | logFC &gt; 20 | logFC &lt; -13.5),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 10\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-11-1",
+    "href": "kmer.html#k-11-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 11",
+    "text": "k = 11\n\n\nCode\ntopRes(k11topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 11-mers.\",\n           nrow(dplyr::filter(k11topTable, DE)),\n           \"of\",\n           nrow(k11topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk11topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 11\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk11topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(-log10(P.Value) &gt; 8.5 | logFC &gt; 20 | logFC &lt; -13.5),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 11\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "kmer.html#k-12-1",
+    "href": "kmer.html#k-12-1",
+    "title": "rRNADepletion_s4ter",
+    "section": "k = 12",
+    "text": "k = 12\n\n\nCode\ntopRes(k12topTable,\n       cap = paste(\n           \"The top 100 differentially expressed 12-mers.\",\n           nrow(dplyr::filter(k12topTable, DE)),\n           \"of\",\n           nrow(k12topTable),\n           \"detected sequences were classified as DE with a BY p-value &lt; 0.05.\"\n       )\n)\n\n\n\n\n\n\n\n\nCode\nk12topTable %&gt;%\n    ggplot(aes(P.Value)) +\n    geom_histogram(\n        binwidth = 0.02,\n        colour = \"black\", fill = \"grey90\"\n    ) +\n    labs(title = \"k = 12\")\n\n\n\n\n\nHistogram of p-values. Values follow the expected distribution when there are many differences.\n\n\n\n\n\n\nCode\nk12topTable %&gt;%\n    ggplot(aes(logFC, -log10(P.Value), colour = DE)) +\n    geom_point(alpha = 0.5) +\n    scale_colour_manual(values = c(\"black\", \"grey50\", \"red\")) +\n    geom_text_repel(\n        data = . %&gt;%\n            dplyr::filter(-log10(P.Value) &gt; 8.5 | logFC &gt; 20 | logFC &lt; -13.5),\n        aes(label = mer, color = \"black\")\n    ) +\n    labs(x = \"logFC\", y = expression(paste(-log[10], \"(p)\")), title = \"k = 11\") +\n    theme_bw() +\n    theme(legend.position = \"none\")\n\n\n\n\n\nVolcano plot showing -log10(p-value) against logFC. Kmers classified as DE with BY p-value &lt; 0.05 are highlighted in red.",
+    "crumbs": [
+      "k-mer"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html",
+    "href": "qc_rRNA_removed.html",
+    "title": "rRNADepletion_s4ter",
+    "section": "",
+    "text": "Code\nsuppressPackageStartupMessages({\n    ## Common packages\n    library(tidyverse)\n    library(magrittr)\n    library(here)\n    library(kableExtra)\n    library(RColorBrewer)\n    library(ggpubr)\n    library(scales)\n    library(AnnotationHub)\n    library(ggrepel)\n    library(ggtext)\n    library(glue)\n    library(DT)\n    library(pander)\n    library(reactable)\n    ## Document-specific packages\n    library(ngsReports)\n})\n\n\n\n\nCode\ntheme_set(theme_bw())\n\n\n\n\nCode\nlb_reactable &lt;- function(\n        tbl, highlight = TRUE, striped = TRUE, compact = TRUE,\n        wrap = FALSE, resizable = TRUE, searchable = TRUE,\n        style = list(fontFamily = \"Calibri, sans-serif\"), ...\n){\n    reactable(\n        tbl,\n        highlight = highlight, striped = striped, compact = compact,\n        wrap = wrap, resizable = TRUE, searchable = TRUE,\n        style = style, ...\n    )\n}\ntooltip &lt;- function(value, tooltip) {\n    tags$abbr(\n        style = \"text-decoration: underline; text-decoration-style: solid; cursor: help\",\n        title = tooltip,\n        value\n    )\n}\nreact_format &lt;- function(format, digits = 2){\n    function(val, ind, col_name){\n        formatC(val, digits = digits, format = format)\n    }\n}\nreact_numeric &lt;- function(format, digits = 2){\n    colDef(cell = function(val, ind, col_name){\n        formatC(val, digits = digits, format = format)\n    })\n}",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#load-data",
+    "href": "qc_rRNA_removed.html#load-data",
+    "title": "rRNADepletion_s4ter",
+    "section": "Load data",
+    "text": "Load data\n\n\nCode\nfqc_raw &lt;- list.files(\n    path = \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/raw_data/FastQC\",\n    pattern = \"zip\",\n    full.names = TRUE\n)\n## Fix raw FQC zip file structure caused by workflow renaming of FQC files\n## Otherwise we encounter a bug in ngsReports\nfqc_raw %&gt;%\n    lapply(\\(x){\n        contents &lt;- unzip(x, list = TRUE)\n        old_dir &lt;- str_remove(contents$Name[1], \"/$\")\n        new_dir &lt;- str_remove(basename(x), \".zip$\")\n        if (old_dir != new_dir) {\n            unzip(x)\n            file.remove(x)\n            system(paste('mv', old_dir, new_dir))\n            files_to_zip &lt;- list.files(here(old_dir), full.names = TRUE)\n            zip(x, new_dir)\n            unlink(new_dir, recursive = TRUE)\n        }\n    })\nfqc_raw &lt;- fqc_raw %&gt;%\n    FastqcDataList()\n## Rename fqc_raw to names used by workflow\nsample_rename &lt;- read_tsv(here(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/units.tsv\")) %&gt;%\n    pivot_longer(cols = c(\"fq1\", \"fq2\"), values_to = \"fq\") %&gt;%\n    dplyr::select(new = sample, old = fq, everything()) %&gt;%\n    mutate(\n        old = basename(old),\n        new = ifelse(\n            str_detect(old, \"_R1.fastq.gz$\"),\n            paste0(new, \"_\", unit, \"_R1.fastq.gz\"),\n            paste0(new, \"_\", unit, \"_R2.fastq.gz\")\n        )\n    )\nfqName(fqc_raw) &lt;- vapply(fqName(fqc_raw), \\(x){\n    sample_rename$new[sample_rename$old == x]\n}, character(1), USE.NAMES = FALSE)\nfqc_raw &lt;- fqc_raw %&gt;%\n    .[str_detect(fqName(.), paste(meta$sample, collapse = \"|\"))]\n\n\n\n\nCode\nfqc_unmapped &lt;- list.files(\n    path = here(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/bwa/FastQC_fastq\"),\n    pattern = \"zip\",\n    full.names = TRUE\n) %&gt;%\n    FastqcDataList()\nfqName(fqc_unmapped) &lt;- vapply(fqName(fqc_unmapped), \\(x){\n    sample_rename$new[sample_rename$old == x]\n}, character(1), USE.NAMES = FALSE)\nfqc_unmapped &lt;- fqc_unmapped %&gt;%\n    .[str_detect(fqName(.), paste(meta$sample, collapse = \"|\"))]\n\n\n\n\nCode\nfqc_mapped &lt;- list.files(\n    path = here(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/star/FastQC_fastq/\"),\n    pattern = \"zip\",\n    full.names = TRUE\n) %&gt;%\n    FastqcDataList()\nfqName(fqc_mapped) &lt;- vapply(fqName(fqc_mapped), \\(x){\n    sample_rename$new[sample_rename$old == x]\n}, character(1), USE.NAMES = FALSE)\nfqc_mapped &lt;- fqc_mapped %&gt;%\n    .[str_detect(fqName(.), paste(meta$sample, collapse = \"|\"))]\n\n\nThe following plots were produced directly from FastQC zip archives with the ngsReports package.\nDirect comparisons between different stages of pre-processing can be made by toggling the tabs above the figures.",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#read-totals",
+    "href": "qc_rRNA_removed.html#read-totals",
+    "title": "rRNADepletion_s4ter",
+    "section": "Read totals",
+    "text": "Read totals\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotReadTotals(fqc_raw)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotReadTotals(fqc_unmapped)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotReadTotals(fqc_mapped)",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#fastqc-summary",
+    "href": "qc_rRNA_removed.html#fastqc-summary",
+    "title": "rRNADepletion_s4ter",
+    "section": "FastQC summary",
+    "text": "FastQC summary\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotSummary(fqc_raw)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSummary(fqc_unmapped)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSummary(fqc_mapped)\n\n\n\n\n\n\n\n\n\n\n\n\nFastQC reports are well-known to return WARN or FAIL when there is no actual reason for concern.\nWe assess each QC category individually in the following plots.",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#sequence-length-distribution",
+    "href": "qc_rRNA_removed.html#sequence-length-distribution",
+    "title": "rRNADepletion_s4ter",
+    "section": "Sequence length distribution",
+    "text": "Sequence length distribution\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotSeqLengthDistn(fqc_raw, plotType = \"cdf\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqLengthDistn(fqc_unmapped, plotType = \"cdf\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqLengthDistn(fqc_mapped, plotType = \"cdf\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#per-base-sequence-qualities",
+    "href": "qc_rRNA_removed.html#per-base-sequence-qualities",
+    "title": "rRNADepletion_s4ter",
+    "section": "Per base sequence qualities",
+    "text": "Per base sequence qualities\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotBaseQuals(fqc_raw, plotType = \"boxplot\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotBaseQuals(fqc_unmapped, plotType = \"boxplot\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotBaseQuals(fqc_mapped, plotType = \"boxplot\")",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#mean-sequence-quality-per-read",
+    "href": "qc_rRNA_removed.html#mean-sequence-quality-per-read",
+    "title": "rRNADepletion_s4ter",
+    "section": "Mean sequence quality per read",
+    "text": "Mean sequence quality per read\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotSeqQuals(fqc_raw, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqQuals(fqc_unmapped, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqQuals(fqc_mapped, plotType = \"line\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#per-base-sequence-content",
+    "href": "qc_rRNA_removed.html#per-base-sequence-content",
+    "title": "rRNADepletion_s4ter",
+    "section": "Per base sequence content",
+    "text": "Per base sequence content\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotSeqContent(fqc_raw, plotType = \"line\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqContent(fqc_unmapped, plotType = \"line\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqContent(fqc_mapped, plotType = \"line\")",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#adapter-content",
+    "href": "qc_rRNA_removed.html#adapter-content",
+    "title": "rRNADepletion_s4ter",
+    "section": "Adapter content",
+    "text": "Adapter content\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotAdapterContent(fqc_raw, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotAdapterContent(fqc_unmapped, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotAdapterContent(fqc_mapped, plotType = \"line\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#sequence-duplication-levels",
+    "href": "qc_rRNA_removed.html#sequence-duplication-levels",
+    "title": "rRNADepletion_s4ter",
+    "section": "Sequence duplication levels",
+    "text": "Sequence duplication levels\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotDupLevels(fqc_raw, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotDupLevels(fqc_unmapped, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotDupLevels(fqc_mapped, plotType = \"line\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#gc-content",
+    "href": "qc_rRNA_removed.html#gc-content",
+    "title": "rRNADepletion_s4ter",
+    "section": "GC content",
+    "text": "GC content\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotGcContent(fqc_raw)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(fqc_unmapped)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(fqc_mapped)\n\n\n\n\n\n\n\n\n\n\n\n\n\nRawrRNA removed (unmapped)rRNA removed (mapped)\n\n\n\n\nCode\nplotGcContent(\n    fqc_raw, plotType = \"line\",  gcType = \"Transcriptome\", usePlotly = TRUE\n)\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(\n    fqc_unmapped, plotType = \"line\",  gcType = \"Transcriptome\", usePlotly = TRUE\n)\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(\n    fqc_mapped, plotType = \"line\",  gcType = \"Transcriptome\", usePlotly = TRUE\n)",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc_rRNA_removed.html#alignments",
+    "href": "qc_rRNA_removed.html#alignments",
+    "title": "rRNADepletion_s4ter",
+    "section": "Alignments",
+    "text": "Alignments\n\n\nCode\nstar_logs &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/star/log\",\n    pattern = \"Log.final.out\",\n    full.names = TRUE\n) %&gt;%\n    importNgsLogs(type = \"star\") %&gt;%\n    mutate(\n        Filename = str_remove(Filename, \"\\\\d+_Ps2Ex3M1_\"),\n        Filename = str_remove(Filename, \"_6month_07_07_2016_F3\"),\n        Filename = str_remove(Filename, \"Log.final.out\")\n    ) %&gt;%\n    dplyr::filter(Filename %in% meta$sample)\n\n\n\n\nCode\nstar_logs %&gt;%\n    dplyr::select(sample = Filename, everything()) %&gt;%\n    left_join(meta[,c(\"sample\", \"group\")]) %&gt;%\n    ggplot(aes(sample, Uniquely_Mapped_Reads_Number)) +\n    geom_bar(aes(fill = group), stat = \"identity\") +\n    scale_y_continuous(\n        labels = scales::comma,\n        breaks = seq(0, 1e9, 2.5e7),\n        expand = expansion(c(0, 0.09))\n    ) +\n    scale_fill_manual(values = pal) +\n    coord_flip() +\n    labs(\n        title = \"Uniquely mapped reads (STAR)\",\n        x = \"Sample\",\n        y = \"Number of uniquely mapped reads\",\n        fill = \"Group\"\n    ) +\n    theme(\n        axis.text.x = element_text(angle = -40, , vjust = 1, hjust = 0)\n    )\n\n\n\n\n\n\n\n\n\n\n\nCode\nstar_logs %&gt;%\n    mutate(\n        `Uniquely mapped` = Uniquely_Mapped_Reads_Number,\n        `Multi mapped` = rowSums(across(c(\n            Number_Of_Reads_Mapped_To_Multiple_Loci,\n            Number_Of_Reads_Mapped_To_Too_Many_Loci\n        ))),\n        Unmapped = rowSums(across(c(\n            Number_Of_Reads_Unmapped_Too_Many_Mismatches,\n            Number_Of_Reads_Unmapped_Too_Short,\n            Number_Of_Reads_Unmapped_Other\n        )))\n    ) %&gt;%\n    dplyr::select(\n        sample = Filename, `Uniquely mapped`, `Multi mapped`, Unmapped\n    ) %&gt;%\n    pivot_longer(\n        cols = -sample,\n        names_to = \"Type\",\n        values_to = \"number\"\n    ) %&gt;%\n    mutate(\n        Type = str_to_sentence(str_replace_all(Type, \"_\", \" \")),\n        Type = factor(Type, levels = c(\n            ## The last factor will be plotted LHS\n            \"Unmapped\", \"Multi mapped\", \"Uniquely mapped\"\n        ))\n    ) %&gt;%\n    ggplot(aes(x = sample, y = number, fill = Type)) +\n    geom_bar(position = \"fill\", stat = \"identity\") +\n    coord_flip() +\n    scale_fill_manual(\n        values = brewer.pal(9, \"Pastel1\")[c(4, 2, 3)],\n        breaks = c(\n            \"Uniquely mapped\", \"Multi mapped\",  \"Unmapped\"\n        )\n    ) +\n    labs(\n        title = \"Alignment summary (STAR)\",\n        x = \"Sample\",\n        y = \"Read proportions\"\n    ) +\n    scale_y_continuous(\n        labels = scales::percent,\n        breaks = seq(0, 1, 0.1),\n        expand = expansion(c(0, 0))\n    )",
+    "crumbs": [
+      "QC (rRNA removed)"
+    ]
+  },
+  {
+    "objectID": "qc.html",
+    "href": "qc.html",
+    "title": "rRNADepletion_s4ter",
+    "section": "",
+    "text": "Code\nsuppressPackageStartupMessages({\n    ## Common packages\n    library(tidyverse)\n    library(magrittr)\n    library(here)\n    library(kableExtra)\n    library(RColorBrewer)\n    library(ggpubr)\n    library(scales)\n    library(AnnotationHub)\n    library(ggrepel)\n    library(ggtext)\n    library(glue)\n    library(DT)\n    library(pander)\n    library(reactable)\n    ## Document-specific packages\n    library(ngsReports)\n})\n\n\n\n\nCode\ntheme_set(theme_bw())\n\n\n\n\nCode\nlb_reactable &lt;- function(\n        tbl, highlight = TRUE, striped = TRUE, compact = TRUE,\n        wrap = FALSE, resizable = TRUE, searchable = TRUE,\n        style = list(fontFamily = \"Calibri, sans-serif\"), ...\n){\n    reactable(\n        tbl,\n        highlight = highlight, striped = striped, compact = compact,\n        wrap = wrap, resizable = TRUE, searchable = TRUE,\n        style = style, ...\n    )\n}\ntooltip &lt;- function(value, tooltip) {\n    tags$abbr(\n        style = \"text-decoration: underline; text-decoration-style: solid; cursor: help\",\n        title = tooltip,\n        value\n    )\n}\nreact_format &lt;- function(format, digits = 2){\n    function(val, ind, col_name){\n        formatC(val, digits = digits, format = format)\n    }\n}\nreact_numeric &lt;- function(format, digits = 2){\n    colDef(cell = function(val, ind, col_name){\n        formatC(val, digits = digits, format = format)\n    })\n}",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#load-data",
+    "href": "qc.html#load-data",
+    "title": "rRNADepletion_s4ter",
+    "section": "Load data",
+    "text": "Load data\n\n\nCode\nfqc_raw &lt;- list.files(\n    path = \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/raw_data/FastQC\",\n    pattern = \"zip\",\n    full.names = TRUE\n)\n## Fix raw FQC zip file structure caused by workflow renaming of FQC files\n## Otherwise we encounter a bug in ngsReports\nfqc_raw %&gt;%\n    lapply(\\(x){\n        contents &lt;- unzip(x, list = TRUE)\n        old_dir &lt;- str_remove(contents$Name[1], \"/$\")\n        new_dir &lt;- str_remove(basename(x), \".zip$\")\n        if (old_dir != new_dir) {\n            unzip(x)\n            file.remove(x)\n            system(paste('mv', old_dir, new_dir))\n            files_to_zip &lt;- list.files(here(old_dir), full.names = TRUE)\n            zip(x, new_dir)\n            unlink(new_dir, recursive = TRUE)\n        }\n    })\nfqc_raw &lt;- fqc_raw %&gt;%\n    FastqcDataList()\n## Rename fqc_raw to names used by workflow\nsample_rename &lt;- read_tsv(here(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/units.tsv\")) %&gt;%\n    pivot_longer(cols = c(\"fq1\", \"fq2\"), values_to = \"fq\") %&gt;%\n    dplyr::select(new = sample, old = fq, everything()) %&gt;%\n    mutate(\n        old = basename(old),\n        new = ifelse(\n            str_detect(old, \"_R1.fastq.gz$\"),\n            paste0(new, \"_\", unit, \"_R1.fastq.gz\"),\n            paste0(new, \"_\", unit, \"_R2.fastq.gz\")\n        )\n    )\nfqName(fqc_raw) &lt;- vapply(fqName(fqc_raw), \\(x){\n    sample_rename$new[sample_rename$old == x]\n}, character(1), USE.NAMES = FALSE)\nfqc_raw &lt;- fqc_raw %&gt;%\n    .[str_detect(fqName(.), paste(meta$sample, collapse = \"|\"))]\n\n\n\n\nCode\nfqc_trim &lt;- list.files(\n    path = here(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/trim/FastQC\"),\n    pattern = \"zip\",\n    full.names = TRUE\n) %&gt;%\n    FastqcDataList()  %&gt;%\n    .[str_detect(fqName(.), paste(meta$sample, collapse = \"|\"))]\n\n\n\n\nCode\nfqc_align &lt;- list.files(\n    path = here(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/align/FastQC\"),\n    pattern = \"zip\",\n    full.names = TRUE\n) %&gt;%\n    FastqcDataList() %&gt;%\n    .[str_detect(fqName(.), paste(meta$sample, collapse = \"|\"))]\n\n\nThe following plots were produced directly from FastQC zip archives with the ngsReports package.\nDirect comparisons between different stages of pre-processing can be made by toggling the tabs above the figures.",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#read-totals",
+    "href": "qc.html#read-totals",
+    "title": "rRNADepletion_s4ter",
+    "section": "Read totals",
+    "text": "Read totals\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotReadTotals(fqc_raw)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotReadTotals(fqc_trim)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotReadTotals(fqc_align)",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#fastqc-summary",
+    "href": "qc.html#fastqc-summary",
+    "title": "rRNADepletion_s4ter",
+    "section": "FastQC summary",
+    "text": "FastQC summary\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotSummary(fqc_raw)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSummary(fqc_trim)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSummary(fqc_align)\n\n\n\n\n\n\n\n\n\n\n\n\nFastQC reports are well-known to return WARN or FAIL when there is no actual reason for concern.\nWe assess each QC category individually in the following plots.",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#sequence-length-distribution",
+    "href": "qc.html#sequence-length-distribution",
+    "title": "rRNADepletion_s4ter",
+    "section": "Sequence length distribution",
+    "text": "Sequence length distribution\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotSeqLengthDistn(fqc_raw, plotType = \"cdf\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqLengthDistn(fqc_trim, plotType = \"cdf\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqLengthDistn(fqc_align, plotType = \"cdf\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#per-base-sequence-qualities",
+    "href": "qc.html#per-base-sequence-qualities",
+    "title": "rRNADepletion_s4ter",
+    "section": "Per base sequence qualities",
+    "text": "Per base sequence qualities\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotBaseQuals(fqc_raw, plotType = \"boxplot\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotBaseQuals(fqc_trim, plotType = \"boxplot\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotBaseQuals(fqc_align, plotType = \"boxplot\")",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#mean-sequence-quality-per-read",
+    "href": "qc.html#mean-sequence-quality-per-read",
+    "title": "rRNADepletion_s4ter",
+    "section": "Mean sequence quality per read",
+    "text": "Mean sequence quality per read\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotSeqQuals(fqc_raw, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqQuals(fqc_trim, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqQuals(fqc_align, plotType = \"line\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#per-base-sequence-content",
+    "href": "qc.html#per-base-sequence-content",
+    "title": "rRNADepletion_s4ter",
+    "section": "Per base sequence content",
+    "text": "Per base sequence content\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotSeqContent(fqc_raw, plotType = \"line\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqContent(fqc_trim, plotType = \"line\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotSeqContent(fqc_align, plotType = \"line\")",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#adapter-content",
+    "href": "qc.html#adapter-content",
+    "title": "rRNADepletion_s4ter",
+    "section": "Adapter content",
+    "text": "Adapter content\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotAdapterContent(fqc_raw, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotAdapterContent(fqc_trim, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotAdapterContent(fqc_align, plotType = \"line\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#sequence-duplication-levels",
+    "href": "qc.html#sequence-duplication-levels",
+    "title": "rRNADepletion_s4ter",
+    "section": "Sequence duplication levels",
+    "text": "Sequence duplication levels\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotDupLevels(fqc_raw, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotDupLevels(fqc_trim, plotType = \"line\") +\n    theme(legend.position = \"none\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotDupLevels(fqc_align, plotType = \"line\") +\n    theme(legend.position = \"none\")",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#gc-content",
+    "href": "qc.html#gc-content",
+    "title": "rRNADepletion_s4ter",
+    "section": "GC content",
+    "text": "GC content\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotGcContent(fqc_raw)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(fqc_trim)\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(fqc_align)\n\n\n\n\n\n\n\n\n\n\n\n\n\nRawTrimmedAligned\n\n\n\n\nCode\nplotGcContent(\n    fqc_raw, plotType = \"line\",  gcType = \"Transcriptome\", usePlotly = TRUE\n)\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(\n    fqc_trim, plotType = \"line\",  gcType = \"Transcriptome\", usePlotly = TRUE\n)\n\n\n\n\n\n\n\n\n\n\nCode\nplotGcContent(\n    fqc_align, plotType = \"line\",  gcType = \"Transcriptome\", usePlotly = TRUE\n)",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#alignments",
+    "href": "qc.html#alignments",
+    "title": "rRNADepletion_s4ter",
+    "section": "Alignments",
+    "text": "Alignments\n\n\nCode\nstar_logs &lt;- list.files(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/align/log\",\n    pattern = \".log.final.out\",\n    full.names = TRUE\n) %&gt;%\n    importNgsLogs(type = \"star\") %&gt;%\n    mutate(Filename = str_remove(Filename, \".log.final.out\")) %&gt;%\n    dplyr::filter(Filename %in% meta$sample)\n\n\n\n\nCode\nstar_logs %&gt;%\n    dplyr::select(sample = Filename, everything()) %&gt;%\n    left_join(meta[,c(\"sample\", \"group\")]) %&gt;%\n    ggplot(aes(sample, Uniquely_Mapped_Reads_Number)) +\n    geom_bar(aes(fill = group), stat = \"identity\") +\n    scale_y_continuous(\n        labels = scales::comma,\n        breaks = seq(0, 1e9, 2.5e7),\n        expand = expansion(c(0, 0.09))\n    ) +\n    scale_fill_manual(values = pal) +\n    coord_flip() +\n    labs(\n        title = \"Uniquely mapped reads (STAR)\",\n        x = \"Sample\",\n        y = \"Number of uniquely mapped reads\",\n        fill = \"Group\"\n    ) +\n    theme(\n        axis.text.x = element_text(angle = -40, , vjust = 1, hjust = 0)\n    )\n\n\n\n\n\n\n\n\n\n\n\nCode\nstar_logs %&gt;%\n    mutate(\n        `Uniquely mapped` = Uniquely_Mapped_Reads_Number,\n        `Multi mapped` = rowSums(across(c(\n            Number_Of_Reads_Mapped_To_Multiple_Loci,\n            Number_Of_Reads_Mapped_To_Too_Many_Loci\n        ))),\n        Unmapped = rowSums(across(c(\n            Number_Of_Reads_Unmapped_Too_Many_Mismatches,\n            Number_Of_Reads_Unmapped_Too_Short,\n            Number_Of_Reads_Unmapped_Other\n        )))\n    ) %&gt;%\n    dplyr::select(\n        sample = Filename, `Uniquely mapped`, `Multi mapped`, Unmapped\n    ) %&gt;%\n    pivot_longer(\n        cols = -sample,\n        names_to = \"Type\",\n        values_to = \"number\"\n    ) %&gt;%\n    mutate(\n        Type = str_to_sentence(str_replace_all(Type, \"_\", \" \")),\n        Type = factor(Type, levels = c(\n            ## The last factor will be plotted LHS\n            \"Unmapped\", \"Multi mapped\", \"Uniquely mapped\"\n        ))\n    ) %&gt;%\n    ggplot(aes(x = sample, y = number, fill = Type)) +\n    geom_bar(position = \"fill\", stat = \"identity\") +\n    coord_flip() +\n    scale_fill_manual(\n        values = brewer.pal(9, \"Pastel1\")[c(4, 2, 3)],\n        breaks = c(\n            \"Uniquely mapped\", \"Multi mapped\",  \"Unmapped\"\n        )\n    ) +\n    labs(\n        title = \"Alignment summary (STAR)\",\n        x = \"Sample\",\n        y = \"Read proportions\"\n    ) +\n    scale_y_continuous(\n        labels = scales::percent,\n        breaks = seq(0, 1, 0.1),\n        expand = expansion(c(0, 0))\n    )",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "qc.html#counts",
+    "href": "qc.html#counts",
+    "title": "rRNADepletion_s4ter",
+    "section": "Counts",
+    "text": "Counts\nGene-level counts were determined with featureCounts from the subread package.\nRNA-seq libraries can be stranded to determine whether the read represents the plus or the minus strand, and therefore the orientation of the transcript. Often this information is not provided by the sequencing provider unless explicitly asked. featureCounts requires specification of the strandedness of the library for best results. When strandedness information is unknown, we can run featureCounts with all three possible options (stranded, unstranded, reverse-stranded), and assess the assignment rates to infer the strandedness of the original library. Unltimately we choose the featureCounts output with the highest assignment rate.\n\n\nCode\nload_fc_summary &lt;- function(file){\n    read_tsv(file) %&gt;%\n        pivot_longer(cols = ends_with(\".bam\"), names_to = \"sample\", values_to = \"reads\") %&gt;%\n        mutate(\n            Status = str_replace_all(Status, \"_\", \" \"),\n            Status = factor(Status),\n            sample = str_remove(basename(sample), \".bam$\"),\n            sample = factor(sample),\n        )\n}\n\n\n\n\nCode\nfc_str &lt;- load_fc_summary(here(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/featureCounts\",\n    \"stranded/all.featureCounts.summary\"\n)) %&gt;%\n    mutate(strandedness = \"Stranded\")\nfc_uns &lt;- load_fc_summary(here(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/featureCounts\",\n    \"unstranded/all.featureCounts.summary\"\n)) %&gt;%\n    mutate(strandedness = \"Unstranded\")\nfc_rev &lt;- load_fc_summary(here(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/featureCounts\",\n    \"reverse/all.featureCounts.summary\"\n)) %&gt;%\n    mutate(strandedness = \"Reverse Stranded\")\nfc_all &lt;- rbind(fc_str, fc_uns, fc_rev) %&gt;%\n    dplyr::mutate(strandedness = factor(\n        strandedness, levels = c(\"Stranded\", \"Unstranded\", \"Reverse Stranded\")\n    )) %&gt;%\n    dplyr::filter(sample %in% meta$sample)\n\n\nDescription of featureCounts unassigned read types:\n\nUnassigned Unmapped: unmapped reads cannot be assigned.\nUnassigned Read Type: reads that have an unexpected read type (eg. being a single end read included in a paired end dataset) and also cannot be counted with confidence (eg. due to stranded counting). Such reads are typically generated from a read trimming program.\nUnassigned Singleton: read pairs that have only one end mapped.\nUnassigned MappingQuality: alignments with a mapping quality score lower than the threshold.\nUnassigned Chimera: two ends in a paired end alignment are located on different chromosomes or have unexpected orientation.\nUnassigned FragementLength: fragment length inferred from paired end alignment does not meet the length criteria.\nUnassigned Duplicate: alignments marked as duplicate (indicated in the FLAG field).\nUnassigned MultiMapping: alignments reported for multi-mapping reads (indicated by ‘NH’ tag).\nUnassigned Secondary: alignments reported as secondary alignments (indicated in the FLAG field).\nUnassigned Split (or Unassigned NonSplit): alignments that contain junctions (or do not contain junctions).\nUnassigned NoFeatures: alignments that do not overlap any feature.\nUnassigned Overlapping Length: alignments that do not overlap any feature (or metafeature) with the minimum required overlap length.\nUnassigned Ambiguity: alignments that overlap two or more features (feature-level summarization) or meta-features (meta-feature-level summarization).\n\n\n\nCode\nfc_all %&gt;%\n    dplyr::filter(reads != 0) %&gt;%\n    mutate(\n        Status = fct_relevel(\n            Status, \"Unassigned Overlapping Length\", \"Unassigned NoFeatures\",\n            \"Unassigned MultiMapping\", \"Unassigned Ambiguity\", \"Assigned\"\n        )\n    ) %&gt;%\n    ggplot(aes(x = sample, y = reads, fill = Status)) +\n    geom_bar(position = \"fill\", stat = \"identity\") +\n    coord_flip() +\n    facet_wrap(~strandedness, ncol = 1) +\n    scale_fill_manual(\n        values = brewer.pal(9, \"Pastel1\"),\n        breaks = c(\n            \"Assigned\", \"Unassigned Ambiguity\", \"Unassigned MultiMapping\",\n            \"Unassigned NoFeatures\", \"Unassigned Overlapping Length\"\n        )\n    ) +\n    labs(\n        title = \"Gene counts summary\",\n        x = \"Sample\",\n        y = \"Total reads\",\n        fill = \"Type\"\n    ) +\n    scale_y_continuous(\n        labels = scales::percent,\n        breaks = seq(0, 1, 0.1),\n        expand = expansion(c(0, 0))\n    ) +\n    theme(\n        axis.text.x = element_text(angle = -40, , vjust = 1, hjust = 0)\n    )\n\n\n\n\n\n\n\n\n\n\n\nCode\nfc_all %&gt;%\n    dplyr::filter(\n        reads != 0,\n        strandedness != \"Stranded\"\n    ) %&gt;%\n    ggplot(aes(x = strandedness, y = reads, fill = Status)) +\n    geom_violin() +\n    geom_boxplot(width=0.2, show.legend = FALSE) +\n    facet_wrap(~Status, scales = \"free_y\", ncol = 2) +\n    scale_fill_manual(\n        values = brewer.pal(8, \"Pastel1\")\n    ) +\n    scale_y_continuous(labels = scales::scientific) +\n    labs(\n        x = \"Strandedness\",\n        y = \"Total reads\",\n        fill = \"Type\"\n    )",
+    "crumbs": [
+      "QC"
+    ]
+  },
+  {
+    "objectID": "de.html",
+    "href": "de.html",
+    "title": "rRNADepletion_s4ter",
+    "section": "",
+    "text": "Code\nlibrary(tidyverse)\nlibrary(magrittr)\nlibrary(ngsReports)\nlibrary(here)\nlibrary(scales)\nlibrary(ggpubr)\nlibrary(kableExtra)\nlibrary(AnnotationHub)\nlibrary(ensembldb)\nlibrary(edgeR)\nlibrary(corrplot)\nlibrary(DT)\nlibrary(ggrepel)\nlibrary(msigdbr)\nlibrary(fgsea)\nlibrary(pander)\n\n\n\n\nCode\nif (interactive()) setwd(here::here())\ntheme_set(theme_bw())",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#sample-information",
+    "href": "de.html#sample-information",
+    "title": "rRNADepletion_s4ter",
+    "section": "Sample information",
+    "text": "Sample information\n\n\nCode\nfiles &lt;- list.files(\n    path = \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/0_rawData/FastQC\",\n    pattern = \"zip\",\n    full.names = TRUE\n)\n\n\n\n\nCode\nsamples &lt;- tibble(\n    sample = str_remove(basename(files), \"_fastqc.zip\"),\n    dataset = NA,\n    organism = NA\n) %&gt;%\n    mutate(\n        dataset = ifelse(\n            str_detect(sample, \"Ps2Ex\"), \"Psen2S4Ter\", dataset\n        ),\n        organism = ifelse(\n            str_detect(sample, \"Ps2Ex\"), \"zebrafish\", organism\n        )\n    )\ndatasets &lt;- samples$dataset %&gt;% \n    unique()\n\n\nThe following analysis involves 12 paired-end samples across 1 dataset(s): Psen2S4Ter.",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#rrna-proportions",
+    "href": "de.html#rrna-proportions",
+    "title": "rRNADepletion_s4ter",
+    "section": "rRNA proportions",
+    "text": "rRNA proportions\n\n\nCode\nrRnaProp &lt;- read.delim(\n    \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/3_bwa/log/samples.mapped.all\", \n    sep = \":\", \n    col.names = c(\"sample\", \"proportion\"), \n    header = FALSE\n) %&gt;% \n    mutate(\n        sample = str_remove_all(sample, \"_6month_F3|[0-9]*_Ps2Ex3M1_|.mapped\"),\n        sample = basename(sample),\n        proportion = proportion/100,\n        dataset = \"Psen2S4Ter\",\n        organism = \"zebrafish\",\n        group = str_extract(sample, \"(WT|Heter|Hom)\")\n    ) %&gt;%\n    as_tibble()\nrRnaProp$dataset %&lt;&gt;%\n    factor(levels = c(\"Psen2S4Ter\"))\n\n\n\n\nCode\nrRnaProp %&gt;%\n    ggplot(aes(sample, proportion)) +\n    geom_bar(stat = \"identity\", position = \"dodge\") +\n    facet_wrap(~dataset, scales = \"free_x\") +\n    scale_y_continuous(labels = percent) +\n    labs(x = \"Sample\", y = \"Percent of Total\", fill = \"Read pair\") +\n    theme(axis.text.x = element_text(angle = 90, hjust = 1))\n\n\n\n\n\nPercentages of each library that align to rRNA sequences with bwa mem.\n\n\n\n\n\n\nCode\nrRnaProp %&gt;%\n    ggplot(aes(group, proportion, fill = group)) +\n    geom_boxplot() +\n    scale_y_continuous(labels = percent) +\n    labs(x = \"Genotype\", y = \"Percent of total RNA\", title = \"rRNA proportions of each genotype\") +\n    scale_fill_discrete(\n        name = \"Genotype\"\n    )",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#gene-gc-content-and-length",
+    "href": "de.html#gene-gc-content-and-length",
+    "title": "rRNADepletion_s4ter",
+    "section": "Gene GC content and length",
+    "text": "Gene GC content and length\n\n\nCode\n# dgeList &lt;- read_tsv(\"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/4_star2pass/featureCounts/genes.out\") %&gt;%\ndgeList &lt;- read_tsv(\n    paste0(\n        \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter\",\n        \"/smk-rnaseq-counts-1.2.2/results/featureCounts/reverse/all.featureCounts\"\n    ),\n    comment = \"#\"\n) %&gt;%\n    dplyr::select(-c(Chr, Start, End, Strand, Length)) %&gt;%\n    set_colnames(basename(colnames(.))) %&gt;%\n    set_colnames(str_remove(colnames(.), \"\\\\.bam$\")) %&gt;%\n    as.data.frame() %&gt;%\n    column_to_rownames(\"Geneid\") %&gt;%\n    DGEList() %&gt;%\n    calcNormFactors()\n\n\n\n\nCode\ndgeList$genes &lt;- genesGR_Dr[rownames(dgeList),]\nmcols(dgeList$genes) %&lt;&gt;% \n    as.data.frame() %&gt;% \n    left_join(geneGcLen_Dr)\naddInfo &lt;- tibble(\n    sample = rRnaProp$sample,\n    dataset = \"Psen2S4Ter\",\n    organism = \"zebrafish\",\n    rRNA = rRnaProp$proportion\n)\ndgeList$samples %&lt;&gt;%\n    rownames_to_column(\"rowname\") %&gt;%\n    mutate(sample = rowname) %&gt;%\n    left_join(addInfo) %&gt;%\n    column_to_rownames(\"rowname\")\n# dgeList$samples$filenames &lt;- list.files(\n#   \"/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/2_alignedData/bam\", \n#   pattern = \".bam$\", \n#   full.names = TRUE\n# )\ndgeList$samples$group &lt;- colnames(dgeList) %&gt;%\n    str_extract(\"(WT|Heter|Hom)\") %&gt;%\n    factor(levels = c(\"WT\", \"Heter\", \"Hom\"))\n\n\n\n\nCode\ngcInfo &lt;- function(x) {\n    x$counts %&gt;%\n        as.data.frame() %&gt;%\n        rownames_to_column(\"gene_id\") %&gt;%\n        as_tibble() %&gt;%\n        pivot_longer(\n            cols = colnames(x), \n            names_to = \"sample\", \n            values_to = \"counts\"\n        ) %&gt;%\n        dplyr::filter(\n            counts &gt; 0\n        ) %&gt;%\n        left_join(\n            geneGcLen_Dr\n        ) %&gt;%\n        dplyr::select(\n            ends_with(\"id\"), sample, counts, aveGc, maxLen\n        ) %&gt;%\n        split(f = .$sample) %&gt;%\n        lapply(\n            function(x){\n                DataFrame(\n                    gc = Rle(x$aveGc, x$counts),\n                    logLen = Rle(log10(x$maxLen), x$counts)\n                )\n            }\n        ) \n}\ngcSummary &lt;- function(x) {\n    x %&gt;%\n        vapply(function(x){\n            c(mean(x$gc), sd(x$gc), mean(x$logLen), sd(x$logLen))\n        }, numeric(4)\n        ) %&gt;%\n        t() %&gt;%\n        set_colnames(\n            c(\"mn_gc\", \"sd_gc\", \"mn_logLen\", \"sd_logLen\")\n        ) %&gt;%\n        as.data.frame() %&gt;%\n        rownames_to_column(\"sample\") %&gt;%\n        as_tibble()\n}\n\n\n\n\nCode\nrle &lt;- gcInfo(dgeList)\n\n\n\n\nCode\nsumGc &lt;- gcSummary(rle)\n\n\n\n\nCode\na &lt;- sumGc %&gt;%\n    left_join(dgeList$samples) %&gt;%\n    ggplot(aes(rRNA, mn_logLen)) +\n    geom_point(aes(colour = group), size = 3) +\n    geom_smooth(method = \"lm\") +\n    scale_x_continuous(labels = percent) +\n    labs(\n        x = \"rRNA Proportion of Initial Library\",\n        y = \"Mean log(Length)\",\n        colour = \"Genotype\"\n    ) \nb &lt;- sumGc %&gt;%\n    left_join(dgeList$samples) %&gt;%\n    ggplot(aes(rRNA, mn_gc)) +\n    geom_point(aes(colour = group), size = 3) +\n    geom_smooth(method = \"lm\") +\n    scale_y_continuous(labels = percent) +\n    scale_x_continuous(labels = percent) +\n    labs(\n        x = \"rRNA Proportion of Initial Library\",\n        y = \"Mean GC Content\",\n        colour = \"Genotype\"\n    )\nggarrange(\n    a, b, ncol = 2, nrow = 1, \n    common.legend = TRUE, legend = \"bottom\"\n) %&gt;%\n    annotate_figure(\"PsenS4Ter Dataset (D. rerio)\")\n\n\n\n\n\nComparison of residual bias potentially introduced by incomplete rRNA removal. Regression lines are shown along with standard error bands for each comparison.",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#pca",
+    "href": "de.html#pca",
+    "title": "rRNADepletion_s4ter",
+    "section": "PCA",
+    "text": "PCA\n\n\nCode\ngenes2keep &lt;- dgeList %&gt;%\n    cpm() %&gt;%\n    is_greater_than(1) %&gt;%\n    rowSums() %&gt;%\n    is_weakly_greater_than(6)\ndgeFilt &lt;- dgeList[genes2keep,, keep.lib.sizes = FALSE] %&gt;%\n    calcNormFactors()\n\n\n\n\nCode\npca &lt;- cpm(dgeFilt, log = TRUE) %&gt;%\n    t() %&gt;%\n    prcomp()\n\n\n\n\nCode\npcaCor &lt;- pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    left_join(sumGc) %&gt;%\n    as_tibble() %&gt;% \n    left_join(dgeList$samples) %&gt;%\n    dplyr::select(\n        PC1, PC2, PC3, \n        Mean_GC = mn_gc, \n        Mean_Length = mn_logLen, \n        rRna_Proportion = rRNA\n    ) %&gt;% \n    cor()\n\n\n\n\nCode\na &lt;- pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    left_join(dgeList$samples) %&gt;%\n    as_tibble() %&gt;%\n    ggplot(aes(PC1, PC2)) +\n    geom_point(aes(colour = group), size = 2) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(pca)$importance[\"Proportion of Variance\",\"PC1\"]),\")\"),\n        y = paste0(\"PC2 (\", percent(summary(pca)$importance[\"Proportion of Variance\",\"PC2\"]),\")\"),\n        colour = \"Genotype\"\n    )\nb &lt;- pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    left_join(dgeList$samples) %&gt;%\n    ggplot(aes(PC1, rRNA, label = rRNA)) +\n    geom_point(aes(colour = group), size = 2) +\n    geom_smooth(method = \"lm\") +\n    geom_text_repel(show.legend = FALSE) +\n    scale_y_continuous(labels = percent) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(pca)$importance[\"Proportion of Variance\",\"PC1\"]),\")\"),\n        y = \"rRNA Proportion of Initial Library\",\n        colour = \"Genotype\"\n    )\nc &lt;- pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    left_join(sumGc) %&gt;%\n    left_join(dgeList$samples) %&gt;%\n    as_tibble() %&gt;%\n    ggplot(aes(PC1, mn_logLen)) +\n    geom_point(aes(colour = group), size = 2) +\n    geom_smooth(method = \"lm\") +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(pca)$importance[\"Proportion of Variance\",\"PC1\"]),\")\"),\n        y = \"Mean log(Length)\",\n        colour = \"Genotype\"\n    )\nd &lt;- pca$x %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"sample\") %&gt;%\n    left_join(sumGc) %&gt;%\n    left_join(dgeList$samples) %&gt;%\n    as_tibble() %&gt;%\n    ggplot(aes(PC1, mn_gc)) +\n    geom_point(aes(colour = group), size = 2) +\n    geom_smooth(method = \"lm\") +\n    scale_y_continuous(labels = percent) +\n    labs(\n        x = paste0(\"PC1 (\", percent(summary(pca)$importance[\"Proportion of Variance\",\"PC1\"]),\")\"),\n        y = \"Mean GC\",\n        colour = \"Genotype\"\n    )\nggarrange(\n    a, b, c, d, ncol = 2, nrow = 2,\n    common.legend = TRUE, legend = \"bottom\"\n) %&gt;%\n    annotate_figure(\"Psen2S4Ter\")\n\n\n\n\n\nPCA plot showing rRNA proportion, mean GC content and mean log(length) after summarisation to gene-level.\n\n\n\n\n\n\nCode\ncorrplot(\n    pcaCor,\n    type = \"lower\", \n    diag = FALSE, \n    addCoef.col = 1, addCoefasPercent = TRUE\n)\n\n\n\n\n\nCorrelations between the first three principal components and measured variables: mean GC content, mean log(length) and rRNA proportion.",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#rrna",
+    "href": "de.html#rrna",
+    "title": "rRNADepletion_s4ter",
+    "section": "rRNA",
+    "text": "rRNA\n\n\nCode\ndesign_r &lt;- model.matrix(~rRNA, data = dgeFilt$samples)\n\n\n\n\nCode\ndisp_r &lt;- estimateDisp(dgeFilt, design_r)\nplotBCV(disp_r)\n\n\n\n\n\n\n\n\n\n\n\nCode\nfit_r &lt;- glmQLFit(disp_r)\nplotQLDisp(fit_r)\n\n\n\n\n\n\n\n\n\n\n\nCode\ntt_r &lt;- glmQLFTest(fit_r) %&gt;%\n    topTags(n = Inf) %&gt;%\n    .[[\"table\"]] %&gt;%\n    rename_all(\n        str_remove, pattern = \"ID.\"\n    ) %&gt;%\n    dplyr::select(\n        Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, \n        P.Value = PValue, FDR, aveLen, maxLen, aveGc, longestGc\n    ) %&gt;%\n    as_tibble() %&gt;%\n    mutate(\n        Bonf = p.adjust(P.Value, \"bonf\"),\n        DE = FDR &lt; 0.05\n    )\n\n\n\n\nCode\ntt_r %&gt;%\n    dplyr::filter(DE) %&gt;%\n    dplyr::slice(1:1000) %&gt;%\n    dplyr::select(-gene_biotype, -DE, -aveLen, -maxLen, -aveGc, -longestGc) %&gt;%\n    mutate(across(c(\"P.Value\", \"FDR\", \"Bonf\"), ~ sprintf(\"%.2e\", .x))) %&gt;%\n    datatable(\n        options = list(pageLength = 10), \n        class = \"striped hover condensed responsive\", \n        filter = \"top\",\n        caption = paste0(\n            \"rRNA: \",\n            nrow(dplyr::filter(tt_r, DE)),\n            \" of \",\n            nrow(tt_r),\n            \" genes were classified as differentially expressed \",\n            \"with a FDR &lt; 0.05. \",\n            \"If more than 1000 genes were classified as DE, only the top 1000 are shown.\"\n        )\n    ) %&gt;%\n    formatRound(c(\"logFC\", \"logCPM\", \"F\"), digits = 2)",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#genotype",
+    "href": "de.html#genotype",
+    "title": "rRNADepletion_s4ter",
+    "section": "Genotype",
+    "text": "Genotype\n\n\nCode\ndesign_g &lt;- model.matrix(~group, data = dgeFilt$samples)\n\n\n\n\nCode\ndisp_g &lt;- estimateDisp(dgeFilt, design_g)\nplotBCV(disp_g)\n\n\n\n\n\n\n\n\n\n\n\nCode\nfit_g &lt;- glmQLFit(disp_g)\nplotQLDisp(fit_g)\n\n\n\n\n\n\n\n\n\n\n\nCode\ntt_g &lt;- colnames(design_g) %&gt;%\n    str_subset(\"Intercept\", negate = TRUE) %&gt;%\n    sapply(function(x){\n        glmQLFTest(fit_g, coef = x) %&gt;%\n            topTags(n = Inf) %&gt;%\n            .[[\"table\"]] %&gt;%\n            rename_all(\n                str_remove, pattern = \"ID.\"\n            ) %&gt;%\n            dplyr::select(\n                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, \n                P.Value = PValue, FDR\n            ) %&gt;%\n            as_tibble() %&gt;%\n            mutate(\n                Bonf = p.adjust(P.Value, \"bonf\"), \n                coef = x,\n                DE = FDR &lt; 0.05\n            )\n    },\n    simplify = FALSE)\n\n\n\n\nCode\ndisplayRes_de(tt_g$groupHeter)\n\n\n\n\n\n\nCode\ndisplayRes_de(tt_g$groupHom)",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#rrna-genotype",
+    "href": "de.html#rrna-genotype",
+    "title": "rRNADepletion_s4ter",
+    "section": "rRNA + genotype",
+    "text": "rRNA + genotype\n\n\nCode\ndesign_gr &lt;- model.matrix(~rRNA + group, data = dgeFilt$samples)\n\n\n\n\nCode\ndisp_gr &lt;- estimateDisp(dgeFilt, design_gr)\nplotBCV(disp_gr)\n\n\n\n\n\n\n\n\n\n\n\nCode\nfit_gr &lt;- glmQLFit(disp_gr)\nplotQLDisp(fit_gr)\n\n\n\n\n\n\n\n\n\n\n\nCode\ntt_gr &lt;- colnames(design_gr) %&gt;%\n    str_subset(\"Intercept\", negate = TRUE) %&gt;%\n    sapply(function(x){\n        glmQLFTest(fit_gr, coef = x) %&gt;%\n            topTags(n = Inf) %&gt;%\n            .[[\"table\"]] %&gt;%\n            rename_all(\n                str_remove, pattern = \"ID.\"\n            ) %&gt;%\n            dplyr::select(\n                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, \n                P.Value = PValue, FDR,\n            ) %&gt;%\n            as_tibble() %&gt;%\n            mutate(\n                Bonf = p.adjust(P.Value, \"bonf\"), \n                coef = x,\n                DE = FDR &lt; 0.05\n            )\n    },\n    simplify = FALSE)\n\n\n\n\nCode\ndisplayRes_de(tt_gr$rRNA)\n\n\n\n\n\n\nCode\ndisplayRes_de(tt_gr$groupHeter)\n\n\n\n\n\n\nCode\ndisplayRes_de(tt_gr$groupHom)",
+    "crumbs": [
+      "DGE"
+    ]
+  },
+  {
+    "objectID": "de.html#rrna-genotype-deconvoluted",
+    "href": "de.html#rrna-genotype-deconvoluted",
+    "title": "rRNADepletion_s4ter",
+    "section": "rRNA + genotype (deconvoluted)",
+    "text": "rRNA + genotype (deconvoluted)\n\n\nCode\ndesign_deconv &lt;- design_gr %&gt;%\n    as.data.frame() %&gt;%\n    rownames_to_column(\"ID\") %&gt;%\n    mutate(\n        groupWT = as.integer(str_detect(ID, \"WT\")),\n        across(\n            .cols = starts_with(\"group\"),\n            .fns = function(x){\n                x &lt;- x - .$rRNA\n                x[x&lt;0] &lt;- 0\n                x\n            }\n        )\n    ) %&gt;%\n    dplyr::select(\n        ID, rRNA, starts_with(\"group\")\n    ) %&gt;%\n    column_to_rownames(\"ID\") %&gt;%\n    as.matrix()\ncont_deconv &lt;-makeContrasts(\n    groupHeter = groupHeter - groupWT,\n    groupHom = groupHom - groupWT,\n    rRNA = rRNA,\n    levels = colnames(design_deconv)\n)\n\n\n\n\nCode\ndisp_deconv &lt;- estimateDisp(dgeFilt, design_deconv)\nplotBCV(disp_deconv)\n\n\n\n\n\n\n\n\n\n\n\nCode\nfit_deconv &lt;- glmQLFit(disp_deconv)\nplotQLDisp(fit_deconv)\n\n\n\n\n\n\n\n\n\n\n\nCode\ntt_deconv &lt;- colnames(cont_deconv) %&gt;%\n    sapply(function(x){\n        glmQLFTest(fit_deconv, contrast = cont_deconv[,x]) %&gt;%\n            topTags(n = Inf) %&gt;%\n            .[[\"table\"]] %&gt;%\n            rename_all(\n                str_remove, pattern = \"ID.\"\n            ) %&gt;%\n            dplyr::select(\n                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, \n                P.Value = PValue, FDR,\n            ) %&gt;%\n            as_tibble() %&gt;%\n            mutate(\n                Bonf = p.adjust(P.Value, \"bonf\"), \n                coef = x,\n                DE = FDR &lt; 0.05\n            )\n    },\n    simplify = FALSE)\n\n\n\n\nCode\ndisplayRes_de(tt_deconv$rRNA)\n\n\n\n\n\n\nCode\ndisplayRes_de(tt_deconv$groupHeter)\n\n\n\n\n\n\nCode\ndisplayRes_de(tt_deconv$groupHom)",
+    "crumbs": [
+      "DGE"
+    ]
+  }
+]
