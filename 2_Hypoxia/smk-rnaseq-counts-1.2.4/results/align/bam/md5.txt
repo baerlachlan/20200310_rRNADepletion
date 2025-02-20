@@ -1,0 +1,16 @@
+157646aa9e269e5535cfb40daa08e582  results/align/bam/6P-PN1.bam
+ace9b5359ecae28c8d477be2106ce741  results/align/bam/6P-PH2.bam
+a49e892448393e0f22fb34aaadeb9bd8  results/align/bam/6P-PH4.bam
+26f7433f5a849e97ec5aca4e9fa5702b  results/align/bam/24P-PN3.bam
+05d240ea6d0dc112423a5ccfe8a60571  results/align/bam/24P-PN2.bam
+576ce1a6a0f6c53fbeb63ee6aef55dc1  results/align/bam/6P-PH3.bam
+4622ee3434069bc9f607b9dc4b8b4ebd  results/align/bam/24P-PN1.bam
+625a09b91ce53e04db7e5c7da04e0a4e  results/align/bam/24P-PN4.bam
+fc4d23d10a741d5887b48a8534a161bc  results/align/bam/24P-PH1.bam
+b0db1423059b00af41cdd58ce5def03c  results/align/bam/24P-PH2.bam
+3df578a2c72ed49b5464ed81de8eed51  results/align/bam/6P-PN3.bam
+1d11aa756d2fe256a3b9aef4bbe9111f  results/align/bam/6P-PH1.bam
+d13741acb238f68fdf51dfd79347cf2d  results/align/bam/24P-PH3.bam
+020c1367ce16ca44aef3f972c22506c6  results/align/bam/6P-PN4.bam
+a414d5d27f3f52be2c6ca05215efbfeb  results/align/bam/24P-PH4.bam
+123444801e06c849388311553213f187  results/align/bam/6P-PN2.bam

@@ -1,0 +1,15 @@
+Status	results/align/bam/6P-PH2.bam	results/align/bam/6P-PH3.bam	results/align/bam/6P-PH4.bam	results/align/bam/24P-PN1.bam	results/align/bam/24P-PN2.bam	results/align/bam/24P-PN3.bam	results/align/bam/6P-PN1.bam	results/align/bam/24P-PN4.bam	results/align/bam/24P-PH1.bam	results/align/bam/24P-PH2.bam	results/align/bam/24P-PH3.bam	results/align/bam/24P-PH4.bam	results/align/bam/6P-PN2.bam	results/align/bam/6P-PN3.bam	results/align/bam/6P-PN4.bam	results/align/bam/6P-PH1.bam
+Assigned	383067	639613	482067	543541	503941	488621	328933	513514	461142	451127	468048	444262	574458	363214	409347	409830
+Unassigned_Unmapped	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Read_Type	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Singleton	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_MultiMapping	4997522	6875024	3716215	7905638	8605275	8736383	5200208	8867118	6884484	6826090	7997472	6869675	6652731	5308877	4740424	4825691
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_NoFeatures	27026946	44317083	33342610	37115379	35334352	33798739	23360835	36172720	32316878	31333702	33199196	30945984	40884414	26185925	28895436	27651579
+Unassigned_Overlapping_Length	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Unassigned_Ambiguity	8710	14825	9524	13010	11854	12122	6869	10481	9508	9770	9928	8239	12622	7527	8325	9379

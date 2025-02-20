@@ -1,0 +1,9 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "resources/salmon_index",
+    "libType": "A",
+    "unmatedReads": "results/trim/fastq/24P-PH4_1_R0.fastq.gz",
+    "output": "results/salmon/24P-PH4",
+    "threads": "8",
+    "auxDir": "aux_info"
+}

@@ -1,0 +1,22 @@
+{
+    "read_files": "[ results/trim/fastq/6P-PN3_1_R0.fastq.gz ]",
+    "expected_format": "SR",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 18596962,
+    "num_assigned_fragments": 18596962,
+    "num_frags_with_concordant_consistent_mappings": 18596777,
+    "num_frags_with_inconsistent_or_orphan_mappings": 295,
+    "strand_mapping_bias": 0.00001586271215167635,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 295,
+    "SR": 18596777,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}

@@ -1,0 +1,22 @@
+{
+    "read_files": "[ results/trim/fastq/24P-PH1_1_R0.fastq.gz ]",
+    "expected_format": "SR",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 22767667,
+    "num_assigned_fragments": 22767667,
+    "num_frags_with_concordant_consistent_mappings": 22767447,
+    "num_frags_with_inconsistent_or_orphan_mappings": 333,
+    "strand_mapping_bias": 0.00001462593190903988,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 333,
+    "SR": 22767447,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}

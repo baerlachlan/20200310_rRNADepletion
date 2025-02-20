@@ -1,0 +1,16 @@
+6c08d472ea7351ba4dfc0adec6660a3a  results/trim/fastq/6P-PN1_1_R0.fastq.gz
+1f7ecd962475eb1356d6d0d23ef43980  results/trim/fastq/6P-PH2_1_R0.fastq.gz
+1fb121d5a562f54b645101262e46b00b  results/trim/fastq/6P-PH4_1_R0.fastq.gz
+e220b199f5d54ba2972ed479aa387d8a  results/trim/fastq/24P-PN3_1_R0.fastq.gz
+4e56da5b585c69c2c8a7fefc12f30c5f  results/trim/fastq/24P-PN4_1_R0.fastq.gz
+faf0dc44f60dd5dacd2fa48d00f82c5b  results/trim/fastq/24P-PN2_1_R0.fastq.gz
+a6b6b51d8b70ab644b58cbf97936b506  results/trim/fastq/24P-PN1_1_R0.fastq.gz
+9a7043c63cbfe7d1fb7c44bf83cf0bcf  results/trim/fastq/6P-PH3_1_R0.fastq.gz
+67d23203e841b274c8849d0bf9d11089  results/trim/fastq/24P-PH1_1_R0.fastq.gz
+2d8dc05d9458de3adf5a203b2b2b4dce  results/trim/fastq/24P-PH2_1_R0.fastq.gz
+a7703c630e0e00cc0da5c362e3e00864  results/trim/fastq/6P-PN3_1_R0.fastq.gz
+c03e43425290469a8983a53f7ae354ac  results/trim/fastq/6P-PN4_1_R0.fastq.gz
+5be95aef71ae3827205881b8517cefd7  results/trim/fastq/24P-PH3_1_R0.fastq.gz
+ae3880733aa84240b3a8ad5f23f46eff  results/trim/fastq/24P-PH4_1_R0.fastq.gz
+d80554da150894f76ba8515e9f373020  results/trim/fastq/6P-PH1_1_R0.fastq.gz
+0526809e4708e4c75df4b025d9d89200  results/trim/fastq/6P-PN2_1_R0.fastq.gz

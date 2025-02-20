@@ -1,0 +1,17 @@
+sample	unit	fq1	fq2
+6P-PH2	1	results/raw_data/fastq/10-MORGAN-6P-PH2_S9_R1_001.fastq.gz
+6P-PH3	1	results/raw_data/fastq/11-MORGAN-6P-PH3_S1_R1_001.fastq.gz
+6P-PH4	1	results/raw_data/fastq/12-MORGAN-6P-PH4_S2_R1_001.fastq.gz
+24P-PN1	1	results/raw_data/fastq/17-MORGAN-24P-PN1_S8_R1_001.fastq.gz
+24P-PN2	1	results/raw_data/fastq/18-MORGAN-24P-PN2_S9_R1_001.fastq.gz
+24P-PN3	1	results/raw_data/fastq/19-MORGAN-24P-PN3_S1_R1_001.fastq.gz
+6P-PN1	1	results/raw_data/fastq/1-MORGAN-6P-PN1_S2_R1_001.fastq.gz
+24P-PN4	1	results/raw_data/fastq/20-MORGAN-24P-PN4_S3_R1_001.fastq.gz
+24P-PH1	1	results/raw_data/fastq/25-MORGAN-24P-PH1_S8_R1_001.fastq.gz
+24P-PH2	1	results/raw_data/fastq/26-MORGAN-24P-PH2_S7_R1_001.fastq.gz
+24P-PH3	1	results/raw_data/fastq/27-MORGAN-24P-PH3_S5_R1_001.fastq.gz
+24P-PH4	1	results/raw_data/fastq/28-MORGAN-24P-PH4_S4_R1_001.fastq.gz
+6P-PN2	1	results/raw_data/fastq/2-MORGAN-6P-PN2_S5_R1_001.fastq.gz
+6P-PN3	1	results/raw_data/fastq/3-MORGAN-6P-PN3_S10_R1_001.fastq.gz
+6P-PN4	1	results/raw_data/fastq/4-MORGAN-6P-PN4_S8_R1_001.fastq.gz
+6P-PH1	1	results/raw_data/fastq/9-MORGAN-6P-PH1_S7_R1_001.fastq.gz
