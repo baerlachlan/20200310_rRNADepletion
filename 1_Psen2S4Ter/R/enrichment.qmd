@@ -53,6 +53,16 @@ theme_set(theme_bw())
 cores <- detectCores() - 2
 ```
 
+# Load data
+
+```{r}
+dgeFilt <- readRDS(here("1_Psen2S4Ter/Rdata/dgeFilt.Rds"))
+tt_r <- readRDS(here("1_Psen2S4Ter/Rdata/tt_r.Rds"))
+tt_g <- readRDS(here("1_Psen2S4Ter/Rdata/tt_g.Rds"))
+tt_gr <- readRDS(here("1_Psen2S4Ter/Rdata/tt_gr.Rds"))
+tt_deconv <- readRDS(here("1_Psen2S4Ter/Rdata/tt_deconv.Rds"))
+```
+
 # Sequence information
 
 ```{r ah}
@@ -109,7 +119,7 @@ An `EnsDb` object was obtained for Ensembl release 101 using the `AnnotationHub`
 # Enrichment
 
 ```{r}
-entrezGenes <- mcols(dgeList$genes) %>%
+entrezGenes <- mcols(dgeFilt$genes) %>%
   as.data.frame() %>%
   dplyr::filter(!is.na(entrezid)) %>%
   unnest(cols = entrezid) %>%
@@ -117,14 +127,14 @@ entrezGenes <- mcols(dgeList$genes) %>%
 ```
 
 ```{r}
-ranks_r <- res_r %>%
+ranks_r <- tt_r %>%
       mutate(stat = -sign(logFC) * log10(P.Value)) %>%
       dplyr::arrange(stat) %>%
       with(structure(stat, names = Geneid))
 ```
 
 ```{r}
-ranks_g <- res_g %>%
+ranks_g <- tt_g %>%
   lapply(function(x){
     x %>%
       mutate(stat = -sign(logFC) * log10(P.Value)) %>%
@@ -134,7 +144,7 @@ ranks_g <- res_g %>%
 ```
 
 ```{r}
-ranks_gr <- res_gr %>%
+ranks_gr <- tt_gr %>%
   lapply(function(x){
     x %>%
       mutate(stat = -sign(logFC) * log10(P.Value)) %>%
@@ -144,7 +154,7 @@ ranks_gr <- res_gr %>%
 ```
 
 ```{r}
-ranks_deconv <- res_deconv %>%
+ranks_deconv <- tt_deconv %>%
   lapply(function(x){
     x %>%
       mutate(stat = -sign(logFC) * log10(P.Value)) %>%
@@ -257,6 +267,9 @@ fgsea_g_hm <- ranks_g %>%
 
 ```{r}
 displayRes_enrich(fgsea_g_hm$groupHeter, "groupHeter")
+```
+
+```{r}
 displayRes_enrich(fgsea_g_hm$groupHom, "groupHom")
 ```
 
@@ -275,7 +288,13 @@ fgsea_gr_hm <- ranks_gr %>%
 
 ```{r}
 displayRes_enrich(fgsea_gr_hm$rRNA, "rRNA")
+```
+
+```{r}
 displayRes_enrich(fgsea_gr_hm$groupHeter, "groupHeter")
+```
+
+```{r}
 displayRes_enrich(fgsea_gr_hm$groupHom, "groupHom")
 ```
 

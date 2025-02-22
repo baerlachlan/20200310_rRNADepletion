@@ -70,7 +70,7 @@ k11topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k11topTable.Rds"))
 k12topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k12topTable.Rds"))
 ```
 
-# Exploration
+# Kappa
 
 Now that differential expression of $k$-mers has been detected, the next step is to develop a normalisation method that can lessen the extent of gene-level differential expression bias due to presence of particular $k$-mers. The initial aim of this exploration is to define a single value per gene, $\kappa$, that represents the magnitude of bias due to the genes constituent $k$-mers.
 
@@ -82,21 +82,41 @@ In an initial attempt to develop a value for $\kappa$, logFC values from previou
 lfc_k5 <- structure(k5topTable$logFC, names = k5topTable$mer)
 ```
 
-```{r kappa_k5}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))) {
     kappa_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))
 } else {
-    kappa_k5 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k5/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k5[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k5 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k5/"),
+        full.names = TRUE
+    )
+    kappa_k5 <- dumps_k5 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k5[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k5), ".dumps"))
 }
+```
+
+```{r kappa_k5}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))) {
+#     kappa_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))
+# } else {
+#     kappa_k5 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k5/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k5[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 6
@@ -105,21 +125,41 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))) {
 lfc_k6 <- structure(k6topTable$logFC, names = k6topTable$mer)
 ```
 
-```{r kappa_k6}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))) {
     kappa_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))
 } else {
-    kappa_k6 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k6/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k6[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k6 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k6/"),
+        full.names = TRUE
+    )
+    kappa_k6 <- dumps_k6 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k6[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k6), ".dumps"))
 }
+```
+
+```{r kappa_k6}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))) {
+#     kappa_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))
+# } else {
+#     kappa_k6 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k6/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k6[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 7
@@ -128,21 +168,41 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))) {
 lfc_k7 <- structure(k7topTable$logFC, names = k7topTable$mer)
 ```
 
-```{r kappa_k7}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))) {
     kappa_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))
 } else {
-    kappa_k7 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k7/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k7[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k7 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k7/"),
+        full.names = TRUE
+    )
+    kappa_k7 <- dumps_k7 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k7[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k7), ".dumps"))
 }
+```
+
+```{r kappa_k7}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))) {
+#     kappa_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))
+# } else {
+#     kappa_k7 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k7/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k7[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 8
@@ -151,21 +211,41 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))) {
 lfc_k8 <- structure(k8topTable$logFC, names = k8topTable$mer)
 ```
 
-```{r kappa_k8}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))) {
     kappa_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))
 } else {
-    kappa_k8 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k8/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k8[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k8 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k8/"),
+        full.names = TRUE
+    )
+    kappa_k8 <- dumps_k8 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k8[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k8), ".dumps"))
 }
+```
+
+```{r kappa_k8}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))) {
+#     kappa_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))
+# } else {
+#     kappa_k8 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k8/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k8[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 9
@@ -174,21 +254,41 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))) {
 lfc_k9 <- structure(k9topTable$logFC, names = k9topTable$mer)
 ```
 
-```{r kappa_k9}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))) {
     kappa_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))
 } else {
-    kappa_k9 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k9/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k9[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k9 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k9/"),
+        full.names = TRUE
+    )
+    kappa_k9 <- dumps_k9 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k9[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k9), ".dumps"))
 }
+```
+
+```{r kappa_k9}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))) {
+#     kappa_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))
+# } else {
+#     kappa_k9 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k9/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k9[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 10
@@ -197,21 +297,41 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))) {
 lfc_k10 <- structure(k10topTable$logFC, names = k10topTable$mer)
 ```
 
-```{r kappa_k10}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))) {
     kappa_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))
 } else {
-    kappa_k10 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k10/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k10[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k10 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k10/"),
+        full.names = TRUE
+    )
+    kappa_k10 <- dumps_k10 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k10[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k10), ".dumps"))
 }
+```
+
+```{r kappa_k10}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))) {
+#     kappa_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))
+# } else {
+#     kappa_k10 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k10/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k10[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 11
@@ -220,21 +340,41 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))) {
 lfc_k11 <- structure(k11topTable$logFC, names = k11topTable$mer)
 ```
 
-```{r kappa_k11}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))) {
     kappa_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))
 } else {
-    kappa_k11 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k11/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k11[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k11 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k11/"),
+        full.names = TRUE
+    )
+    kappa_k11 <- dumps_k11 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k11[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k11), ".dumps"))
 }
+```
+
+```{r kappa_k11}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))) {
+#     kappa_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))
+# } else {
+#     kappa_k11 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k11/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k11[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
 ```
 
 ## k = 12
@@ -243,58 +383,113 @@ if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))) {
 lfc_k12 <- structure(k12topTable$logFC, names = k12topTable$mer)
 ```
 
-```{r kappa_k12}
+```{r}
 if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))) {
     kappa_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))
 } else {
-    kappa_k12 <- vapply(rownames(dgeFilt), \(x){
-        scan <- scan(
-            here(paste0(
-                "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k12/", x, ".dumps"
-            )),
-            what = list(character(1), numeric(1))
-        )
-        mer_counts <- structure(scan[[2]], names = scan[[1]])
-        sum(lfc_k12[names(mer_counts)] * mer_counts)
-    }, numeric(1))
+    dumps_k12 <- list.files(
+        here("1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k12/"),
+        full.names = TRUE
+    )
+    kappa_k12 <- dumps_k12 %>%
+        vapply(\(x){
+            gene_mers <- read_lines(x) %>%
+                str_split(., " ")
+            mer_counts <- vapply(gene_mers, \(x){as.numeric(x[2])}, FUN.VALUE = numeric(1))
+            names(mer_counts) <- vapply(gene_mers, \(x){x[1]}, FUN.VALUE = character(1))
+            sum(lfc_k12[names(mer_counts)] * mer_counts)
+        }, numeric(1)) %>%
+        set_names(str_remove(basename(dumps_k12), ".dumps"))
 }
 ```
 
-## Differential expression
+```{r kappa_k12}
+# if (file.exists(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))) {
+#     kappa_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))
+# } else {
+#     kappa_k12 <- vapply(rownames(dgeFilt), \(x){
+#         scan <- scan(
+#             here(paste0(
+#                 "1_Psen2S4Ter/analysis-gene_kmer/results/dumps/k12/", x, ".dumps"
+#             )),
+#             what = list(character(1), numeric(1))
+#         )
+#         mer_counts <- structure(scan[[2]], names = scan[[1]])
+#         sum(lfc_k12[names(mer_counts)] * mer_counts)
+#     }, numeric(1))
+# }
+```
+
+# Differential expression
 
 ```{r}
-cqn <- cqn(
+displayRes_de <- function(x){
+    de <- x %>%
+        dplyr::filter(DE)
+    de %>%
+        dplyr::slice(1:1000) %>%
+        dplyr::select(-gene_biotype, -coef, -DE) %>%
+        mutate(across(c("P.Value", "FDR", "Bonf"), ~ sprintf("%.2e", .x))) %>%
+        datatable(
+            options = list(pageLength = 10), 
+            class = "striped hover condensed responsive", 
+            filter = "top",
+            caption = paste0(
+                x$coef[1],
+                ": ",
+                nrow(de),
+                " of ",
+                nrow(x),
+                " genes were classified as differentially expressed ",
+                "with a FDR < 0.05. ",
+                "If more than 1000 genes were classified as DE, only the top 1000 are shown."
+            )
+        ) %>%
+        formatRound(c("logFC", "logCPM", "F"), digits = 2)
+}
+```
+
+## k = 5
+
+```{r}
+cqn_k5 <- cqn(
     dgeFilt$counts, 
     x = kappa_k5[rownames(dgeFilt)],
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
-cqnplot(cqn)
+cqnplot(cqn_k5)
 ```
 
 ```{r}
-dgeFilt$offset <- cqn$glm.offset
+dgeFilt_k5 <- dgeFilt
 ```
 
 ```{r}
-design_g <- model.matrix(~group, data = dgeFilt$samples)
+dgeFilt_k5$offset <- cqn_k5$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k5 <- model.matrix(~rRNA, data = dgeFilt_k5$samples)
 ```
 
 ```{r}
-disp_g <- estimateDisp(dgeFilt, design_g)
-plotBCV(disp_g)
+disp_r_k5 <- estimateDisp(dgeFilt_k5, design_r_k5)
+plotBCV(disp_r_k5)
 ```
 
 ```{r}
-fit_g <- glmQLFit(disp_g)
-plotQLDisp(fit_g)
+fit_r_k5 <- glmQLFit(disp_r_k5)
+plotQLDisp(fit_r_k5)
 ```
 
 ```{r}
-res_g <- colnames(design_g) %>%
+res_r_k5 <- colnames(design_r_k5) %>%
     str_subset("Intercept", negate = TRUE) %>%
     sapply(function(x){
-        glmQLFTest(fit_g, coef = x) %>%
+        glmQLFTest(fit_r_k5, coef = x) %>%
             topTags(n = Inf) %>%
             .[["table"]] %>%
             rename_all(
@@ -315,8 +510,1263 @@ res_g <- colnames(design_g) %>%
 ```
 
 ```{r}
-displayRes_de(res_g$groupHeter)
-displayRes_de(res_g$groupHom)
+displayRes_de(res_r_k5$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k5 <- model.matrix(~group, data = dgeFilt_k5$samples)
+```
+
+```{r}
+disp_g_k5 <- estimateDisp(dgeFilt_k5, design_g_k5)
+plotBCV(disp_g_k5)
+```
+
+```{r}
+fit_g_k5 <- glmQLFit(disp_g_k5)
+plotQLDisp(fit_g_k5)
+```
+
+```{r}
+res_g_k5 <- colnames(design_g_k5) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k5, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k5$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k5$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k5 <- model.matrix(~rRNA + group, data = dgeFilt_k5$samples)
+```
+
+```{r}
+disp_gr_k5 <- estimateDisp(dgeFilt_k5, design_gr_k5)
+plotBCV(disp_gr_k5)
+```
+
+```{r}
+fit_gr_k5 <- glmQLFit(disp_gr_k5)
+plotQLDisp(fit_gr_k5)
+```
+
+```{r}
+res_gr_k5 <- colnames(design_gr_k5) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k5, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k5$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k5$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k5$groupHom)
+```
+
+## k = 6
+
+```{r}
+cqn_k6 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k6[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k6)
+```
+
+```{r}
+dgeFilt_k6 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k6$offset <- cqn_k6$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k6 <- model.matrix(~rRNA, data = dgeFilt_k6$samples)
+```
+
+```{r}
+disp_r_k6 <- estimateDisp(dgeFilt_k6, design_r_k6)
+plotBCV(disp_r_k6)
+```
+
+```{r}
+fit_r_k6 <- glmQLFit(disp_r_k6)
+plotQLDisp(fit_r_k6)
+```
+
+```{r}
+res_r_k6 <- colnames(design_r_k6) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k6, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k6$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k6 <- model.matrix(~group, data = dgeFilt_k6$samples)
+```
+
+```{r}
+disp_g_k6 <- estimateDisp(dgeFilt_k6, design_g_k6)
+plotBCV(disp_g_k6)
+```
+
+```{r}
+fit_g_k6 <- glmQLFit(disp_g_k6)
+plotQLDisp(fit_g_k6)
+```
+
+```{r}
+res_g_k6 <- colnames(design_g_k6) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k6, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k6$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k6$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k6 <- model.matrix(~rRNA + group, data = dgeFilt_k6$samples)
+```
+
+```{r}
+disp_gr_k6 <- estimateDisp(dgeFilt_k6, design_gr_k6)
+plotBCV(disp_gr_k6)
+```
+
+```{r}
+fit_gr_k6 <- glmQLFit(disp_gr_k6)
+plotQLDisp(fit_gr_k6)
+```
+
+```{r}
+res_gr_k6 <- colnames(design_gr_k6) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k6, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k6$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k6$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k6$groupHom)
+```
+
+## k = 7
+
+```{r}
+cqn_k7 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k7[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k7)
+```
+
+```{r}
+dgeFilt_k7 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k7$offset <- cqn_k7$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k7 <- model.matrix(~rRNA, data = dgeFilt_k7$samples)
+```
+
+```{r}
+disp_r_k7 <- estimateDisp(dgeFilt_k7, design_r_k7)
+plotBCV(disp_r_k7)
+```
+
+```{r}
+fit_r_k7 <- glmQLFit(disp_r_k7)
+plotQLDisp(fit_r_k7)
+```
+
+```{r}
+res_r_k7 <- colnames(design_r_k7) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k7, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k7$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k7 <- model.matrix(~group, data = dgeFilt_k7$samples)
+```
+
+```{r}
+disp_g_k7 <- estimateDisp(dgeFilt_k7, design_g_k7)
+plotBCV(disp_g_k7)
+```
+
+```{r}
+fit_g_k7 <- glmQLFit(disp_g_k7)
+plotQLDisp(fit_g_k7)
+```
+
+```{r}
+res_g_k7 <- colnames(design_g_k7) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k7, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k7$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k7$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k7 <- model.matrix(~rRNA + group, data = dgeFilt_k7$samples)
+```
+
+```{r}
+disp_gr_k7 <- estimateDisp(dgeFilt_k7, design_gr_k7)
+plotBCV(disp_gr_k7)
+```
+
+```{r}
+fit_gr_k7 <- glmQLFit(disp_gr_k7)
+plotQLDisp(fit_gr_k7)
+```
+
+```{r}
+res_gr_k7 <- colnames(design_gr_k7) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k7, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k7$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k7$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k7$groupHom)
+```
+
+## k = 8
+
+```{r}
+cqn_k8 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k8[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k8)
+```
+
+```{r}
+dgeFilt_k8 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k8$offset <- cqn_k8$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k8 <- model.matrix(~rRNA, data = dgeFilt_k8$samples)
+```
+
+```{r}
+disp_r_k8 <- estimateDisp(dgeFilt_k8, design_r_k8)
+plotBCV(disp_r_k8)
+```
+
+```{r}
+fit_r_k8 <- glmQLFit(disp_r_k8)
+plotQLDisp(fit_r_k8)
+```
+
+```{r}
+res_r_k8 <- colnames(design_r_k8) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k8, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k8$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k8 <- model.matrix(~group, data = dgeFilt_k8$samples)
+```
+
+```{r}
+disp_g_k8 <- estimateDisp(dgeFilt_k8, design_g_k8)
+plotBCV(disp_g_k8)
+```
+
+```{r}
+fit_g_k8 <- glmQLFit(disp_g_k8)
+plotQLDisp(fit_g_k8)
+```
+
+```{r}
+res_g_k8 <- colnames(design_g_k8) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k8, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k8$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k8$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k8 <- model.matrix(~rRNA + group, data = dgeFilt_k8$samples)
+```
+
+```{r}
+disp_gr_k8 <- estimateDisp(dgeFilt_k8, design_gr_k8)
+plotBCV(disp_gr_k8)
+```
+
+```{r}
+fit_gr_k8 <- glmQLFit(disp_gr_k8)
+plotQLDisp(fit_gr_k8)
+```
+
+```{r}
+res_gr_k8 <- colnames(design_gr_k8) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k8, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k8$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k8$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k8$groupHom)
+```
+
+## k = 9
+
+```{r}
+cqn_k9 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k9[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k9)
+```
+
+```{r}
+dgeFilt_k9 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k9$offset <- cqn_k9$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k9 <- model.matrix(~rRNA, data = dgeFilt_k9$samples)
+```
+
+```{r}
+disp_r_k9 <- estimateDisp(dgeFilt_k9, design_r_k9)
+plotBCV(disp_r_k9)
+```
+
+```{r}
+fit_r_k9 <- glmQLFit(disp_r_k9)
+plotQLDisp(fit_r_k9)
+```
+
+```{r}
+res_r_k9 <- colnames(design_r_k9) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k9, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k9$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k9 <- model.matrix(~group, data = dgeFilt_k9$samples)
+```
+
+```{r}
+disp_g_k9 <- estimateDisp(dgeFilt_k9, design_g_k9)
+plotBCV(disp_g_k9)
+```
+
+```{r}
+fit_g_k9 <- glmQLFit(disp_g_k9)
+plotQLDisp(fit_g_k9)
+```
+
+```{r}
+res_g_k9 <- colnames(design_g_k9) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k9, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k9$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k9$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k9 <- model.matrix(~rRNA + group, data = dgeFilt_k9$samples)
+```
+
+```{r}
+disp_gr_k9 <- estimateDisp(dgeFilt_k9, design_gr_k9)
+plotBCV(disp_gr_k9)
+```
+
+```{r}
+fit_gr_k9 <- glmQLFit(disp_gr_k9)
+plotQLDisp(fit_gr_k9)
+```
+
+```{r}
+res_gr_k9 <- colnames(design_gr_k9) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k9, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k9$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k9$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k9$groupHom)
+```
+
+## k = 10
+
+```{r}
+cqn_k10 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k10[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k10)
+```
+
+```{r}
+dgeFilt_k10 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k10$offset <- cqn_k10$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k10 <- model.matrix(~rRNA, data = dgeFilt_k10$samples)
+```
+
+```{r}
+disp_r_k10 <- estimateDisp(dgeFilt_k10, design_r_k10)
+plotBCV(disp_r_k10)
+```
+
+```{r}
+fit_r_k10 <- glmQLFit(disp_r_k10)
+plotQLDisp(fit_r_k10)
+```
+
+```{r}
+res_r_k10 <- colnames(design_r_k10) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k10, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k10$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k10 <- model.matrix(~group, data = dgeFilt_k10$samples)
+```
+
+```{r}
+disp_g_k10 <- estimateDisp(dgeFilt_k10, design_g_k10)
+plotBCV(disp_g_k10)
+```
+
+```{r}
+fit_g_k10 <- glmQLFit(disp_g_k10)
+plotQLDisp(fit_g_k10)
+```
+
+```{r}
+res_g_k10 <- colnames(design_g_k10) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k10, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k10$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k10$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k10 <- model.matrix(~rRNA + group, data = dgeFilt_k10$samples)
+```
+
+```{r}
+disp_gr_k10 <- estimateDisp(dgeFilt_k10, design_gr_k10)
+plotBCV(disp_gr_k10)
+```
+
+```{r}
+fit_gr_k10 <- glmQLFit(disp_gr_k10)
+plotQLDisp(fit_gr_k10)
+```
+
+```{r}
+res_gr_k10 <- colnames(design_gr_k10) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k10, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k10$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k10$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k10$groupHom)
+```
+
+## k = 11
+
+```{r}
+cqn_k11 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k11[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k11)
+```
+
+```{r}
+dgeFilt_k11 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k11$offset <- cqn_k11$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k11 <- model.matrix(~rRNA, data = dgeFilt_k11$samples)
+```
+
+```{r}
+disp_r_k11 <- estimateDisp(dgeFilt_k11, design_r_k11)
+plotBCV(disp_r_k11)
+```
+
+```{r}
+fit_r_k11 <- glmQLFit(disp_r_k11)
+plotQLDisp(fit_r_k11)
+```
+
+```{r}
+res_r_k11 <- colnames(design_r_k11) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k11, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k11$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k11 <- model.matrix(~group, data = dgeFilt_k11$samples)
+```
+
+```{r}
+disp_g_k11 <- estimateDisp(dgeFilt_k11, design_g_k11)
+plotBCV(disp_g_k11)
+```
+
+```{r}
+fit_g_k11 <- glmQLFit(disp_g_k11)
+plotQLDisp(fit_g_k11)
+```
+
+```{r}
+res_g_k11 <- colnames(design_g_k11) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k11, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k11$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k11$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k11 <- model.matrix(~rRNA + group, data = dgeFilt_k11$samples)
+```
+
+```{r}
+disp_gr_k11 <- estimateDisp(dgeFilt_k11, design_gr_k11)
+plotBCV(disp_gr_k11)
+```
+
+```{r}
+fit_gr_k11 <- glmQLFit(disp_gr_k11)
+plotQLDisp(fit_gr_k11)
+```
+
+```{r}
+res_gr_k11 <- colnames(design_gr_k11) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k11, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k11$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k11$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k11$groupHom)
+```
+
+## k = 12
+
+```{r}
+cqn_k12 <- cqn(
+    dgeFilt$counts, 
+    x = kappa_k12[rownames(dgeFilt)],
+    lengths = mcols(dgeFilt$genes)$maxLen,
+    sizeFactors = dgeFilt$samples$lib.size
+)
+cqnplot(cqn_k12)
+```
+
+```{r}
+dgeFilt_k12 <- dgeFilt
+```
+
+```{r}
+dgeFilt_k12$offset <- cqn_k12$glm.offset
+```
+
+### rRNA
+
+```{r}
+design_r_k12 <- model.matrix(~rRNA, data = dgeFilt_k12$samples)
+```
+
+```{r}
+disp_r_k12 <- estimateDisp(dgeFilt_k12, design_r_k12)
+plotBCV(disp_r_k12)
+```
+
+```{r}
+fit_r_k12 <- glmQLFit(disp_r_k12)
+plotQLDisp(fit_r_k12)
+```
+
+```{r}
+res_r_k12 <- colnames(design_r_k12) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_r_k12, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_r_k12$rRNA)
+```
+
+### Genotype
+
+```{r}
+design_g_k12 <- model.matrix(~group, data = dgeFilt_k12$samples)
+```
+
+```{r}
+disp_g_k12 <- estimateDisp(dgeFilt_k12, design_g_k12)
+plotBCV(disp_g_k12)
+```
+
+```{r}
+fit_g_k12 <- glmQLFit(disp_g_k12)
+plotQLDisp(fit_g_k12)
+```
+
+```{r}
+res_g_k12 <- colnames(design_g_k12) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_g_k12, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_g_k12$groupHeter)
+```
+
+```{r}
+displayRes_de(res_g_k12$groupHom)
+```
+
+### rRNA + genotype
+
+```{r}
+design_gr_k12 <- model.matrix(~rRNA + group, data = dgeFilt_k12$samples)
+```
+
+```{r}
+disp_gr_k12 <- estimateDisp(dgeFilt_k12, design_gr_k12)
+plotBCV(disp_gr_k12)
+```
+
+```{r}
+fit_gr_k12 <- glmQLFit(disp_gr_k12)
+plotQLDisp(fit_gr_k12)
+```
+
+```{r}
+res_gr_k12 <- colnames(design_gr_k12) %>%
+    str_subset("Intercept", negate = TRUE) %>%
+    sapply(function(x){
+        glmQLFTest(fit_gr_k12, coef = x) %>%
+            topTags(n = Inf) %>%
+            .[["table"]] %>%
+            rename_all(
+                str_remove, pattern = "ID."
+            ) %>%
+            dplyr::select(
+                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
+                P.Value = PValue, FDR
+            ) %>%
+            as_tibble() %>%
+            mutate(
+                Bonf = p.adjust(P.Value, "bonf"), 
+                coef = x,
+                DE = FDR < 0.05
+            )
+    },
+    simplify = FALSE)
+```
+
+```{r}
+displayRes_de(res_gr_k12$rRNA)
+```
+
+```{r}
+displayRes_de(res_gr_k12$groupHeter)
+```
+
+```{r}
+displayRes_de(res_gr_k12$groupHom)
+```
+
+# Results
+
+```{r}
+tribble(
+    ~k, ~r, ~k6, ~k7
+)
 ```
 
 # Data export

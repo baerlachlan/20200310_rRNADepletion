@@ -1,5 +1,5 @@
 ---
-title: "rRNADepletion_s4ter"
+title: "rRNADepletion_hypoxia"
 subtitle: "DGE Analysis"
 author: "Lachlan Baer"
 date-modified: today
@@ -111,7 +111,8 @@ This is a total RNA-seq dataset generated from a 3-way comparison of WT zebrafis
 
 ```{r files}
 files <- list.files(
-    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/old_bash_analysis.0_rawData/FastQC",
+    # path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/0_rawData/FastQC",
+    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/raw_data/FastQC/",
     pattern = "zip",
     full.names = TRUE
 )
@@ -124,12 +125,8 @@ samples <- tibble(
     organism = NA
 ) %>%
     mutate(
-        dataset = ifelse(
-            str_detect(sample, "Ps2Ex"), "Psen2S4Ter", dataset
-        ),
-        organism = ifelse(
-            str_detect(sample, "Ps2Ex"), "zebrafish", organism
-        )
+        dataset = "Hypoxia",
+        organism = "zebrafish"
     )
 datasets <- samples$dataset %>% 
     unique()
@@ -140,12 +137,20 @@ The following analysis involves `r nrow(samples)/2` paired-end samples across `r
 ## rRNA proportions
 
 ```{r rRnaProp}
-rRnaProp <- read.delim(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/old_bash_analysis/3_bwa/log/samples.mapped.all", 
+read.delim(
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/3_bwa/log/samples.mapped.all",
     sep = ":", 
     col.names = c("sample", "proportion"), 
     header = FALSE
-) %>% 
+)
+list.files(here("2_Hypoxia/analysis-kmer/results/bwa/rrna_props/")) %>%
+    .[str_remove(basename(.), ".rrna") %in% samples$sample]
+rRnaProp <- read.delim(
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/3_bwa/log/samples.mapped.all",
+    sep = ":", 
+    col.names = c("sample", "proportion"), 
+    header = FALSE
+) %>%
     mutate(
         sample = str_remove_all(sample, "_6month_F3|[0-9]*_Ps2Ex3M1_|.mapped"),
         sample = basename(sample),
@@ -183,10 +188,10 @@ rRnaProp %>%
 ## Gene GC content and length
 
 ```{r counts}
-# dgeList <- read_tsv("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/old_bash_analysis.4_star2pass/featureCounts/genes.out") %>%
+# dgeList <- read_tsv("/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/4_star2pass/featureCounts/genes.out") %>%
 dgeList <- read_tsv(
     paste0(
-        "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter",
+        "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia",
         "/smk-rnaseq-counts-1.2.2/results/featureCounts/reverse/all.featureCounts"
     ),
     comment = "#"
@@ -217,7 +222,7 @@ dgeList$samples %<>%
     left_join(addInfo) %>%
     column_to_rownames("rowname")
 # dgeList$samples$filenames <- list.files(
-#   "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/old_bash_analysis.2_alignedData/bam", 
+#   "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/2_alignedData/bam", 
 #   pattern = ".bam$", 
 #   full.names = TRUE
 # )
@@ -318,7 +323,7 @@ genes2keep <- dgeList %>%
     cpm() %>%
     is_greater_than(1) %>%
     rowSums() %>%
-    is_weakly_greater_than(4)
+    is_weakly_greater_than(6)
 dgeFilt <- dgeList[genes2keep,, keep.lib.sizes = FALSE] %>%
     calcNormFactors()
 ```
@@ -666,13 +671,13 @@ displayRes_de(tt_deconv$groupHom)
 # Data export
 
 ```{r}
-saveRDS(addInfo, here("1_Psen2S4Ter/Rdata/addInfo.Rds"))
-saveRDS(dgeList, here("1_Psen2S4Ter/Rdata/dgeList.Rds"))
-saveRDS(dgeFilt, here("1_Psen2S4Ter/Rdata/dgeFilt.Rds"))
-saveRDS(tt_r, here("1_Psen2S4Ter/Rdata/tt_r.Rds"))
-saveRDS(tt_g, here("1_Psen2S4Ter/Rdata/tt_g.Rds"))
-saveRDS(tt_gr, here("1_Psen2S4Ter/Rdata/tt_gr.Rds"))
-saveRDS(tt_deconv, here("1_Psen2S4Ter/Rdata/tt_deconv.Rds"))
+saveRDS(addInfo, here("2_Hypoxia/Rdata/addInfo.Rds"))
+saveRDS(dgeList, here("2_Hypoxia/Rdata/dgeList.Rds"))
+saveRDS(dgeFilt, here("2_Hypoxia/Rdata/dgeFilt.Rds"))
+saveRDS(tt_r, here("2_Hypoxia/Rdata/tt_r.Rds"))
+saveRDS(tt_g, here("2_Hypoxia/Rdata/tt_g.Rds"))
+saveRDS(tt_gr, here("2_Hypoxia/Rdata/tt_gr.Rds"))
+saveRDS(tt_deconv, here("2_Hypoxia/Rdata/tt_deconv.Rds"))
 ```
 
 # Session info

@@ -1,0 +1,40 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "Quality control"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+a <- plotGcContent(
+    fqc_unmapped[str_detect(fqName(fqc_unmapped), "R1")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
+    species = "Drerio", labels = str_remove(basename(fqName(fqc_unmapped[str_detect(fqName(fqc_unmapped), "R1")])), "_1_R1.fastq.gz") %>% set_names(fqName(fqc_unmapped[str_detect(fqName(fqc_unmapped), "R1")]))
+) +
+    labs(subtitle = "R1 reads")
+b <- plotGcContent(
+    fqc_unmapped[str_detect(fqName(fqc_unmapped), "R2")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
+    species = "Drerio", labels = str_remove(basename(fqName(fqc_unmapped[str_detect(fqName(fqc_unmapped), "R2")])), "_1_R2.fastq.gz") %>% set_names(fqName(fqc_unmapped[str_detect(fqName(fqc_unmapped), "R2")]))
+) +
+    labs(subtitle = "R2 reads")
+a + b +
+    plot_layout(ncol = 1, guides = "collect") +
+    plot_annotation(tag_levels = "A") &
+    theme(
+        legend.position = "bottom",
+        plot.margin = unit(c(.2, .5, .2, .2), "cm")
+    ) &
+    guides(colour = guide_legend(nrow = 2, byrow = TRUE))
+ggsave(
+    "~/phd/thesis/tex/fig/rRNA/fqc_removed.png",
+    width = 10, height = 10
+)
+```
+

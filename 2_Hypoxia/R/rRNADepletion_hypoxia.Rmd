@@ -113,7 +113,7 @@ This is a polyA RNA-seq dataset generated from two families of zebrafish at diff
 
 ```{r files}
 files <- list.files(
-  path = "/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/0_rawData/FastQC",
+  path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/0_rawData/FastQC",
   pattern = "zip",
   full.names = TRUE
 )
@@ -166,7 +166,7 @@ Raw libraries were trimmed using `cutadapt v1.14` to remove Illumina adapter seq
 
 ```{r trimFqc}
 trimFqc <- list.files(
-  path = "/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/1_trimmedData/FastQC",
+  path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/1_trimmedData/FastQC",
   pattern = "zip",
   full.names = TRUE
 ) %>%
@@ -195,7 +195,7 @@ Trimmed reads were:
 
 ```{r rRnaProp}
 bwaMapped <- read.delim(
-  "/hpcfs/users/a1647910/20200310_rRNADepletion/2_Hypoxia/3_bwa/log/samples.mapped.all", 
+  "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/3_bwa/log/samples.mapped.all", 
   sep = ":", 
   col.names = c("sample", "proportion"), 
   header = FALSE
@@ -240,7 +240,7 @@ rRnaProp %>%
 ## Gene GC content and length
 
 ```{r counts}
-dgeList <- read_tsv("/hpcfs/users/a1647910/20200910_Hypoxia/2_alignedData/featureCounts/genes.out") %>%
+dgeList <- read_tsv("/mnt/phoenix/hpcfs/20200910_Hypoxia/2_alignedData/featureCounts/genes.out") %>%
   set_colnames(basename(colnames(.))) %>%
   set_colnames(str_remove(colnames(.), "Aligned.sortedByCoord.out.bam")) %>%
   set_colnames(str_remove(colnames(.), "[0-9]+-MORGAN-6P-")) %>%
@@ -268,7 +268,7 @@ dgeList$samples %<>%
   left_join(addInfo) %>%
   column_to_rownames("rowname")
 dgeList$samples$filenames <- read_tsv(
-  "/hpcfs/users/a1647910/20200910_Hypoxia/2_alignedData/featureCounts/genes.out"
+  "/mnt/phoenix/hpcfs/20200910_Hypoxia/2_alignedData/featureCounts/genes.out"
 ) %>% 
   dplyr::select(-Geneid) %>%
   colnames()
@@ -538,7 +538,7 @@ topTable %>%
 #### Counts
 
 ```{r k5counts}
-k5files <- list.files("/hpcfs/users/a1647910/20200910_Hypoxia/5_jellyfishFq/k5", pattern = "_dumps.txt", full.names = TRUE)
+k5files <- list.files("/mnt/phoenix/hpcfs/20200910_Hypoxia/5_jellyfishFq/k5", pattern = "_dumps.txt", full.names = TRUE)
 k5counts <- lapply(k5files, function(x){
   read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
     set_colnames(str_remove_all(colnames(.), "_S[0-9]+_R1_001|[0-9]+-MORGAN-6P-|_dumps\\.txt"))
@@ -659,7 +659,7 @@ k5topTable <- k5eBayes %>%
 #### Counts
 
 ```{r k6counts}
-k6files <- list.files("/hpcfs/users/a1647910/20200910_Hypoxia/5_jellyfishFq/k6", pattern = "_dumps.txt", full.names = TRUE)
+k6files <- list.files("/mnt/phoenix/hpcfs/20200910_Hypoxia/5_jellyfishFq/k6", pattern = "_dumps.txt", full.names = TRUE)
 k6counts <- lapply(k6files, function(x){
   read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
     set_colnames(str_remove_all(colnames(.), "_S[0-9]+_R1_001|[0-9]+-MORGAN-6P-|_dumps\\.txt"))
@@ -780,7 +780,7 @@ k6topTable <- k6eBayes %>%
 #### Counts
 
 ```{r k7counts}
-k7files <- list.files("/hpcfs/users/a1647910/20200910_Hypoxia/5_jellyfishFq/k7", pattern = "_dumps.txt", full.names = TRUE)
+k7files <- list.files("/mnt/phoenix/hpcfs/20200910_Hypoxia/5_jellyfishFq/k7", pattern = "_dumps.txt", full.names = TRUE)
 k7counts <- lapply(k7files, function(x){
   read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
     set_colnames(str_remove_all(colnames(.), "_S[0-9]+_R1_001|[0-9]+-MORGAN-6P-|_dumps\\.txt"))
@@ -901,7 +901,7 @@ k7topTable <- k7eBayes %>%
 #### Counts
 
 ```{r k8counts}
-k8files <- list.files("/hpcfs/users/a1647910/20200910_Hypoxia/5_jellyfishFq/k8", pattern = "_dumps.txt", full.names = TRUE)
+k8files <- list.files("/mnt/phoenix/hpcfs/20200910_Hypoxia/5_jellyfishFq/k8", pattern = "_dumps.txt", full.names = TRUE)
 k8counts <- lapply(k8files, function(x){
   read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
     set_colnames(str_remove_all(colnames(.), "_S[0-9]+_R1_001|[0-9]+-MORGAN-6P-|_dumps\\.txt"))
@@ -1022,7 +1022,7 @@ k8topTable <- k8eBayes %>%
 #### Counts
 
 ```{r k9counts}
-k9files <- list.files("/hpcfs/users/a1647910/20200910_Hypoxia/5_jellyfishFq/k9", pattern = "_dumps.txt", full.names = TRUE)
+k9files <- list.files("/mnt/phoenix/hpcfs/20200910_Hypoxia/5_jellyfishFq/k9", pattern = "_dumps.txt", full.names = TRUE)
 k9counts <- lapply(k9files, function(x){
   read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
     set_colnames(str_remove_all(colnames(.), "_S[0-9]+_R1_001|[0-9]+-MORGAN-6P-|_dumps\\.txt"))
@@ -1143,7 +1143,7 @@ k9topTable <- k9eBayes %>%
 #### Counts
 
 ```{r k10counts}
-k10files <- list.files("/hpcfs/users/a1647910/20200910_Hypoxia/5_jellyfishFq/k10", pattern = "_dumps.txt", full.names = TRUE)
+k10files <- list.files("/mnt/phoenix/hpcfs/20200910_Hypoxia/5_jellyfishFq/k10", pattern = "_dumps.txt", full.names = TRUE)
 k10counts <- lapply(k10files, function(x){
   read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
     set_colnames(str_remove_all(colnames(.), "_S[0-9]+_R1_001|[0-9]+-MORGAN-6P-|_dumps\\.txt"))
