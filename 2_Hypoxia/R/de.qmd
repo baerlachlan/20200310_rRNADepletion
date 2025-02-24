@@ -43,6 +43,7 @@ library(ggrepel)
 library(msigdbr)
 library(fgsea)
 library(pander)
+library(glue)
 ```
 
 ```{r options}
@@ -105,7 +106,7 @@ An `EnsDb` object was obtained for Ensembl release 101 using the `AnnotationHub`
 
 # Raw data
 
-This is a total RNA-seq dataset generated from a 3-way comparison of WT zebrafish (*Danio rerio*) with heterozygous mutants (psen2^S4Ter/+^) and homozygous mutants (psen2^S4Ter/S4Ter^). A [previous analysis](https://uofabioinformaticshub.github.io/20170327_Psen2S4Ter_RNASeq/index.html) of this dataset identified the possibility of incomplete ribosomal RNA (rRNA) removal. The following analysis involves an investigation into possible reasons for incomplete rRNA removal and any bias this introduces into the data.
+This is a total RNA-seq dataset generated from a 3-way comparison of WT zebrafish (*Danio rerio*) with heterozygous mutants (psen2^S4Ter/+^) and homozygous mutants (psen2^S4Ter/S4Ter^). A [previous analysis](https://uofabioinformaticshub.github.io/20170327_Hypoxia_RNASeq/index.html) of this dataset identified the possibility of incomplete ribosomal RNA (rRNA) removal. The following analysis involves an investigation into possible reasons for incomplete rRNA removal and any bias this introduces into the data.
 
 ## Sample information
 
@@ -125,9 +126,20 @@ samples <- tibble(
     organism = NA
 ) %>%
     mutate(
+        sample = str_remove(sample, "_1_R0"),
         dataset = "Hypoxia",
-        organism = "zebrafish"
-    )
+        organism = "zebrafish",
+        group_1 = case_when(
+            str_detect(sample, "6P") ~ "6m",
+            str_detect(sample, "24P") ~ "24m",
+        ),
+        group_2 = case_when(
+            str_detect(sample, "PH") ~ "hypoxia",
+            str_detect(sample, "PN") ~ "normoxia",
+        ),
+        group = glue("{group_2}_{group_1}")
+    ) %>%
+    dplyr::filter(str_detect(sample, "6P"))
 datasets <- samples$dataset %>% 
     unique()
 ```
@@ -137,31 +149,35 @@ The following analysis involves `r nrow(samples)/2` paired-end samples across `r
 ## rRNA proportions
 
 ```{r rRnaProp}
-read.delim(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/3_bwa/log/samples.mapped.all",
-    sep = ":", 
-    col.names = c("sample", "proportion"), 
-    header = FALSE
+fl <- list.files(
+    here("2_Hypoxia/analysis-kmer/results/bwa/rrna_props/"),
+    full.names = TRUE
 )
-list.files(here("2_Hypoxia/analysis-kmer/results/bwa/rrna_props/")) %>%
-    .[str_remove(basename(.), ".rrna") %in% samples$sample]
-rRnaProp <- read.delim(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/3_bwa/log/samples.mapped.all",
-    sep = ":", 
-    col.names = c("sample", "proportion"), 
-    header = FALSE
-) %>%
-    mutate(
-        sample = str_remove_all(sample, "_6month_F3|[0-9]*_Ps2Ex3M1_|.mapped"),
-        sample = basename(sample),
-        proportion = proportion/100,
-        dataset = "Psen2S4Ter",
-        organism = "zebrafish",
-        group = str_extract(sample, "(WT|Heter|Hom)")
-    ) %>%
-    as_tibble()
-rRnaProp$dataset %<>%
-    factor(levels = c("Psen2S4Ter"))
+rRnaProp <- lapply(fl, read_lines) %>%
+    set_names(str_remove_all(basename(fl), "\\d+-MORGAN-|_S.+")) %>%
+    # .[!str_detect(names(.), "6Q|24Q")] %>%
+    .[!str_detect(names(.), "6Q|24Q|24P")] %>%
+    unlist() %>%
+    enframe(name = "sample", value = "proportion") %>%
+    left_join(samples) %>%
+    mutate(proportion = as.numeric(str_remove(proportion, "%$")) / 100)
+# rRnaProp <- read.delim(
+#     "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/3_bwa/log/samples.mapped.all",
+#     sep = ":", 
+#     col.names = c("sample", "proportion"), 
+#     header = FALSE
+# ) %>%
+#     mutate(
+#         sample = str_remove_all(sample, "_6month_F3|[0-9]*_Ps2Ex3M1_|.mapped"),
+#         sample = basename(sample),
+#         proportion = proportion/100,
+#         dataset = "Hypoxia",
+#         organism = "zebrafish",
+#         group = str_extract(sample, "(WT|Heter|Hom)")
+#     ) %>%
+#     as_tibble()
+# rRnaProp$dataset %<>%
+#     factor(levels = c("Hypoxia"))
 ```
 
 ```{r rRnaPropBar, fig.cap="*Percentages of each library that align to rRNA sequences with `bwa mem`.*"}
@@ -192,7 +208,7 @@ rRnaProp %>%
 dgeList <- read_tsv(
     paste0(
         "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia",
-        "/smk-rnaseq-counts-1.2.2/results/featureCounts/reverse/all.featureCounts"
+        "/smk-rnaseq-counts-1.2.4/results/featureCounts/reverse/all.featureCounts"
     ),
     comment = "#"
 ) %>%
@@ -201,6 +217,7 @@ dgeList <- read_tsv(
     set_colnames(str_remove(colnames(.), "\\.bam$")) %>%
     as.data.frame() %>%
     column_to_rownames("Geneid") %>%
+    .[,colnames(.) %in% samples$sample] %>%
     DGEList() %>%
     calcNormFactors()
 ```
@@ -212,23 +229,23 @@ mcols(dgeList$genes) %<>%
     left_join(geneGcLen_Dr)
 addInfo <- tibble(
     sample = rRnaProp$sample,
-    dataset = "Psen2S4Ter",
+    dataset = "Hypoxia",
     organism = "zebrafish",
     rRNA = rRnaProp$proportion
 )
-dgeList$samples %<>%
+dgeList$samples <- dgeList$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
-    left_join(addInfo) %>%
-    column_to_rownames("rowname")
+    dplyr::select(-group) %>%
+    left_join(samples) %>%
+    column_to_rownames("rowname") %>%
+    left_join(rRnaProp[,c("sample", "proportion")]) %>%
+    dplyr::rename(rRNA = proportion)
 # dgeList$samples$filenames <- list.files(
 #   "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/2_alignedData/bam", 
 #   pattern = ".bam$", 
 #   full.names = TRUE
 # )
-dgeList$samples$group <- colnames(dgeList) %>%
-    str_extract("(WT|Heter|Hom)") %>%
-    factor(levels = c("WT", "Heter", "Hom"))
 ```
 
 ```{r gcFunc}
@@ -326,6 +343,8 @@ genes2keep <- dgeList %>%
     is_weakly_greater_than(6)
 dgeFilt <- dgeList[genes2keep,, keep.lib.sizes = FALSE] %>%
     calcNormFactors()
+dgeFilt$samples <- dgeFilt$samples %>%
+    mutate(group = fct_relevel(group, "normoxia_6m"))
 ```
 
 ```{r pca}
@@ -410,7 +429,7 @@ ggarrange(
     a, b, c, d, ncol = 2, nrow = 2,
     common.legend = TRUE, legend = "bottom"
 ) %>%
-    annotate_figure("Psen2S4Ter")
+    annotate_figure("Hypoxia")
 ```
 
 ```{r corrplot, fig.cap="*Correlations between the first three principal components and measured variables: mean GC content, mean log(length) and rRNA proportion.*"}
@@ -549,8 +568,7 @@ tt_g <- colnames(design_g) %>%
 ```
 
 ```{r}
-displayRes_de(tt_g$groupHeter)
-displayRes_de(tt_g$groupHom)
+displayRes_de(tt_g$grouphypoxia_6m)
 ```
 
 ## rRNA + genotype
@@ -595,78 +613,77 @@ tt_gr <- colnames(design_gr) %>%
 
 ```{r}
 displayRes_de(tt_gr$rRNA)
-displayRes_de(tt_gr$groupHeter)
-displayRes_de(tt_gr$groupHom)
+displayRes_de(tt_gr$grouphypoxia_6m)
 ```
 
-## rRNA + genotype (deconvoluted)
+<!-- ## rRNA + genotype (deconvoluted) -->
 
-```{r}
-design_deconv <- design_gr %>%
-    as.data.frame() %>%
-    rownames_to_column("ID") %>%
-    mutate(
-        groupWT = as.integer(str_detect(ID, "WT")),
-        across(
-            .cols = starts_with("group"),
-            .fns = function(x){
-                x <- x - .$rRNA
-                x[x<0] <- 0
-                x
-            }
-        )
-    ) %>%
-    dplyr::select(
-        ID, rRNA, starts_with("group")
-    ) %>%
-    column_to_rownames("ID") %>%
-    as.matrix()
-cont_deconv <-makeContrasts(
-    groupHeter = groupHeter - groupWT,
-    groupHom = groupHom - groupWT,
-    rRNA = rRNA,
-    levels = colnames(design_deconv)
-)
-```
+<!-- ```{r} -->
+<!-- design_deconv <- design_gr %>% -->
+<!--     as.data.frame() %>% -->
+<!--     rownames_to_column("ID") %>% -->
+<!--     mutate( -->
+<!--         groupWT = as.integer(str_detect(ID, "WT")), -->
+<!--         across( -->
+<!--             .cols = starts_with("group"), -->
+<!--             .fns = function(x){ -->
+<!--                 x <- x - .$rRNA -->
+<!--                 x[x<0] <- 0 -->
+<!--                 x -->
+<!--             } -->
+<!--         ) -->
+<!--     ) %>% -->
+<!--     dplyr::select( -->
+<!--         ID, rRNA, starts_with("group") -->
+<!--     ) %>% -->
+<!--     column_to_rownames("ID") %>% -->
+<!--     as.matrix() -->
+<!-- cont_deconv <-makeContrasts( -->
+<!--     groupHeter = groupHeter - groupWT, -->
+<!--     groupHom = groupHom - groupWT, -->
+<!--     rRNA = rRNA, -->
+<!--     levels = colnames(design_deconv) -->
+<!-- ) -->
+<!-- ``` -->
 
-```{r}
-disp_deconv <- estimateDisp(dgeFilt, design_deconv)
-plotBCV(disp_deconv)
-```
+<!-- ```{r} -->
+<!-- disp_deconv <- estimateDisp(dgeFilt, design_deconv) -->
+<!-- plotBCV(disp_deconv) -->
+<!-- ``` -->
 
-```{r}
-fit_deconv <- glmQLFit(disp_deconv)
-plotQLDisp(fit_deconv)
-```
+<!-- ```{r} -->
+<!-- fit_deconv <- glmQLFit(disp_deconv) -->
+<!-- plotQLDisp(fit_deconv) -->
+<!-- ``` -->
 
-```{r}
-tt_deconv <- colnames(cont_deconv) %>%
-    sapply(function(x){
-        glmQLFTest(fit_deconv, contrast = cont_deconv[,x]) %>%
-            topTags(n = Inf) %>%
-            .[["table"]] %>%
-            rename_all(
-                str_remove, pattern = "ID."
-            ) %>%
-            dplyr::select(
-                Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F, 
-                P.Value = PValue, FDR,
-            ) %>%
-            as_tibble() %>%
-            mutate(
-                Bonf = p.adjust(P.Value, "bonf"), 
-                coef = x,
-                DE = FDR < 0.05
-            )
-    },
-    simplify = FALSE)
-```
+<!-- ```{r} -->
+<!-- tt_deconv <- colnames(cont_deconv) %>% -->
+<!--     sapply(function(x){ -->
+<!--         glmQLFTest(fit_deconv, contrast = cont_deconv[,x]) %>% -->
+<!--             topTags(n = Inf) %>% -->
+<!--             .[["table"]] %>% -->
+<!--             rename_all( -->
+<!--                 str_remove, pattern = "ID." -->
+<!--             ) %>% -->
+<!--             dplyr::select( -->
+<!--                 Geneid = gene_id, Symbol = gene_name, gene_biotype, logFC, logCPM, F,  -->
+<!--                 P.Value = PValue, FDR, -->
+<!--             ) %>% -->
+<!--             as_tibble() %>% -->
+<!--             mutate( -->
+<!--                 Bonf = p.adjust(P.Value, "bonf"),  -->
+<!--                 coef = x, -->
+<!--                 DE = FDR < 0.05 -->
+<!--             ) -->
+<!--     }, -->
+<!--     simplify = FALSE) -->
+<!-- ``` -->
 
-```{r}
-displayRes_de(tt_deconv$rRNA)
-displayRes_de(tt_deconv$groupHeter)
-displayRes_de(tt_deconv$groupHom)
-```
+<!-- ```{r} -->
+<!-- displayRes_de(tt_deconv$rRNA) -->
+<!-- displayRes_de(tt_deconv$groupHeter) -->
+<!-- displayRes_de(tt_deconv$groupHom) -->
+<!-- ``` -->
 
 # Data export
 
@@ -677,7 +694,6 @@ saveRDS(dgeFilt, here("2_Hypoxia/Rdata/dgeFilt.Rds"))
 saveRDS(tt_r, here("2_Hypoxia/Rdata/tt_r.Rds"))
 saveRDS(tt_g, here("2_Hypoxia/Rdata/tt_g.Rds"))
 saveRDS(tt_gr, here("2_Hypoxia/Rdata/tt_gr.Rds"))
-saveRDS(tt_deconv, here("2_Hypoxia/Rdata/tt_deconv.Rds"))
 ```
 
 # Session info

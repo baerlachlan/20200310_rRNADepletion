@@ -40,6 +40,7 @@ library(DT)
 library(ggrepel)
 library(pheatmap)
 library(ggdendro)
+library(glue)
 ```
 
 ```{r options}
@@ -49,15 +50,47 @@ theme_set(theme_bw())
 
 ```{r loadObjects}
 # load(
-#     here::here("1_Psen2S4Ter/R/output/1_1_DE.RData")
+#     here::here("2_Hypoxia/R/output/1_1_DE.RData")
 # )
 ```
 
 # Load data
 
 ```{r load_data}
-addInfo <- readRDS(here("1_Psen2S4Ter/Rdata/addInfo.Rds"))
+addInfo <- readRDS(here("2_Hypoxia/Rdata/addInfo.Rds"))
 ```
+
+```{r}
+files <- list.files(
+    # path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/0_rawData/FastQC",
+    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/raw_data/FastQC/",
+    pattern = "zip",
+    full.names = TRUE
+)
+samples <- tibble(
+    sample = str_remove(basename(files), "_fastqc.zip"),
+    dataset = NA,
+    organism = NA
+) %>%
+    mutate(
+        sample = str_remove(sample, "_1_R0"),
+        dataset = "Hypoxia",
+        organism = "zebrafish",
+        group_1 = case_when(
+            str_detect(sample, "6P") ~ "6m",
+            str_detect(sample, "24P") ~ "24m",
+        ),
+        group_2 = case_when(
+            str_detect(sample, "PH") ~ "hypoxia",
+            str_detect(sample, "PN") ~ "normoxia",
+        ),
+        group = glue("{group_2}_{group_1}")
+    ) %>%
+    dplyr::filter(str_detect(sample, "6P"))
+datasets <- samples$dataset %>% 
+    unique()
+```
+
 
 # k-mer analysis
 
@@ -69,15 +102,18 @@ addInfo <- readRDS(here("1_Psen2S4Ter/Rdata/addInfo.Rds"))
 
 ```{r k5counts}
 k5files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k5",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k5",
     pattern = ".dumps", full.names = TRUE
 )
 k5counts <- lapply(k5files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k5dge}
@@ -86,14 +122,13 @@ k5dge <- k5counts %>%
     column_to_rownames("mer") %>%
     DGEList() %>%
     calcNormFactors()
-k5dge$samples %<>%
+k5dge$samples <- k5dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k5dge$samples$group <- colnames(k5dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -210,15 +245,18 @@ k5topTable <- glmQLFTest(k5fit) %>%
 
 ```{r k6counts}
 k6files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k6",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k6",
     pattern = ".dumps", full.names = TRUE
 )
 k6counts <- lapply(k6files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k6dge}
@@ -227,14 +265,13 @@ k6dge <- k6counts %>%
     column_to_rownames("mer") %>%
     DGEList() %>%
     calcNormFactors()
-k6dge$samples %<>%
+k6dge$samples <- k6dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k6dge$samples$group <- colnames(k6dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -381,15 +418,18 @@ k6topTable <- glmQLFTest(k6fit) %>%
 
 ```{r k7counts}
 k7files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k7",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k7",
     pattern = ".dumps", full.names = TRUE
 )
 k7counts <- lapply(k7files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k7dge}
@@ -398,14 +438,13 @@ k7dge <- k7counts %>%
     column_to_rownames("mer") %>%
     DGEList() %>%
     calcNormFactors()
-k7dge$samples %<>%
+k7dge$samples <- k7dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k7dge$samples$group <- colnames(k7dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -552,15 +591,18 @@ k7topTable <- glmQLFTest(k7fit) %>%
 
 ```{r k8counts}
 k8files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k8",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k8",
     pattern = ".dumps", full.names = TRUE
 )
 k8counts <- lapply(k8files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k8dge}
@@ -569,14 +611,13 @@ k8dge <- k8counts %>%
     column_to_rownames("mer") %>%
     DGEList() %>%
     calcNormFactors()
-k8dge$samples %<>%
+k8dge$samples <- k8dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k8dge$samples$group <- colnames(k8dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -722,15 +763,18 @@ k8topTable <- glmQLFTest(k8fit) %>%
 
 ```{r k9counts}
 k9files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k9",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k9",
     pattern = ".dumps", full.names = TRUE
 )
 k9counts <- lapply(k9files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k9dge}
@@ -739,14 +783,13 @@ k9dge <- k9counts %>%
     column_to_rownames("mer") %>%
     DGEList() %>%
     calcNormFactors()
-k9dge$samples %<>%
+k9dge$samples <- k9dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k9dge$samples$group <- colnames(k9dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -864,15 +907,18 @@ k9topTable <- glmQLFTest(k9fit) %>%
 
 ```{r k10counts}
 k10files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k10",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k10",
     pattern = ".dumps", full.names = TRUE
 )
 k10counts <- lapply(k10files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k10dge}
@@ -881,14 +927,13 @@ k10dge <- k10counts %>%
     column_to_rownames("mer") %>%
     DGEList() %>%
     calcNormFactors()
-k10dge$samples %<>%
+k10dge$samples <- k10dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k10dge$samples$group <- colnames(k10dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -1035,32 +1080,34 @@ k10topTable <- glmQLFTest(k10fit) %>%
 
 ```{r k11counts}
 k11files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k11",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k11",
     pattern = ".dumps", full.names = TRUE
 )
 k11counts <- lapply(k11files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k11dge}
 k11dge <- k11counts %>%
     as.data.frame() %>%
     column_to_rownames("mer") %>%
-    replace(is.na(.), 0) %>%
+    mutate(across(everything(), ~ifelse(is.na(.x), 0 , .x))) %>%
     DGEList() %>%
     calcNormFactors()
-k11dge$samples %<>%
+k11dge$samples <- k11dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k11dge$samples$group <- colnames(k11dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -1178,32 +1225,34 @@ k11topTable <- glmQLFTest(k11fit) %>%
 
 ```{r k12counts}
 k12files <- list.files(
-    "/mnt/hpcfs/a1647910/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k12",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k12",
     pattern = ".dumps", full.names = TRUE
 )
 k12counts <- lapply(k12files, function(x){
     read_delim(x, col_names = c("mer", basename(x)), delim = " ") %>%
-        set_colnames(str_remove_all(colnames(.), "_6month_.+_F3|[0-9]*_Ps2Ex3M1_|\\.dumps"))
+        set_colnames(str_remove_all(colnames(.), "\\d+-MORGAN-|_S\\d+_R1_001.dumps"))
 }) %>%
     purrr::reduce(full_join) %>%
-    dplyr::select(mer, contains(c("WT", "Heter")))
+    as.data.frame() %>%
+    column_to_rownames("mer") %>%
+    .[,colnames(.) %in% samples$sample] %>%
+    rownames_to_column("mer")
 ```
 
 ```{r k12dge}
 k12dge <- k12counts %>%
     as.data.frame() %>%
     column_to_rownames("mer") %>%
-    replace(is.na(.), 0) %>%
+    mutate(across(everything(), ~ifelse(is.na(.x), 0 , .x))) %>%
     DGEList() %>%
     calcNormFactors()
-k12dge$samples %<>%
+k12dge$samples <- k12dge$samples %>%
     rownames_to_column("rowname") %>%
     mutate(sample = rowname) %>%
     left_join(addInfo) %>%
-    column_to_rownames("rowname")
-k12dge$samples$group <- colnames(k12dge) %>%
-    str_extract("(WT|Heter)") %>%
-    factor(levels = c("WT", "Heter"))
+    column_to_rownames("rowname") %>%
+    dplyr::select(-group) %>%
+    left_join(samples)
 ```
 
 ### Properties
@@ -1702,22 +1751,22 @@ k12topTable %>%
 # Data export
 
 ```{r}
-saveRDS(k5counts, here("1_Psen2S4Ter/Rdata/k5counts.Rds"))
-saveRDS(k6counts, here("1_Psen2S4Ter/Rdata/k6counts.Rds"))
-saveRDS(k7counts, here("1_Psen2S4Ter/Rdata/k7counts.Rds"))
-saveRDS(k8counts, here("1_Psen2S4Ter/Rdata/k8counts.Rds"))
-saveRDS(k9counts, here("1_Psen2S4Ter/Rdata/k9counts.Rds"))
-saveRDS(k10counts, here("1_Psen2S4Ter/Rdata/k10counts.Rds"))
-saveRDS(k11counts, here("1_Psen2S4Ter/Rdata/k11counts.Rds"))
-saveRDS(k12counts, here("1_Psen2S4Ter/Rdata/k12counts.Rds"))
-saveRDS(k5topTable, here("1_Psen2S4Ter/Rdata/k5topTable.Rds"))
-saveRDS(k6topTable, here("1_Psen2S4Ter/Rdata/k6topTable.Rds"))
-saveRDS(k7topTable, here("1_Psen2S4Ter/Rdata/k7topTable.Rds"))
-saveRDS(k8topTable, here("1_Psen2S4Ter/Rdata/k8topTable.Rds"))
-saveRDS(k9topTable, here("1_Psen2S4Ter/Rdata/k9topTable.Rds"))
-saveRDS(k10topTable, here("1_Psen2S4Ter/Rdata/k10topTable.Rds"))
-saveRDS(k11topTable, here("1_Psen2S4Ter/Rdata/k11topTable.Rds"))
-saveRDS(k12topTable, here("1_Psen2S4Ter/Rdata/k12topTable.Rds"))
+saveRDS(k5counts, here("2_Hypoxia/Rdata/k5counts.Rds"))
+saveRDS(k6counts, here("2_Hypoxia/Rdata/k6counts.Rds"))
+saveRDS(k7counts, here("2_Hypoxia/Rdata/k7counts.Rds"))
+saveRDS(k8counts, here("2_Hypoxia/Rdata/k8counts.Rds"))
+saveRDS(k9counts, here("2_Hypoxia/Rdata/k9counts.Rds"))
+saveRDS(k10counts, here("2_Hypoxia/Rdata/k10counts.Rds"))
+saveRDS(k11counts, here("2_Hypoxia/Rdata/k11counts.Rds"))
+saveRDS(k12counts, here("2_Hypoxia/Rdata/k12counts.Rds"))
+saveRDS(k5topTable, here("2_Hypoxia/Rdata/k5topTable.Rds"))
+saveRDS(k6topTable, here("2_Hypoxia/Rdata/k6topTable.Rds"))
+saveRDS(k7topTable, here("2_Hypoxia/Rdata/k7topTable.Rds"))
+saveRDS(k8topTable, here("2_Hypoxia/Rdata/k8topTable.Rds"))
+saveRDS(k9topTable, here("2_Hypoxia/Rdata/k9topTable.Rds"))
+saveRDS(k10topTable, here("2_Hypoxia/Rdata/k10topTable.Rds"))
+saveRDS(k11topTable, here("2_Hypoxia/Rdata/k11topTable.Rds"))
+saveRDS(k12topTable, here("2_Hypoxia/Rdata/k12topTable.Rds"))
 ```
 
 # Session info

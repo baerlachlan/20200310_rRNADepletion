@@ -98,10 +98,18 @@ raw reads (.fastq.gz) $\rightarrow$ trimmed reads (.fastq.gz) $\rightarrow$ alig
 
 ```{r meta}
 meta <- read_tsv(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/samples.tsv"
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/config/samples.tsv"
 ) %>%
     mutate(
-        group = fct_relevel(group, "WT")
+        group_1 = case_when(
+            str_detect(sample, "6P") ~ "6m",
+            str_detect(sample, "24P") ~ "24m",
+        ),
+        group_2 = case_when(
+            str_detect(sample, "PH") ~ "hypoxia",
+            str_detect(sample, "PN") ~ "normoxia",
+        ),
+        group = glue("{group_2}_{group_1}")
     )
 meta %>%
     kable(
@@ -127,7 +135,7 @@ pal <- brewer.pal(8, "Set2")[
 ```{r fqc_raw}
 #| results: hide
 fqc_raw <- list.files(
-    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/raw_data/FastQC",
+    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/raw_data/FastQC",
     pattern = "zip",
     full.names = TRUE
 )
@@ -150,7 +158,7 @@ fqc_raw %>%
 fqc_raw <- fqc_raw %>%
     FastqcDataList()
 ## Rename fqc_raw to names used by workflow
-sample_rename <- read_tsv(here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/units.tsv")) %>%
+sample_rename <- read_tsv(here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/config/units.tsv")) %>%
     pivot_longer(cols = c("fq1", "fq2"), values_to = "fq") %>%
     dplyr::select(new = sample, old = fq, everything()) %>%
     mutate(
@@ -170,7 +178,7 @@ fqc_raw <- fqc_raw %>%
 
 ```{r fqc_trim}
 fqc_trim <- list.files(
-    path = here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/trim/FastQC"),
+    path = here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/trim/FastQC"),
     pattern = "zip",
     full.names = TRUE
 ) %>%
@@ -180,7 +188,7 @@ fqc_trim <- list.files(
 
 ```{r fqc_align}
 fqc_align <- list.files(
-    path = here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/align/FastQC"),
+    path = here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/align/FastQC"),
     pattern = "zip",
     full.names = TRUE
 ) %>%
@@ -489,7 +497,7 @@ plotGcContent(
 
 ```{r star_logs}
 star_logs <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/align/log",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/align/log",
     pattern = ".log.final.out",
     full.names = TRUE
 ) %>%
@@ -601,17 +609,17 @@ load_fc_summary <- function(file){
 
 ```{r fc}
 fc_str <- load_fc_summary(here(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/featureCounts",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/featureCounts",
     "stranded/all.featureCounts.summary"
 )) %>%
     mutate(strandedness = "Stranded")
 fc_uns <- load_fc_summary(here(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/featureCounts",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/featureCounts",
     "unstranded/all.featureCounts.summary"
 )) %>%
     mutate(strandedness = "Unstranded")
 fc_rev <- load_fc_summary(here(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/featureCounts",
+    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/featureCounts",
     "reverse/all.featureCounts.summary"
 )) %>%
     mutate(strandedness = "Reverse Stranded")
@@ -703,7 +711,7 @@ fc_all %>%
 
 <!-- ```{r salmon_logs} -->
 <!-- salmon_meta <- list.files( -->
-<!--     "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/results/sal", -->
+<!--     "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/sal", -->
 <!--     pattern = "meta_info.json", -->
 <!--     recursive = TRUE, full.names = TRUE -->
 <!-- ) -->
