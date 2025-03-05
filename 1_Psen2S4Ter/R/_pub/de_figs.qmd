@@ -1,0 +1,77 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "DGE Analysis"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    error = FALSE, 
+    fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r packages}
+library(tidyverse)
+library(magrittr)
+library(ngsReports)
+library(here)
+library(scales)
+library(ggpubr)
+library(kableExtra)
+library(AnnotationHub)
+library(ensembldb)
+library(edgeR)
+library(corrplot)
+library(DT)
+library(ggrepel)
+library(msigdbr)
+library(fgsea)
+library(pander)
+library(RColorBrewer)
+```
+
+```{r options}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+```
+
+```{r}
+pal <- brewer.pal(8, "Set2")
+```
+
+## rRNA
+
+```{r}
+rRnaProp %>%
+    ggplot(aes(group, proportion, fill = group)) +
+    geom_boxplot() +
+    scale_y_continuous(labels = percent) +
+    labs(x = "Genotype", y = "Percent of total RNA", title = "rRNA proportions of each genotype") +
+    scale_fill_manual(
+        name = "Genotype",
+        values = c(
+            "WT" = pal[1], "Heter" = pal[2], "Hom" = pal[3]
+        )
+    )
+ggsave(
+    "~/phd/thesis/tex/fig/rRNA/rrna_props.png",
+    width = 8, height = 8
+)
+```
+
