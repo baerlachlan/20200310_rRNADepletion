@@ -1,0 +1,49 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "Quality control"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(xtable)
+library(here)
+library(tidyverse)
+library(scales)
+```
+
+```{r}
+k5topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k5topTable.Rds"))
+k6topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k6topTable.Rds"))
+k7topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k7topTable.Rds"))
+k8topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k8topTable.Rds"))
+k9topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k9topTable.Rds"))
+k10topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k10topTable.Rds"))
+k11topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k11topTable.Rds"))
+k12topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k12topTable.Rds"))
+```
+
+```{r}
+tribble(
+    ~k, ~Significant, ~`Percent total`,
+    "5", comma(sum(k5topTable$DE)), percent(sum(k5topTable$DE) / length(k5topTable$DE)),
+    "6", comma(sum(k6topTable$DE)), percent(sum(k6topTable$DE) / length(k6topTable$DE)),
+    "7", comma(sum(k7topTable$DE)), percent(sum(k7topTable$DE) / length(k7topTable$DE)),
+    "8", comma(sum(k8topTable$DE)), percent(sum(k8topTable$DE) / length(k8topTable$DE)),
+    "9", comma(sum(k9topTable$DE)), percent(sum(k9topTable$DE) / length(k9topTable$DE)),
+    "10", comma(sum(k10topTable$DE)), percent(sum(k10topTable$DE) / length(k10topTable$DE)),
+    "11", comma(sum(k11topTable$DE)), percent(sum(k11topTable$DE) / length(k11topTable$DE)),
+    "12", comma(sum(k12topTable$DE)), percent(sum(k12topTable$DE) / length(k12topTable$DE))
+) %>%
+    xtable() %>%
+    print(include.rownames = FALSE)
+```
+

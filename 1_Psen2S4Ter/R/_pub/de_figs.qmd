@@ -55,7 +55,7 @@ theme_set(theme_bw())
 pal <- brewer.pal(8, "Set2")
 ```
 
-## rRNA
+# rRNA
 
 ```{r}
 rRnaProp %>%
@@ -71,7 +71,37 @@ rRnaProp %>%
     )
 ggsave(
     "~/phd/thesis/tex/fig/rRNA/rrna_props.png",
-    width = 8, height = 8
+    width = 8, height = 6
+)
+```
+
+# PCA
+
+```{r}
+pca$x %>%
+    as.data.frame() %>%
+    rownames_to_column("sample") %>%
+    left_join(dgeList$samples) %>%
+    ggplot(aes(PC1, rRNA, label = rRNA)) +
+    geom_point(aes(colour = group), size = 4) +
+    geom_smooth(method = "lm", se = TRUE, colour = "blue") +
+    # stat_cor() +
+    geom_label_repel(show.legend = FALSE) +
+    scale_y_continuous(labels = percent) +
+    scale_colour_manual(
+        name = "Genotype",
+        values = c(
+            "WT" = pal[1], "Heter" = pal[2], "Hom" = pal[3]
+        )
+    ) +
+    labs(
+        x = paste0("PC1 (", percent(summary(pca)$importance["Proportion of Variance","PC1"]),")"),
+        y = "rRNA proportion of initial library",
+        colour = "Genotype"
+    )
+ggsave(
+    "~/phd/thesis/tex/fig/rRNA/pca_rrna.png",
+    width = 8, height = 6
 )
 ```
 

@@ -1,0 +1,32 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "Quality control"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+plotGcContent(
+    fqc_raw[str_detect(fqName(fqc_raw), "6P")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
+    species = "Drerio", labels = str_remove(basename(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R1")])), "_1_R1.fastq.gz") %>% set_names(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R1")]))
+) +
+    labs(subtitle = "") +
+    theme(
+        legend.position = "bottom",
+        plot.margin = unit(c(.2, .5, .2, .2), "cm")
+    ) +
+    guides(colour = guide_legend(nrow = 2, byrow = TRUE))
+ggsave(
+    "~/phd/thesis/tex/fig/rRNA/fqc_hypoxia.png",
+    width = 10, height = 6
+)
+```
+

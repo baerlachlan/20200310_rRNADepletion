@@ -452,9 +452,12 @@ displayRes_de <- function(x){
 ## k = 5
 
 ```{r}
+kappa_cqn_k5 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k5[names(kappa_k5)] <- kappa_k5
 cqn_k5 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k5[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k5,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -616,9 +619,12 @@ displayRes_de(res_gr_k5$groupHom)
 ## k = 6
 
 ```{r}
+kappa_cqn_k6 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k6[names(kappa_k6)] <- kappa_k6
 cqn_k6 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k6[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k6,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -780,9 +786,12 @@ displayRes_de(res_gr_k6$groupHom)
 ## k = 7
 
 ```{r}
+kappa_cqn_k7 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k7[names(kappa_k7)] <- kappa_k7
 cqn_k7 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k7[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k7,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -944,9 +953,12 @@ displayRes_de(res_gr_k7$groupHom)
 ## k = 8
 
 ```{r}
+kappa_cqn_k8 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k8[names(kappa_k8)] <- kappa_k8
 cqn_k8 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k8[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k8,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -1108,9 +1120,12 @@ displayRes_de(res_gr_k8$groupHom)
 ## k = 9
 
 ```{r}
+kappa_cqn_k9 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k9[names(kappa_k9)] <- kappa_k9
 cqn_k9 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k9[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k9,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -1272,9 +1287,12 @@ displayRes_de(res_gr_k9$groupHom)
 ## k = 10
 
 ```{r}
+kappa_cqn_k10 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k10[names(kappa_k10)] <- kappa_k10
 cqn_k10 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k10[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k10,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -1436,9 +1454,12 @@ displayRes_de(res_gr_k10$groupHom)
 ## k = 11
 
 ```{r}
+kappa_cqn_k11 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k11[names(kappa_k11)] <- kappa_k11
 cqn_k11 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k11[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k11,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -1600,9 +1621,12 @@ displayRes_de(res_gr_k11$groupHom)
 ## k = 12
 
 ```{r}
+kappa_cqn_k12 <- rep(0, length(rownames(dgeFilt))) %>%
+    set_names(rownames(dgeFilt))
+kappa_cqn_k12[names(kappa_k12)] <- kappa_k12
 cqn_k12 <- cqn(
-    dgeFilt$counts, 
-    x = kappa_k12[rownames(dgeFilt)],
+    dgeFilt$counts,
+    x = kappa_cqn_k12,
     lengths = mcols(dgeFilt$genes)$maxLen,
     sizeFactors = dgeFilt$samples$lib.size
 )
@@ -1764,8 +1788,32 @@ displayRes_de(res_gr_k12$groupHom)
 # Results
 
 ```{r}
+tt_g <- readRDS(here("1_Psen2S4Ter/Rdata/tt_g.Rds"))
+```
+
+```{r}
 tribble(
-    ~k, ~r, ~k6, ~k7
+    ~comparison, ~initial, ~k5, ~k6, ~k7, ~k8, ~k9, ~k10, ~k11, ~k12,
+    "Heterozygous",
+    sum(tt_g$groupHeter$DE),
+    sum(res_g_k5$groupHeter$DE),
+    sum(res_g_k6$groupHeter$DE),
+    sum(res_g_k7$groupHeter$DE),
+    sum(res_g_k8$groupHeter$DE),
+    sum(res_g_k9$groupHeter$DE),
+    sum(res_g_k10$groupHeter$DE),
+    sum(res_g_k11$groupHeter$DE),
+    sum(res_g_k12$groupHeter$DE),
+    "Homozygous",
+    sum(tt_g$groupHom$DE),
+    sum(res_g_k5$groupHom$DE),
+    sum(res_g_k6$groupHom$DE),
+    sum(res_g_k7$groupHom$DE),
+    sum(res_g_k8$groupHom$DE),
+    sum(res_g_k9$groupHom$DE),
+    sum(res_g_k10$groupHom$DE),
+    sum(res_g_k11$groupHom$DE),
+    sum(res_g_k12$groupHom$DE)
 )
 ```
 
@@ -1780,6 +1828,14 @@ saveRDS(kappa_k9, here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))
 saveRDS(kappa_k10, here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))
 saveRDS(kappa_k11, here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))
 saveRDS(kappa_k12, here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))
+saveRDS(res_g_k5, here("1_Psen2S4Ter/Rdata/res_g_k5"))
+saveRDS(res_g_k6, here("1_Psen2S4Ter/Rdata/res_g_k6"))
+saveRDS(res_g_k7, here("1_Psen2S4Ter/Rdata/res_g_k7"))
+saveRDS(res_g_k8, here("1_Psen2S4Ter/Rdata/res_g_k8"))
+saveRDS(res_g_k9, here("1_Psen2S4Ter/Rdata/res_g_k9"))
+saveRDS(res_g_k10, here("1_Psen2S4Ter/Rdata/res_g_k10"))
+saveRDS(res_g_k11, here("1_Psen2S4Ter/Rdata/res_g_k11"))
+saveRDS(res_g_k12, here("1_Psen2S4Ter/Rdata/res_g_k12"))
 ```
 
 # Session info

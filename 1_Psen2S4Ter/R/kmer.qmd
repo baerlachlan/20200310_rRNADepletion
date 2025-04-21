@@ -1583,19 +1583,7 @@ k12topTable %>%
     labs(x = "logFC", y = expression(paste(-log[10], "(p)")), title = "k = 11") +
     theme_bw() +
     theme(legend.position = "none")
-```
-
-# k-mer GC
-
-```{r}
-mutate(
-    k11topTable,
-    gc = str_count(mer, "G|C") / str_length(mer),
-    direction = ifelse(sign(logFC) == -1, "Down", "Up")
-    ) %>%
-    ggplot(aes(gc, group = direction, colour = direction)) +
-    stat_ecdf()
-```
+``````
 
 # Data export
 

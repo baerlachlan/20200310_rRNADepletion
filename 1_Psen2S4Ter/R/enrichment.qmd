@@ -202,7 +202,7 @@ hmByID <- hm %>%
 ```
 
 ```{r}
-kg <- msigdbr("Danio rerio", category = "C2", subcategory = "CP:KEGG")  %>% 
+kg <- msigdbr("Danio rerio", category = "C2", subcollection = "CP:KEGG_LEGACY")  %>% 
   left_join(entrezGenes) %>%
   dplyr::filter(!is.na(gene_id)) %>%
   distinct(gs_name, gene_id, .keep_all = TRUE)
@@ -215,7 +215,7 @@ kgByID <- kg  %>%
 ```
 
 ```{r}
-wk <- msigdbr("Danio rerio", category = "C2", subcategory = "CP:WIKIPATHWAYS")  %>% 
+wk <- msigdbr("Danio rerio", category = "C2", subcollection = "CP:WIKIPATHWAYS")  %>% 
   left_join(entrezGenes) %>%
   dplyr::filter(!is.na(gene_id)) %>%
   distinct(gs_name, gene_id, .keep_all = TRUE)
@@ -460,6 +460,426 @@ displayRes_enrich(fgsea_deconv_wk$rRNA, "rRNA")
 displayRes_enrich(fgsea_deconv_wk$groupHeter, "groupHeter")
 displayRes_enrich(fgsea_deconv_wk$groupHom, "groupHom")
 ```
+
+# Enrichment after normalisation
+
+```{r}
+res_g_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k5"))
+res_g_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k6"))
+res_g_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k7"))
+res_g_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k8"))
+res_g_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k9"))
+res_g_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k10"))
+res_g_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k11"))
+res_g_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k12"))
+```
+
+```{r}
+ranks_k5 <- res_g_k5 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k6 <- res_g_k6 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k7 <- res_g_k7 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k8 <- res_g_k8 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k9 <- res_g_k9 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k10 <- res_g_k10 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k11 <- res_g_k11 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+ranks_k12 <- res_g_k12 %>%
+  lapply(function(x){
+    x %>%
+      mutate(stat = -sign(logFC) * log10(P.Value)) %>%
+      dplyr::arrange(stat) %>%
+      with(structure(stat, names = Geneid))
+  })
+```
+
+## Hallmark
+
+::: {tabset-panel}
+
+### k = 5
+
+```{r}
+fgsea_hm_k5 <- ranks_k5 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k5$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k5$groupHom, "groupHom")
+```
+
+### k = 6
+
+```{r}
+fgsea_hm_k6 <- ranks_k6 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k6$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k6$groupHom, "groupHom")
+```
+
+### k = 7
+
+```{r}
+fgsea_hm_k7 <- ranks_k7 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k7$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k7$groupHom, "groupHom")
+```
+
+### k = 8
+
+```{r}
+fgsea_hm_k8 <- ranks_k8 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k8$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k8$groupHom, "groupHom")
+```
+
+### k = 9
+
+```{r}
+fgsea_hm_k9 <- ranks_k9 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k9$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k9$groupHom, "groupHom")
+```
+
+### k = 10
+
+```{r}
+fgsea_hm_k10 <- ranks_k10 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k10$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k10$groupHom, "groupHom")
+```
+
+### k = 11
+
+```{r}
+fgsea_hm_k11 <- ranks_k11 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k11$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k11$groupHom, "groupHom")
+```
+
+### k = 12
+
+```{r}
+fgsea_hm_k12 <- ranks_k12 %>%
+  lapply(function(x){
+    fgsea(hmByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k12$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_hm_k12$groupHom, "groupHom")
+```
+
+:::
+
+## KEGG
+
+::: {tabset-panel}
+
+### k = 5
+
+```{r}
+fgsea_kg_k5 <- ranks_k5 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k5$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k5$groupHom, "groupHom")
+```
+
+### k = 6
+
+```{r}
+fgsea_kg_k6 <- ranks_k6 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k6$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k6$groupHom, "groupHom")
+```
+
+### k = 7
+
+```{r}
+fgsea_kg_k7 <- ranks_k7 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k7$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k7$groupHom, "groupHom")
+```
+
+### k = 8
+
+```{r}
+fgsea_kg_k8 <- ranks_k8 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k8$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k8$groupHom, "groupHom")
+```
+
+### k = 9
+
+```{r}
+fgsea_kg_k9 <- ranks_k9 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k9$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k9$groupHom, "groupHom")
+```
+
+### k = 10
+
+```{r}
+fgsea_kg_k10 <- ranks_k10 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k10$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k10$groupHom, "groupHom")
+```
+
+### k = 11
+
+```{r}
+fgsea_kg_k11 <- ranks_k11 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k11$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k11$groupHom, "groupHom")
+```
+
+### k = 12
+
+```{r}
+fgsea_kg_k12 <- ranks_k12 %>%
+  lapply(function(x){
+    fgsea(kgByID, x, eps = 0) %>%
+      as_tibble() %>%
+      dplyr::rename(FDR = padj) %>%
+      mutate(padj = p.adjust(pval, "bonferroni")) %>%
+      dplyr::arrange(pval)
+  })
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k12$groupHeter, "groupHeter")
+```
+
+```{r}
+displayRes_enrich(fgsea_kg_k12$groupHom, "groupHom")
+```
+
+:::
 
 # Data export
 

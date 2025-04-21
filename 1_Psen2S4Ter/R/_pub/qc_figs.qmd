@@ -14,16 +14,113 @@ editor_options:
 ---
 
 ```{r}
-a <- plotGcContent(
-    fqc_raw[str_detect(fqName(fqc_raw), "R1")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
-    species = "Drerio", labels = str_remove(basename(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R1")])), "_1_R1.fastq.gz") %>% set_names(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R1")]))
-) +
-    labs(subtitle = "R1 reads")
-b <- plotGcContent(
-    fqc_raw[str_detect(fqName(fqc_raw), "R2")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
-    species = "Drerio", labels = str_remove(basename(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R2")])), "_1_R2.fastq.gz") %>% set_names(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R2")]))
-) +
-    labs(subtitle = "R2 reads")
+pal <- brewer.pal(8, "Set2")
+```
+
+```{r}
+GCobject <- ngsReports::gcTheoretical
+species <- "Drerio"
+gcType <- "Transcriptome"
+gcTheoryDF <- getGC(GCobject, species, gcType)
+names(gcTheoryDF)[names(gcTheoryDF) == species] <- "Freq"
+subTitle <- paste(
+    "Theoretical Distribution based on the",
+    species,
+    gcType
+)
+gcTheoryDF$Type <- "Theoretical Distribution"
+gcTheoryDF$Filename <- "Theoretical Distribution"
+gcTheoryDF$Freq <- round(gcTheoryDF$Freq,4)
+gcTheoryDF$Percent <- gcTheoryDF$Freq
+gcTheoryDF <- gcTheoryDF[,c("Filename", "GC_Content", "Percent")]
+```
+
+```{r}
+plotType = "line"
+df <- fqc_raw %>%
+    getModule("Per_sequence_GC_content") %>%
+    split(f = .$Filename) %>%
+    lapply(function(x){
+        x$Percent <- x$Count / sum(x$Count)
+        x
+    }) %>%
+    dplyr::bind_rows() %>%
+    .[c("Filename", "GC_Content", "Percent")]
+xLab <- "GC Content (%)"
+ylab <- "Reads (%)"
+
+n <- length(df)
+lineCols <- RColorBrewer::brewer.pal(12, "Paired")
+if (length(lineCols) > n) lineCols <- lineCols[seq_len(n)]
+lineCols <- colorRampPalette(lineCols)(n)
+lineCols <- c("#000000", lineCols)
+scaleColour <- scale_colour_manual(values = lineCols)
+
+df <- dplyr::bind_rows(gcTheoryDF, df)
+df$Filename <- factor(df$Filename, levels = unique(df$Filename))
+```
+
+```{r}
+a <- df %>%
+    dplyr::filter(str_detect(Filename, "_R1|Theor")) %>%
+    mutate(
+        Filename = str_remove_all(Filename, "_1"),
+        Filename = str_remove_all(Filename, "\\.fastq\\.gz$"),
+        sample = str_remove_all(Filename, "_R(1|2)")
+    ) %>%
+    left_join(meta) %>%
+    mutate(
+        group = ifelse(is.na(group), sample, group),
+        group = factor(group, levels = c(
+            "Theoretical Distribution", "Hom", "Heter", "WT"
+        ))
+        ) %>%
+    ggplot(aes(GC_Content, Percent, colour = group, group = Filename)) +
+    geom_line(linetype = 1, linewidth = 0.5) +
+    scale_x_continuous(
+        breaks = seq(0, 100, by = 10), expand = c(0.02, 0)
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_colour_manual(values = c(
+        "Theoretical Distribution" = "black",
+        "WT" = pal[1], "Heter" = pal[2], "Hom" = pal[3]
+    )) +
+    labs(x = xLab, y = ylab, colour = "") +
+    theme_bw() +
+    theme(
+        plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)
+    )
+b <- df %>%
+    dplyr::filter(str_detect(Filename, "_R2|Theor")) %>%
+    mutate(
+        Filename = str_remove_all(Filename, "_1"),
+        Filename = str_remove_all(Filename, "\\.fastq\\.gz$"),
+        sample = str_remove_all(Filename, "_R(1|2)")
+    ) %>%
+    left_join(meta) %>%
+    mutate(
+        group = ifelse(is.na(group), sample, group),
+        group = factor(group, levels = c(
+            "Theoretical Distribution", "Hom", "Heter", "WT"
+        ))
+        ) %>%
+    ggplot(aes(GC_Content, Percent, colour = group, group = Filename)) +
+    geom_line(linetype = 1, linewidth = 0.5) +
+    scale_x_continuous(
+        breaks = seq(0, 100, by = 10), expand = c(0.02, 0)
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_colour_manual(values = c(
+        "Theoretical Distribution" = "black",
+        "WT" = pal[1], "Heter" = pal[2], "Hom" = pal[3]
+    )) +
+    labs(x = xLab, y = ylab, colour = "") +
+    theme_bw() +
+    theme(
+        plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)
+    )
 a + b +
     plot_layout(ncol = 1, guides = "collect") +
     plot_annotation(tag_levels = "A") &
@@ -31,10 +128,61 @@ a + b +
         legend.position = "bottom",
         plot.margin = unit(c(.2, .5, .2, .2), "cm")
     ) &
-    guides(colour = guide_legend(nrow = 2, byrow = TRUE))
+    guides(colour = guide_legend(nrow = 1, byrow = TRUE))
 ggsave(
     "~/phd/thesis/tex/fig/rRNA/fqc_raw.png",
-    width = 10, height = 10
+    width = 6, height = 6
 )
+```
+
+```{r}
+# pal <- brewer.pal(8, "Set2")
+# labels <- fqName(fqc_raw) %>%
+#     enframe(value = "filename", name = NULL) %>%
+#     mutate(
+#         id =  str_remove_all(filename, "\\.fastq\\.gz"),
+#         sample =  str_remove_all(filename, "_1_R.\\.fastq\\.gz")
+#     ) %>%
+#     left_join(meta) %>%
+#     mutate(colour = case_when(
+#         group == "WT" ~ pal[1],
+#         group == "Heter" ~ pal[2],
+#         group == "Hom" ~ pal[3],
+#     )) %>%
+#     rbind(c(NA, "Theoretical Distribution", NA, NA, "black"))
+# 
+# plotGcContent(
+#     fqc_raw[str_detect(fqName(fqc_raw), "R1")],
+#     plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
+#     species = "Drerio", group = labels$group
+# ) +
+#     geom_point(aes(group = group), data = labels)
+# scale_colour_manual(values = set_names(labels$colour, labels$id), )
+```
+
+```{r}
+# a <- plotGcContent(
+#     fqc_raw[str_detect(fqName(fqc_raw), "R1")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
+#     species = "Drerio", labels = str_remove(basename(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R1")])), "_1_R1.fastq.gz") %>% set_names(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R1")])) +
+#         scale_colour_manual(values = c(labels$filename = labels$group))
+# ) +
+#     labs(subtitle = "R1 reads")
+# b <- plotGcContent(
+#     fqc_raw[str_detect(fqName(fqc_raw), "R2")], plotType = "line",  gcType = "Transcriptome", usePlotly = FALSE,
+#     species = "Drerio", labels = str_remove(basename(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R2")])), "_1_R2.fastq.gz") %>% set_names(fqName(fqc_raw[str_detect(fqName(fqc_raw), "R2")]))
+# ) +
+#     labs(subtitle = "R2 reads")
+# a + b +
+#     plot_layout(ncol = 1, guides = "collect") +
+#     plot_annotation(tag_levels = "A") &
+#     theme(
+#         legend.position = "bottom",
+#         plot.margin = unit(c(.2, .5, .2, .2), "cm")
+#     ) &
+#     guides(colour = guide_legend(nrow = 2, byrow = TRUE))
+# ggsave(
+#     "~/phd/thesis/tex/fig/rRNA/fqc_raw.png",
+#     width = 10, height = 10
+# )
 ```
 

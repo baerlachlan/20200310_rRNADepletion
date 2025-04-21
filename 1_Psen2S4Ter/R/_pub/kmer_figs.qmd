@@ -1,0 +1,132 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "k-mer analysis"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    error = FALSE,
+    fig.align = "center"
+)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+# Setup 
+
+```{r packages}
+library(tidyverse)
+library(magrittr)
+library(parallel)
+library(pander)
+library(here)
+library(scales)
+library(ggpubr)
+library(kableExtra)
+library(edgeR)
+library(DT)
+library(ggrepel)
+library(pheatmap)
+library(ggdendro)
+library(RColorBrewer)
+```
+
+```{r}
+pal <- brewer.pal(8, "Set2")
+```
+
+# k-mer GC
+
+```{r}
+lapply(list(
+    k5topTable,
+    k8topTable,
+    k9topTable,
+    k12topTable
+), \(x){
+    mutate(
+        x,
+        gc = str_count(mer, "G|C") / str_length(mer),
+        direction = ifelse(sign(logFC) == -1, "Down", "Up"),
+        group = paste0("k = ", str_length(mer))
+    )
+}) %>%
+    bind_rows() %>%
+    mutate(group = fct_relevel(group, c(
+        "k = 5", "k = 6", "k = 7", "k = 8", "k = 9", "k = 10", "k = 11", "k = 12"
+    ))) %>%
+    ggplot(aes(gc, group = direction, colour = direction)) +
+    stat_ecdf(linewidth = 1) +
+    facet_wrap(~group, ncol = 2) +
+    scale_x_continuous(labels = scales::percent) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_colour_manual(values = c("Down" = pal[3], "Up" = pal[2])) +
+    labs(
+        x = "k-mer GC content",
+        y = "Fraction of data",
+        colour = "Direction of fold change"
+    ) +
+    theme(
+        legend.position = "bottom"
+    )
+ggsave(
+    "~/phd/thesis/tex/fig/rRNA/kmer_gc.png",
+    width = 8, height = 6
+)
+```
+
+```{r}
+lapply(list(
+    k6topTable,
+    k7topTable,
+    k10topTable,
+    k11topTable
+), \(x){
+    mutate(
+        x,
+        gc = str_count(mer, "G|C") / str_length(mer),
+        direction = ifelse(sign(logFC) == -1, "Down", "Up"),
+        group = paste0("k = ", str_length(mer))
+    )
+}) %>%
+    bind_rows() %>%
+    mutate(group = fct_relevel(group, c(
+        "k = 5", "k = 6", "k = 7", "k = 8", "k = 9", "k = 10", "k = 11", "k = 12"
+    ))) %>%
+    ggplot(aes(gc, group = direction, colour = direction)) +
+    stat_ecdf(linewidth = 1) +
+    facet_wrap(~group, ncol = 2) +
+    scale_x_continuous(labels = scales::percent) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_colour_manual(values = c("Down" = pal[3], "Up" = pal[2])) +
+    labs(
+        x = "k-mer GC content",
+        y = "Fraction of data",
+        colour = "Direction of fold change"
+    ) +
+    theme(
+        legend.position = "bottom"
+    )
+ggsave(
+    "~/phd/thesis/tex/fig/rRNA/kmer_gc_supp.png",
+    width = 8, height = 6
+)
+```
+
+# Session info
+
+```{r seshInfo}
+sessionInfo()
+```

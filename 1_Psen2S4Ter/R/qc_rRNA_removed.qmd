@@ -98,7 +98,7 @@ raw reads (.fastq.gz) $\rightarrow$ trimmed reads (.fastq.gz) $\rightarrow$ alig
 
 ```{r meta}
 meta <- read_tsv(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/samples.tsv"
+    "1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/samples.tsv"
 ) %>%
     mutate(
         group = fct_relevel(group, "WT")
@@ -127,7 +127,7 @@ pal <- brewer.pal(8, "Set2")[
 ```{r fqc_raw}
 #| results: hide
 fqc_raw <- list.files(
-    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/raw_data/FastQC",
+    path = "1_Psen2S4Ter/analysis-kmer/results/raw_data/FastQC",
     pattern = "zip",
     full.names = TRUE
 )
@@ -150,7 +150,7 @@ fqc_raw %>%
 fqc_raw <- fqc_raw %>%
     FastqcDataList()
 ## Rename fqc_raw to names used by workflow
-sample_rename <- read_tsv(here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/units.tsv")) %>%
+sample_rename <- read_tsv(here("1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/units.tsv")) %>%
     pivot_longer(cols = c("fq1", "fq2"), values_to = "fq") %>%
     dplyr::select(new = sample, old = fq, everything()) %>%
     mutate(
@@ -170,7 +170,7 @@ fqc_raw <- fqc_raw %>%
 
 ```{r fqc_unmapped}
 fqc_unmapped <- list.files(
-    path = here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/bwa/FastQC_fastq"),
+    path = here("1_Psen2S4Ter/analysis-kmer/results/bwa/FastQC_fastq"),
     pattern = "zip",
     full.names = TRUE
 ) %>%
@@ -184,7 +184,7 @@ fqc_unmapped <- fqc_unmapped %>%
 
 ```{r fqc_mapped}
 fqc_mapped <- list.files(
-    path = here("/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/star/FastQC_fastq/"),
+    path = here("1_Psen2S4Ter/analysis-kmer/results/star/FastQC_fastq/"),
     pattern = "zip",
     full.names = TRUE
 ) %>%
@@ -497,7 +497,7 @@ plotGcContent(
 
 ```{r star_logs}
 star_logs <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/star/log",
+    "1_Psen2S4Ter/analysis-kmer/results/star/log",
     pattern = "Log.final.out",
     full.names = TRUE
 ) %>%

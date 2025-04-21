@@ -1,0 +1,98 @@
+---
+title: "rRNADepletion_s4ter"
+subtitle: "Quality control"
+author: "Lachlan Baer"
+date-modified: today
+date-format: "DD MMMM, YYYY"
+modified-title: "LAST MODIFIED"
+code-fold: true
+fig-width: 8
+fig-height: 6
+fig-align: center
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(xtable)
+```
+
+```{r}
+tribble(
+    ~k, ~Heterozygous, ~Homozygous,
+    "Uncorrected", sum(tt_g$groupHeter$DE), sum(tt_g$groupHom$DE),
+    "5", sum(res_g_k5$groupHeter$DE), sum(res_g_k5$groupHom$DE),
+    "6", sum(res_g_k6$groupHeter$DE), sum(res_g_k6$groupHom$DE),
+    "7", sum(res_g_k7$groupHeter$DE), sum(res_g_k7$groupHom$DE),
+    "8", sum(res_g_k8$groupHeter$DE), sum(res_g_k8$groupHom$DE),
+    "9", sum(res_g_k9$groupHeter$DE), sum(res_g_k9$groupHom$DE),
+    "10", sum(res_g_k10$groupHeter$DE), sum(res_g_k10$groupHom$DE),
+    "11", sum(res_g_k11$groupHeter$DE), sum(res_g_k11$groupHom$DE),
+    "12", sum(res_g_k12$groupHeter$DE), sum(res_g_k12$groupHom$DE)
+) %>%
+    xtable() %>%
+    print(include.rownames = FALSE)
+```
+
+```{r}
+# tribble(
+#     ~comparison, ~initial, ~k5, ~k6, ~k7, ~k8, ~k9, ~k10, ~k11, ~k12,
+#     "Heterozygous",
+#     sum(tt_g$groupHeter$DE),
+#     sum(res_g_k5$groupHeter$DE),
+#     sum(res_g_k6$groupHeter$DE),
+#     sum(res_g_k7$groupHeter$DE),
+#     sum(res_g_k8$groupHeter$DE),
+#     sum(res_g_k9$groupHeter$DE),
+#     sum(res_g_k10$groupHeter$DE),
+#     sum(res_g_k11$groupHeter$DE),
+#     sum(res_g_k12$groupHeter$DE),
+#     "Homozygous",
+#     sum(tt_g$groupHom$DE),
+#     sum(res_g_k5$groupHom$DE),
+#     sum(res_g_k6$groupHom$DE),
+#     sum(res_g_k7$groupHom$DE),
+#     sum(res_g_k8$groupHom$DE),
+#     sum(res_g_k9$groupHom$DE),
+#     sum(res_g_k10$groupHom$DE),
+#     sum(res_g_k11$groupHom$DE),
+#     sum(res_g_k12$groupHom$DE)
+# ) %>%
+#     xtable() %>%
+#     print(include.rownames = FALSE)
+```
+
+```{r}
+a <- enframe(kappa_cqn_k5, name = "gene_id", value = "kappa")
+# b <- 
+dgeFilt$counts %>%
+    cpm(log = TRUE) %>%
+    as.data.frame() %>%
+    rownames_to_column("gene_id") %>%
+    pivot_longer(-gene_id, names_to = "sample", values_to = "cpm") %>%
+    left_join(dgeFilt$samples[,c("sample", "group")]) %>%
+    summarise(cpm = mean(cpm), .by = c(gene_id, group)) %>%
+    left_join(a) 
+    # summarise(
+    #     across(contains("WT"), ~mean(.x))
+    # )
+    mutate(
+        across(contains("WT"), ~mean(.x))
+    )
+    dplyr
+```
+
+```{r}
+res_g_k5 %>%
+    bind_rows() %>%
+    dplyr::rename(gene_id = Geneid) %>%
+    left_join(a) %>%
+    ggplot(aes(kappa, logFC)) +
+    geom_point() +
+    stat_cor(method = "spearman")
+    lapply(dplyr::rename, gene_id = Geneid) %>%
+    lapply(\(x){
+        
+    })
+```
+
