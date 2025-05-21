@@ -464,14 +464,14 @@ displayRes_enrich(fgsea_deconv_wk$groupHom, "groupHom")
 # Enrichment after normalisation
 
 ```{r}
-res_g_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k5"))
-res_g_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k6"))
-res_g_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k7"))
-res_g_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k8"))
-res_g_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k9"))
-res_g_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k10"))
-res_g_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k11"))
-res_g_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k12"))
+res_g_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k5.Rds"))
+res_g_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k6.Rds"))
+res_g_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k7.Rds"))
+res_g_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k8.Rds"))
+res_g_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k9.Rds"))
+res_g_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k10.Rds"))
+res_g_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k11.Rds"))
+res_g_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k12.Rds"))
 ```
 
 ```{r}

@@ -41,10 +41,45 @@ library(ggrepel)
 library(pheatmap)
 library(ggdendro)
 library(RColorBrewer)
+library(ggtext)
+library(glue)
+```
+
+```{r options}
+if (interactive()) setwd(here::here())
+theme_set(theme_bw())
+theme_update(
+    axis.title.x = element_markdown(),
+    axis.title.y = element_markdown(),
+)
 ```
 
 ```{r}
 pal <- brewer.pal(8, "Set2")
+```
+
+# Load data
+
+```{r}
+k5counts <- readRDS(here("1_Psen2S4Ter/Rdata/k5counts.Rds"))
+k6counts <- readRDS(here("1_Psen2S4Ter/Rdata/k6counts.Rds"))
+k7counts <- readRDS(here("1_Psen2S4Ter/Rdata/k7counts.Rds"))
+k8counts <- readRDS(here("1_Psen2S4Ter/Rdata/k8counts.Rds"))
+k9counts <- readRDS(here("1_Psen2S4Ter/Rdata/k9counts.Rds"))
+k10counts <- readRDS(here("1_Psen2S4Ter/Rdata/k10counts.Rds"))
+k11counts <- readRDS(here("1_Psen2S4Ter/Rdata/k11counts.Rds"))
+k12counts <- readRDS(here("1_Psen2S4Ter/Rdata/k12counts.Rds"))
+```
+
+```{r}
+k5topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k5topTable.Rds"))
+k6topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k6topTable.Rds"))
+k7topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k7topTable.Rds"))
+k8topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k8topTable.Rds"))
+k9topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k9topTable.Rds"))
+k10topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k10topTable.Rds"))
+k11topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k11topTable.Rds"))
+k12topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k12topTable.Rds"))
 ```
 
 # k-mer GC
@@ -123,6 +158,88 @@ ggsave(
     "~/phd/thesis/tex/fig/rRNA/kmer_gc_supp.png",
     width = 8, height = 6
 )
+```
+
+##
+
+```{r}
+lapply(list(
+    k5topTable,
+    k6topTable,
+    k7topTable,
+    k8topTable,
+    k9topTable,
+    k10topTable,
+    k11topTable,
+    k12topTable
+), \(x){
+    mutate(
+        x,
+        gc = str_count(mer, "G|C") / str_length(mer),
+        direction = ifelse(sign(logFC) == -1, "Down", "Up"),
+        group = paste0("k = ", str_length(mer))
+    )
+}) %>%
+    bind_rows() %>%
+    mutate(group = fct_relevel(group, c(
+        "k = 5", "k = 6", "k = 7", "k = 8", "k = 9", "k = 10", "k = 11", "k = 12"
+    ))) %>%
+    ggplot(aes(gc, group = direction, colour = direction)) +
+    stat_ecdf(linewidth = 1) +
+    facet_wrap(~group, ncol = 2) +
+    scale_x_continuous(labels = scales::percent) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_colour_manual(values = c("Down" = pal[3], "Up" = pal[2])) +
+    labs(
+        x = "k-mer GC content",
+        y = "Fraction of data",
+        colour = "Direction of fold change"
+    ) +
+    theme(
+        legend.position = "bottom"
+    )
+```
+
+# Volcano
+
+```{r}
+lapply(list(
+    k5topTable,
+    k6topTable,
+    k7topTable,
+    k8topTable,
+    k9topTable,
+    k10topTable,
+    k11topTable,
+    k12topTable
+), \(x){
+    x %>%
+        mutate(
+            k = glue("k = {str_length(mer)}")
+        )
+}) %>%
+    bind_rows() %>%
+    mutate(
+        k = fct_relevel(k, c(
+            "k = 5",
+            "k = 6",
+            "k = 7",
+            "k = 8",
+            "k = 9",
+            "k = 10",
+            "k = 11",
+            "k = 12"
+        ))
+    ) %>%
+    ggplot(aes(logFC, -log10(P.Value))) +
+    geom_point(shape = 21, fill = "grey20", alpha = 0.2, size = 2) +
+    labs(
+        x = "logFC",
+        y = "-log~10~(p)"
+    ) +
+    facet_wrap(~k, ncol = 2, scales = "free") +
+    theme(text = element_text(size = 20))
+ggsave("~/phd/thesis/tex/fig/rRNA/k_volc.png", width = 8, height = 12)
 ```
 
 # Session info

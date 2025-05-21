@@ -8,6 +8,9 @@ project:
     - qc_rRNA_removed.qmd
     - de.qmd
     - kmer.qmd
+    - kappa.qmd
+    - enrichment.qmd
+    - ruv.qmd
 
 website:
   back-to-top-navigation: true
@@ -26,6 +29,12 @@ website:
         href: de.qmd
       - text: k-mer
         href: kmer.qmd
+      - text: kappa
+        href: kappa.qmd
+      - text: enrichment
+        href: enrichment.qmd
+      - text: RUV
+        href: ruv.qmd
     tools:
       - icon: github
         href: https://github.com/baerlachlan/241107_THOC_Raman

@@ -21,6 +21,17 @@ library(scales)
 ```
 
 ```{r}
+k5counts <- readRDS(here("1_Psen2S4Ter/Rdata/k5counts.Rds"))
+k6counts <- readRDS(here("1_Psen2S4Ter/Rdata/k6counts.Rds"))
+k7counts <- readRDS(here("1_Psen2S4Ter/Rdata/k7counts.Rds"))
+k8counts <- readRDS(here("1_Psen2S4Ter/Rdata/k8counts.Rds"))
+k9counts <- readRDS(here("1_Psen2S4Ter/Rdata/k9counts.Rds"))
+k10counts <- readRDS(here("1_Psen2S4Ter/Rdata/k10counts.Rds"))
+k11counts <- readRDS(here("1_Psen2S4Ter/Rdata/k11counts.Rds"))
+k12counts <- readRDS(here("1_Psen2S4Ter/Rdata/k12counts.Rds"))
+```
+
+```{r}
 k5topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k5topTable.Rds"))
 k6topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k6topTable.Rds"))
 k7topTable <- readRDS(here("1_Psen2S4Ter/Rdata/k7topTable.Rds"))

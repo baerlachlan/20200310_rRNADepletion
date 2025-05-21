@@ -68,9 +68,10 @@ rRnaProp %>%
         values = c(
             "WT" = pal[1], "Heter" = pal[2], "Hom" = pal[3]
         )
-    )
+    ) +
+    theme(text = element_text(size = 15))
 ggsave(
-    "~/phd/thesis/tex/fig/rRNA/rrna_props.png",
+    "~/phd/thesis/tex/fig/rRNA/rrna_props.pdf",
     width = 8, height = 6
 )
 ```
@@ -98,10 +99,18 @@ pca$x %>%
         x = paste0("PC1 (", percent(summary(pca)$importance["Proportion of Variance","PC1"]),")"),
         y = "rRNA proportion of initial library",
         colour = "Genotype"
-    )
+    ) +
+    theme(text = element_text(size = 15))
 ggsave(
-    "~/phd/thesis/tex/fig/rRNA/pca_rrna.png",
+    "~/phd/thesis/tex/fig/rRNA/pca_rrna.pdf",
     width = 8, height = 6
 )
+```
+
+# Table
+
+```{r}
+readRDS(here("1_Psen2S4Ter/Rdata/tt_g.Rds"))
+17,096
 ```
 

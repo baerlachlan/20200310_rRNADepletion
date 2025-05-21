@@ -81,8 +81,8 @@ ranges <- exonsBy(ensDb, by = "gene", filter = GeneIdFilter(ids)) %>%
 seqs <- lapply(ranges, function(x){
     getSeq(
         FaFile(
-            file = "/mnt/hpcfs/a1647910/workflows/smk-ens-refs/results/danio_rerio/release_101/genome.fa",
-            index = "/mnt/hpcfs/a1647910/workflows/smk-ens-refs/results/danio_rerio/release_101/genome.fa.fai"
+            file = "/mnt/phoenix/hpcfs/workflows/smk-ens-refs/results/danio_rerio/release_101/genome.fa",
+            index = "/mnt/phoenix/hpcfs/workflows/smk-ens-refs/results/danio_rerio/release_101/genome.fa.fai"
         ),
         x
     ) %>%
@@ -92,12 +92,29 @@ seqs <- lapply(ranges, function(x){
 ```
 
 ```{r}
+## Uncomment to overwrite
+# lapply(names(seqs), \(x){
+#     writeXStringSet(
+#         seqs[x],
+#         here(paste0(
+#             "1_Psen2S4Ter/analysis-gene_kmer/results/seqs/", x, ".fa"
+#         ))
+#     )
+# })
+```
+
+```{r}
+saved_seqs <- list.files(here("1_Psen2S4Ter/analysis-gene_kmer/results/seqs/")) %>%
+    str_remove_all("\\.fa$")
 lapply(names(seqs), \(x){
-    writeXStringSet(
-        seqs[x],
-        here(paste0(
-            "1_Psen2S4Ter/analysis-gene_kmer/results/seqs/", x, ".fa"
-        ))
-    )
+    if (!(x %in% saved_seqs)) {
+        writeXStringSet(
+            seqs[x],
+            here(paste0(
+                "1_Psen2S4Ter/analysis-gene_kmer/results/seqs/", x, ".fa"
+            ))
+        )
+    }
 })
 ```
+

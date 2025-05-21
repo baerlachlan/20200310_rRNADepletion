@@ -70,11 +70,11 @@ a <- df %>%
     ) %>%
     left_join(meta) %>%
     mutate(
-        group = ifelse(is.na(group), sample, group),
+        group = ifelse(is.na(group), sample, as.character(group)),
         group = factor(group, levels = c(
             "Theoretical Distribution", "Hom", "Heter", "WT"
         ))
-        ) %>%
+    ) %>%
     ggplot(aes(GC_Content, Percent, colour = group, group = Filename)) +
     geom_line(linetype = 1, linewidth = 0.5) +
     scale_x_continuous(
@@ -100,11 +100,11 @@ b <- df %>%
     ) %>%
     left_join(meta) %>%
     mutate(
-        group = ifelse(is.na(group), sample, group),
+        group = ifelse(is.na(group), sample, as.character(group)),
         group = factor(group, levels = c(
             "Theoretical Distribution", "Hom", "Heter", "WT"
         ))
-        ) %>%
+    ) %>%
     ggplot(aes(GC_Content, Percent, colour = group, group = Filename)) +
     geom_line(linetype = 1, linewidth = 0.5) +
     scale_x_continuous(
@@ -126,11 +126,12 @@ a + b +
     plot_annotation(tag_levels = "A") &
     theme(
         legend.position = "bottom",
-        plot.margin = unit(c(.2, .5, .2, .2), "cm")
+        plot.margin = unit(c(.2, .5, .2, .2), "cm"),
+        text = element_text(size = 12)
     ) &
     guides(colour = guide_legend(nrow = 1, byrow = TRUE))
 ggsave(
-    "~/phd/thesis/tex/fig/rRNA/fqc_raw.png",
+    "~/phd/thesis/tex/fig/rRNA/fqc_raw.pdf",
     width = 6, height = 6
 )
 ```

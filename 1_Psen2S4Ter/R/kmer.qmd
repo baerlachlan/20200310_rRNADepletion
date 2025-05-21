@@ -40,6 +40,7 @@ library(DT)
 library(ggrepel)
 library(pheatmap)
 library(ggdendro)
+library(AnnotationHub)
 ```
 
 ```{r options}
@@ -69,7 +70,7 @@ addInfo <- readRDS(here("1_Psen2S4Ter/Rdata/addInfo.Rds"))
 
 ```{r k5counts}
 k5files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k5",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k5",
     pattern = ".dumps", full.names = TRUE
 )
 k5counts <- lapply(k5files, function(x){
@@ -211,7 +212,7 @@ k5topTable <- glmQLFTest(k5fit) %>%
 
 ```{r k6counts}
 k6files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k6",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k6",
     pattern = ".dumps", full.names = TRUE
 )
 k6counts <- lapply(k6files, function(x){
@@ -353,7 +354,7 @@ k6topTable <- glmQLFTest(k6fit) %>%
 
 ```{r k7counts}
 k7files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k7",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k7",
     pattern = ".dumps", full.names = TRUE
 )
 k7counts <- lapply(k7files, function(x){
@@ -495,7 +496,7 @@ k7topTable <- glmQLFTest(k7fit) %>%
 
 ```{r k8counts}
 k8files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k8",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k8",
     pattern = ".dumps", full.names = TRUE
 )
 k8counts <- lapply(k8files, function(x){
@@ -637,7 +638,7 @@ k8topTable <- glmQLFTest(k8fit) %>%
 
 ```{r k9counts}
 k9files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k9",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k9",
     pattern = ".dumps", full.names = TRUE
 )
 k9counts <- lapply(k9files, function(x){
@@ -779,7 +780,7 @@ k9topTable <- glmQLFTest(k9fit) %>%
 
 ```{r k10counts}
 k10files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k10",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k10",
     pattern = ".dumps", full.names = TRUE
 )
 k10counts <- lapply(k10files, function(x){
@@ -921,7 +922,7 @@ k10topTable <- glmQLFTest(k10fit) %>%
 
 ```{r k11counts}
 k11files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k11",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k11",
     pattern = ".dumps", full.names = TRUE
 )
 k11counts <- lapply(k11files, function(x){
@@ -1064,7 +1065,7 @@ k11topTable <- glmQLFTest(k11fit) %>%
 
 ```{r k12counts}
 k12files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k12",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/1_Psen2S4Ter/analysis-kmer/results/jellyfish/k12",
     pattern = ".dumps", full.names = TRUE
 )
 k12counts <- lapply(k12files, function(x){
@@ -1583,7 +1584,7 @@ k12topTable %>%
     labs(x = "logFC", y = expression(paste(-log[10], "(p)")), title = "k = 11") +
     theme_bw() +
     theme(legend.position = "none")
-``````
+```
 
 # Data export
 
@@ -1604,6 +1605,81 @@ saveRDS(k9topTable, here("1_Psen2S4Ter/Rdata/k9topTable.Rds"))
 saveRDS(k10topTable, here("1_Psen2S4Ter/Rdata/k10topTable.Rds"))
 saveRDS(k11topTable, here("1_Psen2S4Ter/Rdata/k11topTable.Rds"))
 saveRDS(k12topTable, here("1_Psen2S4Ter/Rdata/k12topTable.Rds"))
+```
+
+# Check rRNA transcripts
+
+```{r ah}
+ah_Dr <- AnnotationHub() %>%
+    subset(species == "Danio rerio") %>%
+    subset(rdataclass == "EnsDb")
+ensDb <- ah_Dr[["AH83189"]]
+trEns_Dr <- transcripts(ensDb) %>%
+    mcols() %>% 
+    as_tibble()
+trLen_Dr <- exonsBy(ensDb, "tx") %>%
+    width() %>%
+    vapply(sum, integer(1))
+geneGcLen_Dr <- trLen_Dr %>%
+    enframe() %>%
+    set_colnames(c("tx_id", "length")) %>%
+    left_join(trEns_Dr) %>%
+    group_by(gene_id) %>% 
+    summarise(
+        aveLen = mean(length),
+        maxLen = max(length), 
+        aveGc = sum(length * gc_content) / sum(length),
+        longestGc = gc_content[which.max(length)[[1]]]
+    ) %>%
+    mutate(
+        aveGc =  aveGc / 100,
+        longestGc = longestGc / 100
+    )
+trGcLen_Dr <- trLen_Dr %>%
+    enframe() %>%
+    set_colnames(c("tx_id", "length")) %>%
+    left_join(trEns_Dr) %>%
+    group_by(tx_id) %>% 
+    summarise(
+        aveLen = mean(length),
+        maxLen = max(length), 
+        aveGc = sum(length * gc_content) / sum(length),
+        longestGc = gc_content[which.max(length)[[1]]]
+    ) %>%
+    mutate(
+        aveGc =  aveGc / 100,
+        longestGc = longestGc / 100
+    )
+genesGR_Dr <- genes(ensDb)
+mcols(genesGR_Dr) <- mcols(genesGR_Dr)[c("gene_id", "gene_name", 
+                                         "gene_biotype", "entrezid")]
+txGR_Dr <- transcripts(ensDb)
+mcols(txGR_Dr) <- mcols(txGR_Dr)[c("tx_id", "tx_name", 
+                                   "tx_biotype", "tx_id_version", "gene_id")]
+```
+
+```{r}
+kappa_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k5.Rds"))
+kappa_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k6.Rds"))
+kappa_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k7.Rds"))
+kappa_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k8.Rds"))
+kappa_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k9.Rds"))
+kappa_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k10.Rds"))
+kappa_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k11.Rds"))
+kappa_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/kappa_k12.Rds"))
+```
+
+```{r}
+rrna_genes <- genesGR_Dr %>%
+    plyranges::filter(str_detect(gene_biotype, "rRNA")) %>%
+    as_tibble() %>%
+    pull(gene_id)
+```
+
+```{r}
+enframe(kappa_k12, name = "gene_id", value = "kappa") %>%
+    dplyr::arrange(abs(kappa)) %>%
+    with(which(gene_id %in% rrna_genes))
 ```
 
 # Session info

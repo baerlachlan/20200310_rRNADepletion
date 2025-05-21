@@ -126,11 +126,12 @@ a + b +
     plot_annotation(tag_levels = "A") &
     theme(
         legend.position = "bottom",
-        plot.margin = unit(c(.2, .5, .2, .2), "cm")
+        plot.margin = unit(c(.2, .5, .2, .2), "cm"),
+        text = element_text(size = 12)
     ) &
     guides(colour = guide_legend(nrow = 1, byrow = TRUE))
 ggsave(
-    "~/phd/thesis/tex/fig/rRNA/fqc_removed.png",
+    "~/phd/thesis/tex/fig/rRNA/fqc_removed.pdf",
     width = 6, height = 6
 )
 ```

@@ -99,7 +99,8 @@ raw reads (.fastq.gz) $\rightarrow$ trimmed reads (.fastq.gz) $\rightarrow$ alig
 ```{r meta}
 meta <- read_tsv(
     "1_Psen2S4Ter/smk-rnaseq-counts-1.2.2/config/samples.tsv"
-)
+) %>%
+    mutate(group = factor(group))
 meta %>%
     kable(
         align = "l",

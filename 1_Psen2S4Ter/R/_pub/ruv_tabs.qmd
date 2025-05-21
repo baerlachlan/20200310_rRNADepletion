@@ -18,28 +18,14 @@ library(xtable)
 ```
 
 ```{r}
-res_g_k5 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k5.Rds"))
-res_g_k6 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k6.Rds"))
-res_g_k7 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k7.Rds"))
-res_g_k8 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k8.Rds"))
-res_g_k9 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k9.Rds"))
-res_g_k10 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k10_abs.Rds"))
-res_g_k11 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k11.Rds"))
-res_g_k12 <- readRDS(here("1_Psen2S4Ter/Rdata/res_g_k12.Rds"))
-```
-
-```{r}
 tribble(
-    ~k, ~Heterozygous, ~Homozygous,
-    "Uncorrected", sum(tt_g$groupHeter$DE), sum(tt_g$groupHom$DE),
-    "5", sum(res_g_k5$groupHeter$DE), sum(res_g_k5$groupHom$DE),
-    "6", sum(res_g_k6$groupHeter$DE), sum(res_g_k6$groupHom$DE),
-    "7", sum(res_g_k7$groupHeter$DE), sum(res_g_k7$groupHom$DE),
-    "8", sum(res_g_k8$groupHeter$DE), sum(res_g_k8$groupHom$DE),
-    "9", sum(res_g_k9$groupHeter$DE), sum(res_g_k9$groupHom$DE),
-    "10", sum(res_g_k10$groupHeter$DE), sum(res_g_k10$groupHom$DE),
-    "11", sum(res_g_k11$groupHeter$DE), sum(res_g_k11$groupHom$DE),
-    "12", sum(res_g_k12$groupHeter$DE), sum(res_g_k12$groupHom$DE)
+    ~Correction, ~Factors, ~Heterozygous, ~Homozygous,
+    "RUVg", "1", sum(tt_ruvg$k1$Heter$DE), sum(tt_ruvg$k1$Hom$DE),
+    "RUVg", "2", sum(tt_ruvg$k2$Heter$DE), sum(tt_ruvg$k2$Hom$DE),
+    "RUVg", "3", sum(tt_ruvg$k3$Heter$DE), sum(tt_ruvg$k3$Hom$DE),
+    "RUVr", "1", sum(tt_ruvr$k1$Heter$DE), sum(tt_ruvr$k1$Hom$DE),
+    "RUVr", "2", sum(tt_ruvr$k2$Heter$DE), sum(tt_ruvr$k2$Hom$DE),
+    "RUVr", "3", sum(tt_ruvr$k3$Heter$DE), sum(tt_ruvr$k3$Hom$DE)
 ) %>%
     xtable() %>%
     print(include.rownames = FALSE)

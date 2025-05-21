@@ -62,8 +62,8 @@ addInfo <- readRDS(here("2_Hypoxia/Rdata/addInfo.Rds"))
 
 ```{r}
 files <- list.files(
-    # path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/0_rawData/FastQC",
-    path = "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/raw_data/FastQC/",
+    # path = "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/old_bash_analysis/0_rawData/FastQC",
+    path = "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/smk-rnaseq-counts-1.2.4/results/raw_data/FastQC/",
     pattern = "zip",
     full.names = TRUE
 )
@@ -102,7 +102,7 @@ datasets <- samples$dataset %>%
 
 ```{r k5counts}
 k5files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k5",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k5",
     pattern = ".dumps", full.names = TRUE
 )
 k5counts <- lapply(k5files, function(x){
@@ -245,7 +245,7 @@ k5topTable <- glmQLFTest(k5fit) %>%
 
 ```{r k6counts}
 k6files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k6",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k6",
     pattern = ".dumps", full.names = TRUE
 )
 k6counts <- lapply(k6files, function(x){
@@ -418,7 +418,7 @@ k6topTable <- glmQLFTest(k6fit) %>%
 
 ```{r k7counts}
 k7files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k7",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k7",
     pattern = ".dumps", full.names = TRUE
 )
 k7counts <- lapply(k7files, function(x){
@@ -591,7 +591,7 @@ k7topTable <- glmQLFTest(k7fit) %>%
 
 ```{r k8counts}
 k8files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k8",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k8",
     pattern = ".dumps", full.names = TRUE
 )
 k8counts <- lapply(k8files, function(x){
@@ -763,7 +763,7 @@ k8topTable <- glmQLFTest(k8fit) %>%
 
 ```{r k9counts}
 k9files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k9",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k9",
     pattern = ".dumps", full.names = TRUE
 )
 k9counts <- lapply(k9files, function(x){
@@ -907,7 +907,7 @@ k9topTable <- glmQLFTest(k9fit) %>%
 
 ```{r k10counts}
 k10files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k10",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k10",
     pattern = ".dumps", full.names = TRUE
 )
 k10counts <- lapply(k10files, function(x){
@@ -1080,7 +1080,7 @@ k10topTable <- glmQLFTest(k10fit) %>%
 
 ```{r k11counts}
 k11files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k11",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k11",
     pattern = ".dumps", full.names = TRUE
 )
 k11counts <- lapply(k11files, function(x){
@@ -1225,7 +1225,7 @@ k11topTable <- glmQLFTest(k11fit) %>%
 
 ```{r k12counts}
 k12files <- list.files(
-    "/mnt/phoenix/hpcfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k12",
+    "/mnt/phoenix/gpfs/20200310_rRNADepletion/2_Hypoxia/analysis-kmer/results/jellyfish/k12",
     pattern = ".dumps", full.names = TRUE
 )
 k12counts <- lapply(k12files, function(x){
