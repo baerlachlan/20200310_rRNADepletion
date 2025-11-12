@@ -237,7 +237,7 @@ lapply(list(
         x = "logFC",
         y = "-log~10~(p)"
     ) +
-    facet_wrap(~k, ncol = 2, scales = "free") +
+    facet_wrap(~k, ncol = 2, scales = "free_y") +
     theme(text = element_text(size = 20))
 ggsave("~/phd/thesis/tex/fig/rRNA/k_volc.png", width = 8, height = 12)
 ```

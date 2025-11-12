@@ -1,5 +1,6 @@
 library(Biostrings)
 library(tidyverse)
+library(here)
 
 rrna <- readDNAStringSet(here("ext_data/rRNA.fa"))
 fs <- 300

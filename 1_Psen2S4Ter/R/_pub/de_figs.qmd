@@ -63,6 +63,15 @@ rRnaProp %>%
     geom_boxplot() +
     scale_y_continuous(labels = percent) +
     labs(x = "Genotype", y = "Percent of total RNA", title = "rRNA proportions of each genotype") +
+    stat_compare_means(
+        comparisons = list(
+            c("Heter", "WT"),
+            c("Hom", "WT"),
+            c("Heter", "Hom")
+        ),
+        label = "p.signif",
+        method = "t.test"
+    ) +
     scale_fill_manual(
         name = "Genotype",
         values = c(
@@ -86,7 +95,7 @@ pca$x %>%
     ggplot(aes(PC1, rRNA, label = rRNA)) +
     geom_point(aes(colour = group), size = 4) +
     geom_smooth(method = "lm", se = TRUE, colour = "blue") +
-    # stat_cor() +
+    stat_cor() +
     geom_label_repel(show.legend = FALSE) +
     scale_y_continuous(labels = percent) +
     scale_colour_manual(
